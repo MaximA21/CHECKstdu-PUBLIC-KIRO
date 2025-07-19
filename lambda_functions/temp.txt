@@ -1,0 +1,401 @@
+# EventBridge Connection for ByteMe API
+resource "aws_cloudwatch_event_connection" "byteme_connection" {
+  name        = "${var.project_name}-${var.environment}-byteme-connection"
+  description = "Connection for ByteMe provider API"
+
+  authorization_type = "API_KEY"
+
+  auth_parameters {
+    api_key {
+      key   = "X-Api-Key"
+      value = var.byteme_api_key
+    }
+  }
+}
+
+resource "aws_cloudwatch_event_connection" "verbyndich_connection" {
+  name        = "${var.project_name}-${var.environment}-verbyndich-connection"
+  description = "Connection for Verbyndich provider API"
+
+  authorization_type = "API_KEY"
+
+  auth_parameters {
+    api_key {
+      key   = "X-Api-Key"
+      value = "Servus"
+    }
+  }
+}
+
+resource "aws_sfn_state_machine" "provider_workflow" {
+  name     = "${var.project_name}-${var.environment}-provider-workflow"
+  role_arn = aws_iam_role.step_functions_role.arn
+  tracing_configuration {
+    enabled = true
+  }
+
+
+  definition = <<EOF
+{
+  "Comment": "Multi-Provider Workflow - ByteMe + VerbynDich Dynamic Pagination",
+  "StartAt": "ParallelProviders",
+  "States": {
+    "ParallelProviders": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "CallByteMe",
+          "States": {
+            "CallByteMe": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::http:invoke",
+              "Parameters": {
+                "ApiEndpoint": "https://byteme.gendev7.check24.fun/app/api/products/data",
+                "Method": "GET",
+                "Authentication": {
+                  "ConnectionArn": "${aws_cloudwatch_event_connection.byteme_connection.arn}"
+                },
+                "QueryParameters": {
+                  "street.$": "$.address.street",
+                  "houseNumber.$": "$.address.house_number",
+                  "city.$": "$.address.city",
+                  "plz.$": "$.address.postal_code"
+                }
+              },
+              "ResultPath": "$.http_response",
+              "Retry": [
+                {
+                  "ErrorEquals": ["States.Http.HttpException"],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 3,
+                  "BackoffRate": 2.0
+                }
+              ],
+              "Catch": [
+                {
+                  "ErrorEquals": ["States.ALL"],
+                  "Next": "SendByteMeFailure"
+                }
+              ],
+              "Next": "SendByteMeSuccess"
+            },
+            "SendByteMeSuccess": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::sqs:sendMessage",
+              "Parameters": {
+                "QueueUrl": "${aws_sqs_queue.results_queue.url}",
+                "MessageBody": {
+                  "request_id.$": "$.request_id",
+                  "connection_id.$": "$.connection_id",
+                  "provider_name": "byteme",
+                  "status": "success",
+                  "raw_response.$": "$.http_response.ResponseBody",
+                  "address.$": "$.address",
+                  "share_token.$": "$.share_token"
+                }
+              },
+              "End": true
+            },
+            "SendByteMeFailure": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::sqs:sendMessage",
+              "Parameters": {
+                "QueueUrl": "${aws_sqs_queue.results_queue.url}",
+                "MessageBody": {
+                  "request_id.$": "$.request_id",
+                  "connection_id.$": "$.connection_id",
+                  "provider_name": "byteme",
+                  "status": "failed",
+                  "error_details.$": "$.Error",
+                  "address.$": "$.address",
+                  "share_token.$": "$.share_token"
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "InitVerbynDichPagination",
+          "States": {
+            "InitVerbynDichPagination": {
+              "Type": "Pass",
+              "Parameters": {
+                "page": 0,
+                "all_offers": [],
+                "continue_pagination": true,
+                "request_id.$": "$.request_id",
+                "connection_id.$": "$.connection_id",
+                "address.$": "$.address",
+                "share_token.$": "$.share_token"
+              },
+              "Next": "VerbynDichPaginationLoop"
+            },
+            "VerbynDichPaginationLoop": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "And": [
+                    {
+                      "Variable": "$.continue_pagination",
+                      "BooleanEquals": true
+                    },
+                    {
+                      "Variable": "$.page",
+                      "NumericLessThan": 20
+                    }
+                  ],
+                  "Next": "CallVerbynDichPage"
+                }
+              ],
+              "Default": "SendVerbynDichResults"
+            },
+            "CallVerbynDichPage": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::http:invoke",
+              "Parameters": {
+                "ApiEndpoint": "https://verbyndich.gendev7.check24.fun/check24/data",
+                "Method": "POST",
+                "Headers": {
+                  "Content-Type": "text/plain"
+                },
+                "Authentication": {
+                  "ConnectionArn": "${aws_cloudwatch_event_connection.verbyndich_connection.arn}"
+                },
+                "QueryParameters": {
+                  "apiKey": "${var.verbyndich_api_key}",
+                  "page.$": "States.Format('{}', $.page)"
+                },
+                "RequestBody.$": "States.Format('{};{};{};{}', $.address.street, $.address.house_number, $.address.city, $.address.postal_code)"
+              },
+              "ResultPath": "$.current_response",
+              "Retry": [
+                {
+                  "ErrorEquals": ["States.Http.HttpException"],
+                  "IntervalSeconds": 1,
+                  "MaxAttempts": 3,
+                  "BackoffRate": 2.0
+                }
+              ],
+              "Catch": [
+                {
+                  "ErrorEquals": ["States.ALL"],
+                  "Next": "SendVerbynDichFailure"
+                }
+              ],
+              "Next": "ProcessVerbynDichResponse"
+            },
+            "ProcessVerbynDichResponse": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.current_response.ResponseBody.valid",
+                  "BooleanEquals": true,
+                  "Next": "AddValidOfferToPagination"
+                }
+              ],
+              "Default": "IncrementPageOnly"
+            },
+            "AddValidOfferToPagination": {
+              "Type": "Pass",
+              "Parameters": {
+                "page.$": "States.MathAdd($.page, 1)",
+                "all_offers.$": "States.Array($.all_offers[*], $.current_response.ResponseBody)",
+                "continue_pagination.$": "$.current_response.ResponseBody.last",
+                "request_id.$": "$.request_id",
+                "connection_id.$": "$.connection_id",
+                "address.$": "$.address",
+                "share_token.$": "$.share_token"
+              },
+              "Next": "InvertLastFlag"
+            },
+            "IncrementPageOnly": {
+              "Type": "Pass",
+              "Parameters": {
+                "page.$": "States.MathAdd($.page, 1)",
+                "all_offers.$": "$.all_offers",
+                "continue_pagination.$": "$.current_response.ResponseBody.last",
+                "request_id.$": "$.request_id",
+                "connection_id.$": "$.connection_id",
+                "address.$": "$.address",
+                "share_token.$": "$.share_token"
+              },
+              "Next": "InvertLastFlag"
+            },
+            "InvertLastFlag": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.continue_pagination",
+                  "BooleanEquals": true,
+                  "Next": "SetContinueFalse"
+                }
+              ],
+              "Default": "SetContinueTrue"
+            },
+            "SetContinueFalse": {
+              "Type": "Pass",
+              "Parameters": {
+                "page.$": "$.page",
+                "all_offers.$": "$.all_offers",
+                "continue_pagination": false,
+                "request_id.$": "$.request_id",
+                "connection_id.$": "$.connection_id",
+                "address.$": "$.address",
+                "share_token.$": "$.share_token"
+              },
+              "Next": "VerbynDichPaginationLoop"
+            },
+            "SetContinueTrue": {
+              "Type": "Pass",
+              "Parameters": {
+                "page.$": "$.page",
+                "all_offers.$": "$.all_offers",
+                "continue_pagination": true,
+                "request_id.$": "$.request_id",
+                "connection_id.$": "$.connection_id",
+                "address.$": "$.address",
+                "share_token.$": "$.share_token"
+              },
+              "Next": "VerbynDichPaginationLoop"
+            },
+            "SendVerbynDichResults": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::sqs:sendMessage",
+              "Parameters": {
+                "QueueUrl": "${aws_sqs_queue.results_queue.url}",
+                "MessageBody": {
+                  "request_id.$": "$.request_id",
+                  "connection_id.$": "$.connection_id",
+                  "provider_name": "verbyndich",
+                  "status": "success",
+                  "raw_response.$": "$.all_offers",
+                  "total_pages.$": "$.page",
+                  "address.$": "$.address",
+                  "share_token.$": "$.share_token"
+                }
+              },
+              "End": true
+            },
+            "SendVerbynDichFailure": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::sqs:sendMessage",
+              "Parameters": {
+                "QueueUrl": "${aws_sqs_queue.results_queue.url}",
+                "MessageBody": {
+                  "request_id.$": "$.request_id",
+                  "connection_id.$": "$.connection_id",
+                  "provider_name": "verbyndich",
+                  "status": "failed",
+                  "error_details.$": "$.Error",
+                  "address.$": "$.address",
+                  "share_token.$": "$.share_token"
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "End": true
+    }
+  }
+}
+EOF
+
+
+
+  tags = {
+    Name        = "${var.project_name}-provider-workflow"
+    Environment = var.environment
+  }
+}
+
+# IAM-Rolle für Step Functions
+resource "aws_iam_role" "step_functions_role" {
+  name = "${var.project_name}-${var.environment}-step-functions-role"
+
+  assume_role_policy = jsonencode({
+    Version   = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "states.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name        = "${var.project_name}-step-functions-role"
+    Environment = var.environment
+  }
+}
+
+# IAM-Policy für Step Functions
+resource "aws_iam_policy" "step_functions_policy" {
+  name        = "${var.project_name}-${var.environment}-step-functions-policy"
+  description = "Policy for Step Functions state machine"
+
+  policy = jsonencode({
+    Version   = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:*:*:*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:SendMessage"
+        ]
+        Resource = [
+          aws_sqs_queue.results_queue.arn
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "states:InvokeHTTPEndpoint"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "events:RetrieveConnectionCredentials"
+        ]
+        Resource = [aws_cloudwatch_event_connection.byteme_connection.arn,
+          aws_cloudwatch_event_connection.verbyndich_connection.arn]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ]
+        Resource = "arn:aws:secretsmanager:${var.aws_region}:*:secret:events!connection/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "xray:PutTraceSegments",
+          "xray:PutTelemetryRecords"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "step_functions_policy_attachment" {
+  role       = aws_iam_role.step_functions_role.name
+  policy_arn = aws_iam_policy.step_functions_policy.arn
+}
