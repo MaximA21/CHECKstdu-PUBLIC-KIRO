@@ -1,69 +1,743 @@
 [
   {
     "address": "Munich",
+    "connection_type": "FIBER",
+    "installation": true,
+    "status_code": 200,
+    "success": true,
+    "response_size": 3930,
+    "offers_count": 6,
+    "error": null,
+    "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><Output xmlns:ns2=\"http://webwunder.gendev7.check24.fun/offerservice\"><ns2:products><ns2:productId>410</ns2:productId><ns2:providerName>WebWunder Premium 80</ns2:providerName><ns2:productInfo><ns2:speed>80</ns2:speed><ns2:monthlyCostInCent>4120</ns2:monthlyCostInCent><ns2:monthlyCostInCentFrom25thMonth>4020</ns2:monthlyCostInCentFrom25thMonth><ns2:voucher xmlns:xsi=\"http://www.w3.org/20...",
+    "offers_details": [
+      {
+        "offer_id": 1,
+        "product_id": "410",
+        "provider_name": "WebWunder Premium 80",
+        "speed": "80",
+        "monthly_cost": "4120",
+        "monthly_cost_from_25th": "4020",
+        "contract_duration": "24",
+        "connection_type": "FIBER",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 2,
+        "product_id": "411",
+        "provider_name": "WebWunder Premium 90",
+        "speed": "90",
+        "monthly_cost": "4320",
+        "monthly_cost_from_25th": "4320",
+        "contract_duration": "24",
+        "connection_type": "FIBER",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 3,
+        "product_id": "412",
+        "provider_name": "WebWunder Premium 100",
+        "speed": "100",
+        "monthly_cost": "4520",
+        "monthly_cost_from_25th": "4620",
+        "contract_duration": "24",
+        "connection_type": "FIBER",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 4,
+        "product_id": "413",
+        "provider_name": "WebWunder Ultra 100",
+        "speed": "100",
+        "monthly_cost": "4720",
+        "monthly_cost_from_25th": "4920",
+        "contract_duration": "36",
+        "connection_type": "FIBER",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 5,
+        "product_id": "414",
+        "provider_name": "WebWunder Ultra 110",
+        "speed": "110",
+        "monthly_cost": "4920",
+        "monthly_cost_from_25th": "4720",
+        "contract_duration": "36",
+        "connection_type": "FIBER",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 6,
+        "product_id": "415",
+        "provider_name": "WebWunder Ultra 120",
+        "speed": "120",
+        "monthly_cost": "5120",
+        "monthly_cost_from_25th": "5020",
+        "contract_duration": "36",
+        "connection_type": "FIBER",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      }
+    ],
+    "has_pricing": true,
+    "has_discounts": true,
+    "unique_names": [
+      "WebWunder Ultra 110",
+      "WebWunder Premium 80",
+      "WebWunder Premium 90",
+      "WebWunder Premium 100",
+      "WebWunder Ultra 100",
+      "WebWunder Ultra 120"
+    ],
+    "speed_range": [
+      "80",
+      "90",
+      "100",
+      "100",
+      "110",
+      "120"
+    ]
+  },
+  {
+    "address": "Munich",
+    "connection_type": "FIBER",
+    "installation": false,
+    "status_code": 200,
+    "success": true,
+    "response_size": 3930,
+    "offers_count": 6,
+    "error": null,
+    "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><Output xmlns:ns2=\"http://webwunder.gendev7.check24.fun/offerservice\"><ns2:products><ns2:productId>410</ns2:productId><ns2:providerName>WebWunder Premium 80</ns2:providerName><ns2:productInfo><ns2:speed>80</ns2:speed><ns2:monthlyCostInCent>4120</ns2:monthlyCostInCent><ns2:monthlyCostInCentFrom25thMonth>4020</ns2:monthlyCostInCentFrom25thMonth><ns2:voucher xmlns:xsi=\"http://www.w3.org/20...",
+    "offers_details": [
+      {
+        "offer_id": 1,
+        "product_id": "410",
+        "provider_name": "WebWunder Premium 80",
+        "speed": "80",
+        "monthly_cost": "4120",
+        "monthly_cost_from_25th": "4020",
+        "contract_duration": "24",
+        "connection_type": "FIBER",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 2,
+        "product_id": "411",
+        "provider_name": "WebWunder Premium 90",
+        "speed": "90",
+        "monthly_cost": "4320",
+        "monthly_cost_from_25th": "4320",
+        "contract_duration": "24",
+        "connection_type": "FIBER",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 3,
+        "product_id": "412",
+        "provider_name": "WebWunder Premium 100",
+        "speed": "100",
+        "monthly_cost": "4520",
+        "monthly_cost_from_25th": "4620",
+        "contract_duration": "24",
+        "connection_type": "FIBER",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 4,
+        "product_id": "413",
+        "provider_name": "WebWunder Ultra 100",
+        "speed": "100",
+        "monthly_cost": "4720",
+        "monthly_cost_from_25th": "4920",
+        "contract_duration": "36",
+        "connection_type": "FIBER",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 5,
+        "product_id": "414",
+        "provider_name": "WebWunder Ultra 110",
+        "speed": "110",
+        "monthly_cost": "4920",
+        "monthly_cost_from_25th": "4720",
+        "contract_duration": "36",
+        "connection_type": "FIBER",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 6,
+        "product_id": "415",
+        "provider_name": "WebWunder Ultra 120",
+        "speed": "120",
+        "monthly_cost": "5120",
+        "monthly_cost_from_25th": "5020",
+        "contract_duration": "36",
+        "connection_type": "FIBER",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      }
+    ],
+    "has_pricing": true,
+    "has_discounts": true,
+    "unique_names": [
+      "WebWunder Ultra 110",
+      "WebWunder Premium 80",
+      "WebWunder Premium 90",
+      "WebWunder Premium 100",
+      "WebWunder Ultra 100",
+      "WebWunder Ultra 120"
+    ],
+    "speed_range": [
+      "80",
+      "90",
+      "100",
+      "100",
+      "110",
+      "120"
+    ]
+  },
+  {
+    "address": "Munich",
     "connection_type": "DSL",
     "installation": true,
-    "status_code": 400,
-    "success": false,
-    "response_size": 0,
-    "offers_count": 0,
-    "error": "HTTP 400: ",
-    "raw_response": ""
+    "status_code": 200,
+    "success": true,
+    "response_size": 3919,
+    "offers_count": 6,
+    "error": null,
+    "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><Output xmlns:ns2=\"http://webwunder.gendev7.check24.fun/offerservice\"><ns2:products><ns2:productId>401</ns2:productId><ns2:providerName>WebWunder Starter 20</ns2:providerName><ns2:productInfo><ns2:speed>20</ns2:speed><ns2:monthlyCostInCent>2320</ns2:monthlyCostInCent><ns2:monthlyCostInCentFrom25thMonth>2320</ns2:monthlyCostInCentFrom25thMonth><ns2:voucher xmlns:xsi=\"http://www.w3.org/20...",
+    "offers_details": [
+      {
+        "offer_id": 1,
+        "product_id": "401",
+        "provider_name": "WebWunder Starter 20",
+        "speed": "20",
+        "monthly_cost": "2320",
+        "monthly_cost_from_25th": "2320",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 2,
+        "product_id": "402",
+        "provider_name": "WebWunder Starter 30",
+        "speed": "30",
+        "monthly_cost": "2520",
+        "monthly_cost_from_25th": "2620",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 3,
+        "product_id": "403",
+        "provider_name": "WebWunder Starter 40",
+        "speed": "40",
+        "monthly_cost": "2720",
+        "monthly_cost_from_25th": "2920",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 4,
+        "product_id": "404",
+        "provider_name": "WebWunder Standard 40",
+        "speed": "40",
+        "monthly_cost": "2920",
+        "monthly_cost_from_25th": "2720",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 5,
+        "product_id": "405",
+        "provider_name": "WebWunder Standard 50",
+        "speed": "50",
+        "monthly_cost": "3120",
+        "monthly_cost_from_25th": "3020",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 6,
+        "product_id": "406",
+        "provider_name": "WebWunder Standard 60",
+        "speed": "60",
+        "monthly_cost": "3320",
+        "monthly_cost_from_25th": "3320",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      }
+    ],
+    "has_pricing": true,
+    "has_discounts": true,
+    "unique_names": [
+      "WebWunder Standard 40",
+      "WebWunder Starter 20",
+      "WebWunder Starter 30",
+      "WebWunder Standard 60",
+      "WebWunder Starter 40",
+      "WebWunder Standard 50"
+    ],
+    "speed_range": [
+      "20",
+      "30",
+      "40",
+      "40",
+      "50",
+      "60"
+    ]
   },
   {
     "address": "Munich",
     "connection_type": "DSL",
     "installation": false,
-    "status_code": 400,
-    "success": false,
-    "response_size": 0,
-    "offers_count": 0,
-    "error": "HTTP 400: ",
-    "raw_response": ""
+    "status_code": 200,
+    "success": true,
+    "response_size": 3919,
+    "offers_count": 6,
+    "error": null,
+    "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><Output xmlns:ns2=\"http://webwunder.gendev7.check24.fun/offerservice\"><ns2:products><ns2:productId>401</ns2:productId><ns2:providerName>WebWunder Starter 20</ns2:providerName><ns2:productInfo><ns2:speed>20</ns2:speed><ns2:monthlyCostInCent>2320</ns2:monthlyCostInCent><ns2:monthlyCostInCentFrom25thMonth>2320</ns2:monthlyCostInCentFrom25thMonth><ns2:voucher xmlns:xsi=\"http://www.w3.org/20...",
+    "offers_details": [
+      {
+        "offer_id": 1,
+        "product_id": "401",
+        "provider_name": "WebWunder Starter 20",
+        "speed": "20",
+        "monthly_cost": "2320",
+        "monthly_cost_from_25th": "2320",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 2,
+        "product_id": "402",
+        "provider_name": "WebWunder Starter 30",
+        "speed": "30",
+        "monthly_cost": "2520",
+        "monthly_cost_from_25th": "2620",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 3,
+        "product_id": "403",
+        "provider_name": "WebWunder Starter 40",
+        "speed": "40",
+        "monthly_cost": "2720",
+        "monthly_cost_from_25th": "2920",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 4,
+        "product_id": "404",
+        "provider_name": "WebWunder Standard 40",
+        "speed": "40",
+        "monthly_cost": "2920",
+        "monthly_cost_from_25th": "2720",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 5,
+        "product_id": "405",
+        "provider_name": "WebWunder Standard 50",
+        "speed": "50",
+        "monthly_cost": "3120",
+        "monthly_cost_from_25th": "3020",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 6,
+        "product_id": "406",
+        "provider_name": "WebWunder Standard 60",
+        "speed": "60",
+        "monthly_cost": "3320",
+        "monthly_cost_from_25th": "3320",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      }
+    ],
+    "has_pricing": true,
+    "has_discounts": true,
+    "unique_names": [
+      "WebWunder Standard 40",
+      "WebWunder Starter 20",
+      "WebWunder Starter 30",
+      "WebWunder Standard 60",
+      "WebWunder Starter 40",
+      "WebWunder Standard 50"
+    ],
+    "speed_range": [
+      "20",
+      "30",
+      "40",
+      "40",
+      "50",
+      "60"
+    ]
   },
   {
     "address": "Munich",
-    "connection_type": "Cable",
+    "connection_type": "CABLE",
     "installation": true,
-    "status_code": 400,
-    "success": false,
-    "response_size": 0,
-    "offers_count": 0,
-    "error": "HTTP 400: ",
-    "raw_response": ""
+    "status_code": 200,
+    "success": true,
+    "response_size": 2068,
+    "offers_count": 3,
+    "error": null,
+    "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><Output xmlns:ns2=\"http://webwunder.gendev7.check24.fun/offerservice\"><ns2:products><ns2:productId>407</ns2:productId><ns2:providerName>WebWunder Plus 60</ns2:providerName><ns2:productInfo><ns2:speed>60</ns2:speed><ns2:monthlyCostInCent>3520</ns2:monthlyCostInCent><ns2:monthlyCostInCentFrom25thMonth>3620</ns2:monthlyCostInCentFrom25thMonth><ns2:voucher xmlns:xsi=\"http://www.w3.org/2001/...",
+    "offers_details": [
+      {
+        "offer_id": 1,
+        "product_id": "407",
+        "provider_name": "WebWunder Plus 60",
+        "speed": "60",
+        "monthly_cost": "3520",
+        "monthly_cost_from_25th": "3620",
+        "contract_duration": "24",
+        "connection_type": "CABLE",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 2,
+        "product_id": "408",
+        "provider_name": "WebWunder Plus 70",
+        "speed": "70",
+        "monthly_cost": "3720",
+        "monthly_cost_from_25th": "3920",
+        "contract_duration": "24",
+        "connection_type": "CABLE",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 3,
+        "product_id": "409",
+        "provider_name": "WebWunder Plus 80",
+        "speed": "80",
+        "monthly_cost": "3920",
+        "monthly_cost_from_25th": "3720",
+        "contract_duration": "24",
+        "connection_type": "CABLE",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      }
+    ],
+    "has_pricing": true,
+    "has_discounts": true,
+    "unique_names": [
+      "WebWunder Plus 80",
+      "WebWunder Plus 70",
+      "WebWunder Plus 60"
+    ],
+    "speed_range": [
+      "60",
+      "70",
+      "80"
+    ]
   },
   {
     "address": "Munich",
-    "connection_type": "Cable",
+    "connection_type": "CABLE",
     "installation": false,
-    "status_code": 400,
-    "success": false,
-    "response_size": 0,
-    "offers_count": 0,
-    "error": "HTTP 400: ",
-    "raw_response": ""
+    "status_code": 200,
+    "success": true,
+    "response_size": 2068,
+    "offers_count": 3,
+    "error": null,
+    "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><Output xmlns:ns2=\"http://webwunder.gendev7.check24.fun/offerservice\"><ns2:products><ns2:productId>407</ns2:productId><ns2:providerName>WebWunder Plus 60</ns2:providerName><ns2:productInfo><ns2:speed>60</ns2:speed><ns2:monthlyCostInCent>3520</ns2:monthlyCostInCent><ns2:monthlyCostInCentFrom25thMonth>3620</ns2:monthlyCostInCentFrom25thMonth><ns2:voucher xmlns:xsi=\"http://www.w3.org/2001/...",
+    "offers_details": [
+      {
+        "offer_id": 1,
+        "product_id": "407",
+        "provider_name": "WebWunder Plus 60",
+        "speed": "60",
+        "monthly_cost": "3520",
+        "monthly_cost_from_25th": "3620",
+        "contract_duration": "24",
+        "connection_type": "CABLE",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 2,
+        "product_id": "408",
+        "provider_name": "WebWunder Plus 70",
+        "speed": "70",
+        "monthly_cost": "3720",
+        "monthly_cost_from_25th": "3920",
+        "contract_duration": "24",
+        "connection_type": "CABLE",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      },
+      {
+        "offer_id": 3,
+        "product_id": "409",
+        "provider_name": "WebWunder Plus 80",
+        "speed": "80",
+        "monthly_cost": "3920",
+        "monthly_cost_from_25th": "3720",
+        "contract_duration": "24",
+        "connection_type": "CABLE",
+        "voucher_percentage": "8",
+        "voucher_max_discount": "10806"
+      }
+    ],
+    "has_pricing": true,
+    "has_discounts": true,
+    "unique_names": [
+      "WebWunder Plus 80",
+      "WebWunder Plus 70",
+      "WebWunder Plus 60"
+    ],
+    "speed_range": [
+      "60",
+      "70",
+      "80"
+    ]
   },
   {
-    "address": "Munich",
-    "connection_type": "Fiber",
+    "address": "Berlin",
+    "connection_type": "FIBER",
     "installation": true,
-    "status_code": 400,
-    "success": false,
-    "response_size": 0,
-    "offers_count": 0,
-    "error": "HTTP 400: ",
-    "raw_response": ""
+    "status_code": 200,
+    "success": true,
+    "response_size": 3996,
+    "offers_count": 6,
+    "error": null,
+    "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><Output xmlns:ns2=\"http://webwunder.gendev7.check24.fun/offerservice\"><ns2:products><ns2:productId>410</ns2:productId><ns2:providerName>WebWunder Premium 80</ns2:providerName><ns2:productInfo><ns2:speed>80</ns2:speed><ns2:monthlyCostInCent>4122</ns2:monthlyCostInCent><ns2:monthlyCostInCentFrom25thMonth>4322</ns2:monthlyCostInCentFrom25thMonth><ns2:voucher xmlns:xsi=\"http://www.w3.org/20...",
+    "offers_details": [
+      {
+        "offer_id": 1,
+        "product_id": "410",
+        "provider_name": "WebWunder Premium 80",
+        "speed": "80",
+        "monthly_cost": "4122",
+        "monthly_cost_from_25th": "4322",
+        "contract_duration": "24",
+        "connection_type": "FIBER",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 2,
+        "product_id": "411",
+        "provider_name": "WebWunder Premium 90",
+        "speed": "90",
+        "monthly_cost": "4322",
+        "monthly_cost_from_25th": "4122",
+        "contract_duration": "24",
+        "connection_type": "FIBER",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 3,
+        "product_id": "412",
+        "provider_name": "WebWunder Premium 100",
+        "speed": "100",
+        "monthly_cost": "4522",
+        "monthly_cost_from_25th": "4422",
+        "contract_duration": "24",
+        "connection_type": "FIBER",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 4,
+        "product_id": "413",
+        "provider_name": "WebWunder Ultra 100",
+        "speed": "100",
+        "monthly_cost": "4722",
+        "monthly_cost_from_25th": "4722",
+        "contract_duration": "36",
+        "connection_type": "FIBER",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 5,
+        "product_id": "414",
+        "provider_name": "WebWunder Ultra 110",
+        "speed": "110",
+        "monthly_cost": "4922",
+        "monthly_cost_from_25th": "5022",
+        "contract_duration": "36",
+        "connection_type": "FIBER",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 6,
+        "product_id": "415",
+        "provider_name": "WebWunder Ultra 120",
+        "speed": "120",
+        "monthly_cost": "5122",
+        "monthly_cost_from_25th": "5322",
+        "contract_duration": "36",
+        "connection_type": "FIBER",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      }
+    ],
+    "has_pricing": true,
+    "has_discounts": false,
+    "unique_names": [
+      "WebWunder Ultra 110",
+      "WebWunder Premium 80",
+      "WebWunder Premium 90",
+      "WebWunder Premium 100",
+      "WebWunder Ultra 100",
+      "WebWunder Ultra 120"
+    ],
+    "speed_range": [
+      "80",
+      "90",
+      "100",
+      "100",
+      "110",
+      "120"
+    ]
   },
   {
-    "address": "Munich",
-    "connection_type": "Fiber",
+    "address": "Berlin",
+    "connection_type": "FIBER",
     "installation": false,
-    "status_code": 400,
-    "success": false,
-    "response_size": 0,
-    "offers_count": 0,
-    "error": "HTTP 400: ",
-    "raw_response": ""
+    "status_code": 200,
+    "success": true,
+    "response_size": 3996,
+    "offers_count": 6,
+    "error": null,
+    "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><Output xmlns:ns2=\"http://webwunder.gendev7.check24.fun/offerservice\"><ns2:products><ns2:productId>410</ns2:productId><ns2:providerName>WebWunder Premium 80</ns2:providerName><ns2:productInfo><ns2:speed>80</ns2:speed><ns2:monthlyCostInCent>4122</ns2:monthlyCostInCent><ns2:monthlyCostInCentFrom25thMonth>4322</ns2:monthlyCostInCentFrom25thMonth><ns2:voucher xmlns:xsi=\"http://www.w3.org/20...",
+    "offers_details": [
+      {
+        "offer_id": 1,
+        "product_id": "410",
+        "provider_name": "WebWunder Premium 80",
+        "speed": "80",
+        "monthly_cost": "4122",
+        "monthly_cost_from_25th": "4322",
+        "contract_duration": "24",
+        "connection_type": "FIBER",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 2,
+        "product_id": "411",
+        "provider_name": "WebWunder Premium 90",
+        "speed": "90",
+        "monthly_cost": "4322",
+        "monthly_cost_from_25th": "4122",
+        "contract_duration": "24",
+        "connection_type": "FIBER",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 3,
+        "product_id": "412",
+        "provider_name": "WebWunder Premium 100",
+        "speed": "100",
+        "monthly_cost": "4522",
+        "monthly_cost_from_25th": "4422",
+        "contract_duration": "24",
+        "connection_type": "FIBER",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 4,
+        "product_id": "413",
+        "provider_name": "WebWunder Ultra 100",
+        "speed": "100",
+        "monthly_cost": "4722",
+        "monthly_cost_from_25th": "4722",
+        "contract_duration": "36",
+        "connection_type": "FIBER",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 5,
+        "product_id": "414",
+        "provider_name": "WebWunder Ultra 110",
+        "speed": "110",
+        "monthly_cost": "4922",
+        "monthly_cost_from_25th": "5022",
+        "contract_duration": "36",
+        "connection_type": "FIBER",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 6,
+        "product_id": "415",
+        "provider_name": "WebWunder Ultra 120",
+        "speed": "120",
+        "monthly_cost": "5122",
+        "monthly_cost_from_25th": "5322",
+        "contract_duration": "36",
+        "connection_type": "FIBER",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      }
+    ],
+    "has_pricing": true,
+    "has_discounts": false,
+    "unique_names": [
+      "WebWunder Ultra 110",
+      "WebWunder Premium 80",
+      "WebWunder Premium 90",
+      "WebWunder Premium 100",
+      "WebWunder Ultra 100",
+      "WebWunder Ultra 120"
+    ],
+    "speed_range": [
+      "80",
+      "90",
+      "100",
+      "100",
+      "110",
+      "120"
+    ]
   },
   {
     "address": "Berlin",
@@ -72,10 +746,101 @@
     "status_code": 200,
     "success": true,
     "response_size": 3985,
-    "offers_count": 0,
+    "offers_count": 6,
     "error": null,
     "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><Output xmlns:ns2=\"http://webwunder.gendev7.check24.fun/offerservice\"><ns2:products><ns2:productId>401</ns2:productId><ns2:providerName>WebWunder Starter 20</ns2:providerName><ns2:productInfo><ns2:speed>20</ns2:speed><ns2:monthlyCostInCent>2322</ns2:monthlyCostInCent><ns2:monthlyCostInCentFrom25thMonth>2122</ns2:monthlyCostInCentFrom25thMonth><ns2:voucher xmlns:xsi=\"http://www.w3.org/20...",
-    "offers_details": []
+    "offers_details": [
+      {
+        "offer_id": 1,
+        "product_id": "401",
+        "provider_name": "WebWunder Starter 20",
+        "speed": "20",
+        "monthly_cost": "2322",
+        "monthly_cost_from_25th": "2122",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 2,
+        "product_id": "402",
+        "provider_name": "WebWunder Starter 30",
+        "speed": "30",
+        "monthly_cost": "2522",
+        "monthly_cost_from_25th": "2422",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 3,
+        "product_id": "403",
+        "provider_name": "WebWunder Starter 40",
+        "speed": "40",
+        "monthly_cost": "2722",
+        "monthly_cost_from_25th": "2722",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 4,
+        "product_id": "404",
+        "provider_name": "WebWunder Standard 40",
+        "speed": "40",
+        "monthly_cost": "2922",
+        "monthly_cost_from_25th": "3022",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 5,
+        "product_id": "405",
+        "provider_name": "WebWunder Standard 50",
+        "speed": "50",
+        "monthly_cost": "3122",
+        "monthly_cost_from_25th": "3322",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 6,
+        "product_id": "406",
+        "provider_name": "WebWunder Standard 60",
+        "speed": "60",
+        "monthly_cost": "3322",
+        "monthly_cost_from_25th": "3122",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      }
+    ],
+    "has_pricing": true,
+    "has_discounts": false,
+    "unique_names": [
+      "WebWunder Standard 40",
+      "WebWunder Starter 20",
+      "WebWunder Starter 30",
+      "WebWunder Standard 60",
+      "WebWunder Starter 40",
+      "WebWunder Standard 50"
+    ],
+    "speed_range": [
+      "20",
+      "30",
+      "40",
+      "40",
+      "50",
+      "60"
+    ]
   },
   {
     "address": "Berlin",
@@ -84,121 +849,222 @@
     "status_code": 200,
     "success": true,
     "response_size": 3985,
-    "offers_count": 0,
+    "offers_count": 6,
     "error": null,
     "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><Output xmlns:ns2=\"http://webwunder.gendev7.check24.fun/offerservice\"><ns2:products><ns2:productId>401</ns2:productId><ns2:providerName>WebWunder Starter 20</ns2:providerName><ns2:productInfo><ns2:speed>20</ns2:speed><ns2:monthlyCostInCent>2322</ns2:monthlyCostInCent><ns2:monthlyCostInCentFrom25thMonth>2122</ns2:monthlyCostInCentFrom25thMonth><ns2:voucher xmlns:xsi=\"http://www.w3.org/20...",
-    "offers_details": []
+    "offers_details": [
+      {
+        "offer_id": 1,
+        "product_id": "401",
+        "provider_name": "WebWunder Starter 20",
+        "speed": "20",
+        "monthly_cost": "2322",
+        "monthly_cost_from_25th": "2122",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 2,
+        "product_id": "402",
+        "provider_name": "WebWunder Starter 30",
+        "speed": "30",
+        "monthly_cost": "2522",
+        "monthly_cost_from_25th": "2422",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 3,
+        "product_id": "403",
+        "provider_name": "WebWunder Starter 40",
+        "speed": "40",
+        "monthly_cost": "2722",
+        "monthly_cost_from_25th": "2722",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 4,
+        "product_id": "404",
+        "provider_name": "WebWunder Standard 40",
+        "speed": "40",
+        "monthly_cost": "2922",
+        "monthly_cost_from_25th": "3022",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 5,
+        "product_id": "405",
+        "provider_name": "WebWunder Standard 50",
+        "speed": "50",
+        "monthly_cost": "3122",
+        "monthly_cost_from_25th": "3322",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 6,
+        "product_id": "406",
+        "provider_name": "WebWunder Standard 60",
+        "speed": "60",
+        "monthly_cost": "3322",
+        "monthly_cost_from_25th": "3122",
+        "contract_duration": "12",
+        "connection_type": "DSL",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      }
+    ],
+    "has_pricing": true,
+    "has_discounts": false,
+    "unique_names": [
+      "WebWunder Standard 40",
+      "WebWunder Starter 20",
+      "WebWunder Starter 30",
+      "WebWunder Standard 60",
+      "WebWunder Starter 40",
+      "WebWunder Standard 50"
+    ],
+    "speed_range": [
+      "20",
+      "30",
+      "40",
+      "40",
+      "50",
+      "60"
+    ]
   },
   {
     "address": "Berlin",
-    "connection_type": "Cable",
-    "installation": true,
-    "status_code": 500,
-    "success": false,
-    "response_size": 298,
-    "offers_count": 0,
-    "error": "HTTP 500: <SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><SOAP-ENV:Fault><faultcode>SOAP-ENV:Server</faultcode><faultstring xml:lang=\"en\">getConne",
-    "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><SOAP-ENV:Fault><faultcode>SOAP-ENV:Server</faultcode><faultstring xml:lang=\"en\">getConnectionEnum(...) must not be null</faultstring></SOAP-ENV:Fault></SOAP-ENV:Body></SOAP-ENV:Envelope>"
-  },
-  {
-    "address": "Berlin",
-    "connection_type": "Cable",
-    "installation": false,
-    "status_code": 500,
-    "success": false,
-    "response_size": 298,
-    "offers_count": 0,
-    "error": "HTTP 500: <SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><SOAP-ENV:Fault><faultcode>SOAP-ENV:Server</faultcode><faultstring xml:lang=\"en\">getConne",
-    "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><SOAP-ENV:Fault><faultcode>SOAP-ENV:Server</faultcode><faultstring xml:lang=\"en\">getConnectionEnum(...) must not be null</faultstring></SOAP-ENV:Fault></SOAP-ENV:Body></SOAP-ENV:Envelope>"
-  },
-  {
-    "address": "Berlin",
-    "connection_type": "Fiber",
-    "installation": true,
-    "status_code": 500,
-    "success": false,
-    "response_size": 298,
-    "offers_count": 0,
-    "error": "HTTP 500: <SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><SOAP-ENV:Fault><faultcode>SOAP-ENV:Server</faultcode><faultstring xml:lang=\"en\">getConne",
-    "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><SOAP-ENV:Fault><faultcode>SOAP-ENV:Server</faultcode><faultstring xml:lang=\"en\">getConnectionEnum(...) must not be null</faultstring></SOAP-ENV:Fault></SOAP-ENV:Body></SOAP-ENV:Envelope>"
-  },
-  {
-    "address": "Berlin",
-    "connection_type": "Fiber",
-    "installation": false,
-    "status_code": 500,
-    "success": false,
-    "response_size": 298,
-    "offers_count": 0,
-    "error": "HTTP 500: <SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><SOAP-ENV:Fault><faultcode>SOAP-ENV:Server</faultcode><faultstring xml:lang=\"en\">getConne",
-    "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><SOAP-ENV:Fault><faultcode>SOAP-ENV:Server</faultcode><faultstring xml:lang=\"en\">getConnectionEnum(...) must not be null</faultstring></SOAP-ENV:Fault></SOAP-ENV:Body></SOAP-ENV:Envelope>"
-  },
-  {
-    "address": "Hamburg",
-    "connection_type": "DSL",
+    "connection_type": "CABLE",
     "installation": true,
     "status_code": 200,
     "success": true,
-    "response_size": 3925,
-    "offers_count": 0,
+    "response_size": 2101,
+    "offers_count": 3,
     "error": null,
-    "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><Output xmlns:ns2=\"http://webwunder.gendev7.check24.fun/offerservice\"><ns2:products><ns2:productId>401</ns2:productId><ns2:providerName>WebWunder Starter 20</ns2:providerName><ns2:productInfo><ns2:speed>20</ns2:speed><ns2:monthlyCostInCent>2617</ns2:monthlyCostInCent><ns2:monthlyCostInCentFrom25thMonth>2517</ns2:monthlyCostInCentFrom25thMonth><ns2:voucher xmlns:xsi=\"http://www.w3.org/20...",
-    "offers_details": []
+    "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><Output xmlns:ns2=\"http://webwunder.gendev7.check24.fun/offerservice\"><ns2:products><ns2:productId>407</ns2:productId><ns2:providerName>WebWunder Plus 60</ns2:providerName><ns2:productInfo><ns2:speed>60</ns2:speed><ns2:monthlyCostInCent>3522</ns2:monthlyCostInCent><ns2:monthlyCostInCentFrom25thMonth>3422</ns2:monthlyCostInCentFrom25thMonth><ns2:voucher xmlns:xsi=\"http://www.w3.org/2001/...",
+    "offers_details": [
+      {
+        "offer_id": 1,
+        "product_id": "407",
+        "provider_name": "WebWunder Plus 60",
+        "speed": "60",
+        "monthly_cost": "3522",
+        "monthly_cost_from_25th": "3422",
+        "contract_duration": "24",
+        "connection_type": "CABLE",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 2,
+        "product_id": "408",
+        "provider_name": "WebWunder Plus 70",
+        "speed": "70",
+        "monthly_cost": "3722",
+        "monthly_cost_from_25th": "3722",
+        "contract_duration": "24",
+        "connection_type": "CABLE",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 3,
+        "product_id": "409",
+        "provider_name": "WebWunder Plus 80",
+        "speed": "80",
+        "monthly_cost": "3922",
+        "monthly_cost_from_25th": "4022",
+        "contract_duration": "24",
+        "connection_type": "CABLE",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      }
+    ],
+    "has_pricing": true,
+    "has_discounts": false,
+    "unique_names": [
+      "WebWunder Plus 80",
+      "WebWunder Plus 70",
+      "WebWunder Plus 60"
+    ],
+    "speed_range": [
+      "60",
+      "70",
+      "80"
+    ]
   },
   {
-    "address": "Hamburg",
-    "connection_type": "DSL",
+    "address": "Berlin",
+    "connection_type": "CABLE",
     "installation": false,
     "status_code": 200,
     "success": true,
-    "response_size": 3925,
-    "offers_count": 0,
+    "response_size": 2101,
+    "offers_count": 3,
     "error": null,
-    "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><Output xmlns:ns2=\"http://webwunder.gendev7.check24.fun/offerservice\"><ns2:products><ns2:productId>401</ns2:productId><ns2:providerName>WebWunder Starter 20</ns2:providerName><ns2:productInfo><ns2:speed>20</ns2:speed><ns2:monthlyCostInCent>2617</ns2:monthlyCostInCent><ns2:monthlyCostInCentFrom25thMonth>2517</ns2:monthlyCostInCentFrom25thMonth><ns2:voucher xmlns:xsi=\"http://www.w3.org/20...",
-    "offers_details": []
-  },
-  {
-    "address": "Hamburg",
-    "connection_type": "Cable",
-    "installation": true,
-    "status_code": 500,
-    "success": false,
-    "response_size": 298,
-    "offers_count": 0,
-    "error": "HTTP 500: <SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><SOAP-ENV:Fault><faultcode>SOAP-ENV:Server</faultcode><faultstring xml:lang=\"en\">getConne",
-    "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><SOAP-ENV:Fault><faultcode>SOAP-ENV:Server</faultcode><faultstring xml:lang=\"en\">getConnectionEnum(...) must not be null</faultstring></SOAP-ENV:Fault></SOAP-ENV:Body></SOAP-ENV:Envelope>"
-  },
-  {
-    "address": "Hamburg",
-    "connection_type": "Cable",
-    "installation": false,
-    "status_code": 500,
-    "success": false,
-    "response_size": 298,
-    "offers_count": 0,
-    "error": "HTTP 500: <SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><SOAP-ENV:Fault><faultcode>SOAP-ENV:Server</faultcode><faultstring xml:lang=\"en\">getConne",
-    "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><SOAP-ENV:Fault><faultcode>SOAP-ENV:Server</faultcode><faultstring xml:lang=\"en\">getConnectionEnum(...) must not be null</faultstring></SOAP-ENV:Fault></SOAP-ENV:Body></SOAP-ENV:Envelope>"
-  },
-  {
-    "address": "Hamburg",
-    "connection_type": "Fiber",
-    "installation": true,
-    "status_code": 500,
-    "success": false,
-    "response_size": 298,
-    "offers_count": 0,
-    "error": "HTTP 500: <SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><SOAP-ENV:Fault><faultcode>SOAP-ENV:Server</faultcode><faultstring xml:lang=\"en\">getConne",
-    "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><SOAP-ENV:Fault><faultcode>SOAP-ENV:Server</faultcode><faultstring xml:lang=\"en\">getConnectionEnum(...) must not be null</faultstring></SOAP-ENV:Fault></SOAP-ENV:Body></SOAP-ENV:Envelope>"
-  },
-  {
-    "address": "Hamburg",
-    "connection_type": "Fiber",
-    "installation": false,
-    "status_code": 500,
-    "success": false,
-    "response_size": 298,
-    "offers_count": 0,
-    "error": "HTTP 500: <SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><SOAP-ENV:Fault><faultcode>SOAP-ENV:Server</faultcode><faultstring xml:lang=\"en\">getConne",
-    "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><SOAP-ENV:Fault><faultcode>SOAP-ENV:Server</faultcode><faultstring xml:lang=\"en\">getConnectionEnum(...) must not be null</faultstring></SOAP-ENV:Fault></SOAP-ENV:Body></SOAP-ENV:Envelope>"
+    "raw_response": "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><Output xmlns:ns2=\"http://webwunder.gendev7.check24.fun/offerservice\"><ns2:products><ns2:productId>407</ns2:productId><ns2:providerName>WebWunder Plus 60</ns2:providerName><ns2:productInfo><ns2:speed>60</ns2:speed><ns2:monthlyCostInCent>3522</ns2:monthlyCostInCent><ns2:monthlyCostInCentFrom25thMonth>3422</ns2:monthlyCostInCentFrom25thMonth><ns2:voucher xmlns:xsi=\"http://www.w3.org/2001/...",
+    "offers_details": [
+      {
+        "offer_id": 1,
+        "product_id": "407",
+        "provider_name": "WebWunder Plus 60",
+        "speed": "60",
+        "monthly_cost": "3522",
+        "monthly_cost_from_25th": "3422",
+        "contract_duration": "24",
+        "connection_type": "CABLE",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 2,
+        "product_id": "408",
+        "provider_name": "WebWunder Plus 70",
+        "speed": "70",
+        "monthly_cost": "3722",
+        "monthly_cost_from_25th": "3722",
+        "contract_duration": "24",
+        "connection_type": "CABLE",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      },
+      {
+        "offer_id": 3,
+        "product_id": "409",
+        "provider_name": "WebWunder Plus 80",
+        "speed": "80",
+        "monthly_cost": "3922",
+        "monthly_cost_from_25th": "4022",
+        "contract_duration": "24",
+        "connection_type": "CABLE",
+        "voucher_percentage": "N/A",
+        "voucher_max_discount": "N/A"
+      }
+    ],
+    "has_pricing": true,
+    "has_discounts": false,
+    "unique_names": [
+      "WebWunder Plus 80",
+      "WebWunder Plus 70",
+      "WebWunder Plus 60"
+    ],
+    "speed_range": [
+      "60",
+      "70",
+      "80"
+    ]
   }
 ]

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Internet Provider Vergleich - WebSocket Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 { color: #333; }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #log {
+            height: 300px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            overflow-y: scroll;
+            background-color: #f9f9f9;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .status {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .status.connected {
+            background-color: #4CAF50;
+        }
+        .status.disconnected {
+            background-color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Internet Provider Vergleich - WebSocket Test</h1>
+
+        <div class="card">
+            <h2>1. Verbindung herstellen</h2>
+            <div class="form-group">
+                <label for="wsUrl">WebSocket URL:</label>
+                <input type="text" id="wsUrl" placeholder="wss://xxx.execute-api.eu-central-1.amazonaws.com/prod/">
+            </div>
+            <div>
+                <span id="connectionStatus" class="status disconnected"></span>
+                <span id="connectionStatusText">Nicht verbunden</span>
+            </div>
+            <div style="margin-top: 10px;">
+                <button id="connectBtn">Verbinden</button>
+                <button id="disconnectBtn" disabled>Trennen</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>2. Adresse eingeben</h2>
+            <div class="form-group">
+                <label for="street">Straße:</label>
+                <input type="text" id="street" placeholder="z.B. Musterstraße">
+            </div>
+            <div class="form-group">
+                <label for="houseNumber">Hausnummer:</label>
+                <input type="text" id="houseNumber" placeholder="z.B. 123">
+            </div>
+            <div class="form-group">
+                <label for="postalCode">Postleitzahl:</label>
+                <input type="text" id="postalCode" placeholder="z.B. 10115">
+            </div>
+            <div class="form-group">
+                <label for="city">Stadt:</label>
+                <input type="text" id="city" placeholder="z.B. Berlin">
+            </div>
+            <button id="searchBtn" disabled>Angebote suchen</button>
+        </div>
+
+        <div class="card">
+            <h2>3. Ergebnisse</h2>
+            <div id="log"></div>
+        </div>
+    </div>
+
+    <script>
+        // DOM-Elemente
+        const wsUrlInput = document.getElementById('wsUrl');
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const searchBtn = document.getElementById('searchBtn');
+        const logElement = document.getElementById('log');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const connectionStatusText = document.getElementById('connectionStatusText');
+
+        // Formularfelder
+        const streetInput = document.getElementById('street');
+        const houseNumberInput = document.getElementById('houseNumber');
+        const postalCodeInput = document.getElementById('postalCode');
+        const cityInput = document.getElementById('city');
+
+        // WebSocket-Verbindung
+        let socket = null;
+
+        // Logger-Funktion
+        function log(message, type = 'info') {
+            const timestamp = new Date().toISOString();
+            let cssClass = '';
+
+            switch(type) {
+                case 'error':
+                    cssClass = 'color: #f44336;';
+                    break;
+                case 'success':
+                    cssClass = 'color: #4CAF50;';
+                    break;
+                case 'send':
+                    cssClass = 'color: #2196F3;';
+                    break;
+                case 'receive':
+                    cssClass = 'color: #9C27B0;';
+                    break;
+                default:
+                    cssClass = 'color: #333;';
+            }
+
+            logElement.innerHTML += `<div style="${cssClass}">[${timestamp}] ${message}</div>`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        // JSON formatieren
+        function formatJSON(json) {
+            if (typeof json === 'string') {
+                try {
+                    json = JSON.parse(json);
+                } catch (e) {
+                    return json;
+                }
+            }
+            return JSON.stringify(json, null, 2);
+        }
+
+        // Verbindung herstellen
+        connectBtn.addEventListener('click', () => {
+            const wsUrl = wsUrlInput.value.trim();
+            if (!wsUrl) {
+                log('Bitte WebSocket URL eingeben!', 'error');
+                return;
+            }
+
+            try {
+                log(`Verbindung wird hergestellt: ${wsUrl}`);
+                socket = new WebSocket(wsUrl);
+
+                socket.onopen = (event) => {
+                    log('✅ Verbindung hergestellt!', 'success');
+                    connectBtn.disabled = true;
+                    disconnectBtn.disabled = false;
+                    searchBtn.disabled = false;
+
+                    connectionStatus.classList.remove('disconnected');
+                    connectionStatus.classList.add('connected');
+                    connectionStatusText.textContent = 'Verbunden';
+                };
+
+                socket.onmessage = (event) => {
+                    log(`📩 Nachricht empfangen:`, 'receive');
+                    try {
+                        const data = JSON.parse(event.data);
+                        log(formatJSON(data), 'receive');
+                    } catch (e) {
+                        log(event.data, 'receive');
+                    }
+                };
+
+                socket.onclose = (event) => {
+                    log(`❌ Verbindung getrennt. Code: ${event.code}, Grund: ${event.reason}`, 'error');
+                    connectBtn.disabled = false;
+                    disconnectBtn.disabled = true;
+                    searchBtn.disabled = true;
+                    socket = null;
+
+                    connectionStatus.classList.remove('connected');
+                    connectionStatus.classList.add('disconnected');
+                    connectionStatusText.textContent = 'Nicht verbunden';
+                };
+
+                socket.onerror = (error) => {
+                    log(`⚠️ WebSocket-Fehler`, 'error');
+                };
+            } catch (err) {
+                log(`⚠️ Fehler beim Verbindungsaufbau: ${err.message}`, 'error');
+            }
+        });
+
+        // Verbindung trennen
+        disconnectBtn.addEventListener('click', () => {
+            if (socket) {
+                socket.close();
+                log('Verbindung wird getrennt...');
+            }
+        });
+
+        // Suche starten
+        searchBtn.addEventListener('click', () => {
+            if (!socket || socket.readyState !== WebSocket.OPEN) {
+                log('Keine aktive WebSocket-Verbindung!', 'error');
+                return;
+            }
+
+            // Adressdaten sammeln
+            const street = streetInput.value.trim();
+            const houseNumber = houseNumberInput.value.trim();
+            const postalCode = postalCodeInput.value.trim();
+            const city = cityInput.value.trim();
+
+            // Validierung
+            if (!street || !houseNumber || !postalCode || !city) {
+                log('Bitte alle Adressfelder ausfüllen!', 'error');
+                return;
+            }
+
+            // Anfrage vorbereiten
+            const searchRequest = {
+                action: "search",
+                address: {
+                    street: street,
+                    house_number: houseNumber,
+                    postal_code: postalCode,
+                    city: city
+                }
+            };
+
+            // Anfrage senden
+            log(`📤 Suchanfrage wird gesendet:`, 'send');
+            log(formatJSON(searchRequest), 'send');
+
+            socket.send(JSON.stringify(searchRequest));
+        });
+    </script>
+</body>
+</html>
