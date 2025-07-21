@@ -1,7 +1,16 @@
 import pytest
 
 from lambda_functions.results_handler import results_handler
-from services.mock_storage import MockStorageService
+import sys
+import os
+
+# Add both src and root directory to path
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+src_dir = os.path.join(root_dir, 'src')
+sys.path.insert(0, root_dir)
+sys.path.insert(0, src_dir)
+
+from src.infrastructure.persistence.legacy_mock_storage import MockStorageService
 
 
 @pytest.mark.asyncio

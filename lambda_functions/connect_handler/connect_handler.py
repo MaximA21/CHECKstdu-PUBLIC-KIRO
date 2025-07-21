@@ -1,39 +1,16 @@
-import json
+import sys
 import os
-import boto3
-import uuid
-import logging
-from datetime import datetime
 
-# Konfiguriere Logger
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+# Add src directory to path for importing the new DI-based handler
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
-# DynamoDB-Client
-#dynamodb = boto3.resource('dynamodb')
-#TABLE_NAME = os.environ.get('DYNAMODB_TABLE')
-#table = dynamodb.Table(TABLE_NAME)
+# Import the new DI-based handler
+from presentation.lambda_handlers.connect_handler import lambda_handler as di_lambda_handler
 
 
 def lambda_handler(event, context):
-    logger.info("Connect-Handler aufgerufen")
-    logger.info(f"Event: {json.dumps(event)}")
-
-    connection_id = event.get('requestContext', {}).get('connectionId')
-    if not connection_id:
-        logger.error("Keine Connection-ID gefunden")
-        return {'statusCode': 400, 'body': 'Connection-ID fehlt'}
-
-    # Query-Parameter extrahieren (falls verfügbar)
-    query_params = event.get('queryStringParameters', {}) or {}
-    street = query_params.get('street', '')
-    house_number = query_params.get('houseNumber', '')
-    city = query_params.get('city', '')
-    postal_code = query_params.get('postalCode', '')
-    return {
-        'statusCode': 200,
-        'body': json.dumps({'message': 'Verbunden', 'connection_id': connection_id})
-    }
+    """Lambda entry point that delegates to DI-based handler."""
+    return di_lambda_handler(event, context)
 """
     # In DynamoDB speichern
     try:
@@ -57,10 +34,17 @@ def lambda_handler(event, context):
         share_id = str(uuid.uuid4())[:8]  # Kürzere Version für den Link
         item['share_id'] = share_id
 
+        # Log session details at DEBUG level
+        logger.debug(f"Generated session ID: {session_id}")
+        logger.debug(f"Generated share ID: {share_id}")
+        logger.debug(f"Session timestamp: {timestamp}")
+        logger.debug(f"DynamoDB item: {json.dumps(item, default=str)}")
+
         # In DynamoDB speichern
         table.put_item(Item=item)
 
-        logger.info(f"Verbindung gespeichert: {connection_id}, Session: {session_id}, Share-ID: {share_id}")
+        # Connection saved successfully at INFO level
+        logger.info(f"Connection session saved successfully - Connection: {connection_id}, Session: {session_id}")
 
         return {
             'statusCode': 200,
@@ -71,6 +55,6 @@ def lambda_handler(event, context):
             })
         }
     except Exception as e:
-        logger.error(f"Fehler beim Speichern der Verbindung: {str(e)}")
-        return {'statusCode': 500, 'body': 'Interner Serverfehler'}
+        logger.error(f"Failed to save connection session: {str(e)}")
+        return {'statusCode': 500, 'body': 'Internal server error'}
         """

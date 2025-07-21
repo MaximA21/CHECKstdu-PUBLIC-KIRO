@@ -1,0 +1,46 @@
+# Docker Compose override for development environment
+
+version: '3.8'
+
+services:
+  webwunder-api:
+    environment:
+      - APP_ENVIRONMENT=development
+      - LOG_LEVEL=DEBUG
+      - DEBUG=true
+    volumes:
+      - ./src:/app/src:ro
+      - ./config:/app/config:ro
+      - ./logs:/app/logs
+    ports:
+      - "8080:8080"
+
+  webwunder-websocket:
+    environment:
+      - APP_ENVIRONMENT=development
+      - LOG_LEVEL=DEBUG
+      - DEBUG=true
+    volumes:
+      - ./src:/app/src:ro
+      - ./config:/app/config:ro
+      - ./logs:/app/logs
+    ports:
+      - "8081:8081"
+
+  # Development database (optional)
+  postgres:
+    image: postgres:15-alpine
+    container_name: webwunder-postgres-dev
+    environment:
+      - POSTGRES_DB=webwunder_dev
+      - POSTGRES_USER=webwunder
+      - POSTGRES_PASSWORD=dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+    networks:
+      - webwunder-network
+
+volumes:
+  postgres-dev-data:

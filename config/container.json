@@ -1,0 +1,60 @@
+{
+  "database": {
+    "provider": "mock",
+    "table_prefix": "container_",
+    "timeout_seconds": 30
+  },
+  "messaging": {
+    "provider": "mock",
+    "queue_prefix": "container_",
+    "timeout_seconds": 30
+  },
+  "logging": {
+    "provider": "console",
+    "level": "INFO",
+    "structured": true
+  },
+  "providers": {
+    "byteme": {
+      "enabled": true,
+      "timeout_seconds": 30,
+      "retry_attempts": 3,
+      "config": {
+        "base_url": "https://api.byteme.example.com"
+      }
+    },
+    "verbyndich": {
+      "enabled": true,
+      "timeout_seconds": 30,
+      "retry_attempts": 3,
+      "config": {
+        "base_url": "https://api.verbyndich.example.com"
+      }
+    },
+    "webwunder": {
+      "enabled": true,
+      "timeout_seconds": 30,
+      "retry_attempts": 3,
+      "config": {
+        "base_url": "https://api.webwunder.example.com"
+      }
+    },
+    "pingperfect": {
+      "enabled": true,
+      "timeout_seconds": 30,
+      "retry_attempts": 3,
+      "config": {
+        "base_url": "https://api.pingperfect.example.com"
+      }
+    }
+  },
+  "container": {
+    "http_port": 8080,
+    "websocket_port": 8081,
+    "cors_enabled": true,
+    "request_timeout_seconds": 30,
+    "max_connections": 1000,
+    "health_check_interval": 30
+  },
+  "debug": false
+}

@@ -1,64 +1,50 @@
 import json
+import sys
 import os
-import boto3
-import logging
 
-# Konfiguriere Logger
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+# Add src to path for imports
+sys.path.append('/opt/python')
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
-# AWS-Clients
-sqs = boto3.client('sqs')
-sfn = boto3.client('stepfunctions')
-
-# Umgebungsvariablen
-SQS_QUEUE_URL = os.environ.get('SQS_QUEUE_URL')
-STATE_MACHINE_ARN = os.environ.get('STATE_MACHINE_ARN')
+from src.shared.dependency_injection.bootstrap import get_container
+from src.presentation.lambda_handlers.requestor_handler import RequestorHandler
+from src.application.use_cases.requestor_use_case import RequestorUseCase
 
 
 def lambda_handler(event, context):
-    logger.info("Requestor Handler aufgerufen")
-    logger.info(f"Event: {json.dumps(event)}")
-
-    # SQS-Trigger-Event verarbeiten
-    if not SQS_QUEUE_URL or not STATE_MACHINE_ARN:
-        logger.error("SQS_QUEUE_URL oder STATE_MACHINE_ARN nicht konfiguriert")
-        return {"statusCode": 500, "body": "Konfigurationsfehler"}
-
-    for record in event.get('Records', []):
-        try:
-            # Nachricht aus SQS verarbeiten
-            message_body = record.get('body')
-            if not message_body:
-                logger.warning("Leere Nachricht übersprungen")
+    """Lambda entry point for requestor handler using dependency injection."""
+    try:
+        # Get DI container
+        container = get_container()
+        
+        # Create handler with dependencies
+        handler = RequestorHandler(
+            requestor_use_case=container.get(RequestorUseCase),
+            logger=container.get_logger("requestor_handler")
+        )
+        
+        # Handle SQS records
+        for record in event.get('Records', []):
+            try:
+                # Parse SQS message body
+                message_body = json.loads(record.get('body', '{}'))
+                
+                # Handle request using DI
+                import asyncio
+                asyncio.run(handler.handle_request({
+                    'body': json.dumps(message_body)
+                }))
+                
+            except Exception as e:
+                # Log error but continue processing other records
+                print(f"Error processing record: {e}")
                 continue
-
-            request_data = json.loads(message_body)
-            logger.info(f"Verarbeite Anfrage: {request_data.get('request_id')}")
-
-            # Step Functions starten
-            execution_input = {
-                "request_id": request_data.get('request_id'),
-                "connection_id": request_data.get('connection_id'),
-                "address": request_data.get('address'),
-                "share_token": request_data.get('share_token'),
-                "timestamp": request_data.get('timestamp')
-            }
-
-            execution_name = f"req-{request_data.get('request_id', 'unknown')}"
-            if len(execution_name) > 80:  # Step Functions hat ein Limit für den Namen
-                execution_name = execution_name[:80]
-
-            response = sfn.start_execution(
-                stateMachineArn=STATE_MACHINE_ARN,
-                name=execution_name,
-                input=json.dumps(execution_input)
-            )
-
-            logger.info(f"Step Functions gestartet: {response.get('executionArn')}")
-
-        except Exception as e:
-            logger.error(f"Fehler bei der Verarbeitung: {str(e)}")
-            # Die Nachricht wird wieder in die Queue gestellt, da wir keine explizite Bestätigung senden
-
-    return {"statusCode": 200, "body": "Erfolgreich verarbeitet"}
+        
+        return {"statusCode": 200, "body": "Requests processed successfully"}
+        
+    except Exception as e:
+        # Fallback error handling if DI fails
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'error': 'Internal server error'})
+        }

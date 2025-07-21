@@ -1,0 +1,56 @@
+{
+  "database": {
+    "provider": "aws_dynamodb",
+    "region": "eu-central-1",
+    "table_prefix": "prod_",
+    "timeout_seconds": 30
+  },
+  "messaging": {
+    "provider": "aws_sqs",
+    "region": "eu-central-1",
+    "queue_prefix": "prod_",
+    "timeout_seconds": 30
+  },
+  "logging": {
+    "provider": "aws_cloudwatch",
+    "level": "INFO",
+    "structured": true,
+    "log_group": "/aws/lambda/webwunder-prod",
+    "region": "eu-central-1"
+  },
+  "providers": {
+    "byteme": {
+      "enabled": true,
+      "timeout_seconds": 30,
+      "retry_attempts": 3,
+      "config": {
+        "base_url": "https://api.byteme.com"
+      }
+    },
+    "verbyndich": {
+      "enabled": true,
+      "timeout_seconds": 30,
+      "retry_attempts": 3,
+      "config": {
+        "base_url": "https://api.verbyndich.com"
+      }
+    },
+    "webwunder": {
+      "enabled": true,
+      "timeout_seconds": 30,
+      "retry_attempts": 3,
+      "config": {
+        "base_url": "https://api.webwunder.com"
+      }
+    },
+    "pingperfect": {
+      "enabled": true,
+      "timeout_seconds": 30,
+      "retry_attempts": 3,
+      "config": {
+        "base_url": "https://api.pingperfect.com"
+      }
+    }
+  },
+  "debug": false
+}

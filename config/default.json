@@ -1,0 +1,36 @@
+{
+  "database": {
+    "provider": "mock",
+    "table_prefix": "dev_",
+    "timeout_seconds": 30
+  },
+  "messaging": {
+    "provider": "mock",
+    "queue_prefix": "dev_",
+    "timeout_seconds": 30
+  },
+  "logging": {
+    "provider": "console",
+    "level": "INFO",
+    "structured": true
+  },
+  "providers": {
+    "byteme": {
+      "enabled": true,
+      "timeout_seconds": 30,
+      "retry_attempts": 3,
+      "config": {
+        "base_url": "https://api.byteme.example.com"
+      }
+    },
+    "verbyndich": {
+      "enabled": true,
+      "timeout_seconds": 30,
+      "retry_attempts": 3,
+      "config": {
+        "base_url": "https://api.verbyndich.example.com"
+      }
+    }
+  },
+  "debug": false
+}
