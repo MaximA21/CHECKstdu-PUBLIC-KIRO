@@ -108,10 +108,12 @@
     - Use AWS managed policies where possible to reduce complexity
     - _Requirements: 6.4_
 
-  - [ ] 6.2 Basic security controls
+  - [-] 6.2 Basic security controls and GitHub Actions updates
+    - Update GitHub Actions workflows to use actions/upload-artifact@v4 and actions/download-artifact@v4
     - Enable CloudTrail for audit logging (basic tier only)
     - Use AWS managed encryption keys instead of customer managed
     - Implement basic IAM policies for Lambda functions
+    - Update .gitignore file for better security and coverage
     - Skip advanced security scanning to reduce costs
     - _Requirements: 6.1, 6.2_
 

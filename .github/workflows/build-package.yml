@@ -168,7 +168,7 @@ jobs:
         EOF
 
     - name: Upload Lambda packages
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: lambda-packages-${{ github.sha }}
         path: lambda_packages/
@@ -268,7 +268,7 @@ jobs:
         EOF
 
     - name: Upload Docker manifest
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: docker-manifest-${{ github.sha }}
         path: docker-manifest.json
@@ -353,7 +353,7 @@ jobs:
         echo "**Format Check:** $(terraform fmt -check -recursive > /dev/null 2>&1 && echo '✅ Passed' || echo '⚠️ Needs formatting')" >> $GITHUB_STEP_SUMMARY
 
     - name: Upload Terraform artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: terraform-artifacts-${{ github.sha }}
         path: |
@@ -372,7 +372,10 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Download all artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
+      with:
+        pattern: "*-${{ github.sha }}"
+        merge-multiple: true
 
     - name: Generate build manifest
       run: |
