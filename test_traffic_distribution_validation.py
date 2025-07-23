@@ -6,13 +6,12 @@ Tests the validation logic without requiring actual AWS infrastructure.
 
 import asyncio
 import json
-import sys
-import unittest
-from unittest.mock import Mock, patch, AsyncMock
+import os
 
 # Add scripts directory to path for imports
 import sys
-import os
+import unittest
+from unittest.mock import AsyncMock, Mock, patch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "scripts"))
 

@@ -4,23 +4,22 @@ import boto3
 from botocore.exceptions import ClientError
 
 try:
-    from boto3.dynamodb.conditions import Key, Attr
+    from boto3.dynamodb.conditions import Attr, Key
 except ImportError:
     # Mock for testing environments
     Key = lambda x: x
     Attr = lambda x: x
-from typing import Dict, Any, Optional, List
-from datetime import datetime, timedelta
-from decimal import Decimal
 import json
 import logging
+from datetime import datetime, timedelta
+from decimal import Decimal
+from typing import Any, Dict, List, Optional
 
-from ...application.interfaces.repositories import ISearchResultRepository, IConnectionRepository, IProviderOfferRepository
-from ...domain.entities.search_result import SearchResult
+from ...application.interfaces.repositories import IConnectionRepository, IProviderOfferRepository, ISearchResultRepository
 from ...domain.entities.connection_session import ConnectionSession, ConnectionStatus, SessionConnectionType
-from ...domain.entities.provider_offer import ProviderOffer, ConnectionType, OfferStatus
+from ...domain.entities.provider_offer import ConnectionType, OfferStatus, ProviderOffer
+from ...domain.entities.search_result import SearchResult
 from ...domain.value_objects.address import Address
-
 
 logger = logging.getLogger(__name__)
 

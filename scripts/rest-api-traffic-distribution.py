@@ -5,13 +5,14 @@ This script shows how to implement client-side traffic distribution for canary d
 """
 
 import argparse
-import requests
-import random
 import json
-import time
+import random
 import statistics
-from typing import Dict, List, Any, Optional
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Any, Dict, List, Optional
+
+import requests
 
 
 class RestApiTrafficDistributor:

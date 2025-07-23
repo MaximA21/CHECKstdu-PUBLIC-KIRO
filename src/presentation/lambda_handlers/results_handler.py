@@ -1,11 +1,11 @@
 """Lambda handler for processing results using dependency injection."""
 
-from typing import Dict, Any
+from typing import Any, Dict
 
-from ..controllers.base_controller import HTTPController
-from ...application.use_cases.process_results_use_case import ProcessResultsUseCase
 from ...application.interfaces.logging import ILogger
+from ...application.use_cases.process_results_use_case import ProcessResultsUseCase
 from ...shared.exceptions.domain import DomainException
+from ..controllers.base_controller import HTTPController
 
 
 class ResultsHandler(HTTPController):
@@ -75,8 +75,8 @@ class ResultsHandler(HTTPController):
 # Lambda entry point function
 def lambda_handler(event, context):
     """Lambda entry point for results processing."""
-    from ...shared.dependency_injection.bootstrap import get_container
     from ...application.use_cases.connection_management_use_case import ConnectionManagementUseCase
+    from ...shared.dependency_injection.bootstrap import get_container
 
     # Get DI container
     container = get_container()

@@ -1,8 +1,8 @@
 """Logging abstraction interfaces to replace direct logging_config usage."""
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional, List
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class LogLevel(Enum):

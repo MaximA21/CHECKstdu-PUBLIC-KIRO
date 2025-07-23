@@ -1,15 +1,15 @@
 """Mock repository implementations for testing purposes."""
 
-from typing import Dict, Any, Optional, List
-from datetime import datetime, timedelta
 import json
 import uuid
 from copy import deepcopy
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
 
-from ...application.interfaces.repositories import ISearchResultRepository, IConnectionRepository, IProviderOfferRepository
-from ...domain.entities.search_result import SearchResult
+from ...application.interfaces.repositories import IConnectionRepository, IProviderOfferRepository, ISearchResultRepository
 from ...domain.entities.connection_session import ConnectionSession
 from ...domain.entities.provider_offer import ProviderOffer
+from ...domain.entities.search_result import SearchResult
 from ...domain.value_objects.address import Address
 
 

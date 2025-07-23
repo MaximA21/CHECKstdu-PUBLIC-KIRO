@@ -1,8 +1,8 @@
 """Messaging interfaces for queue and workflow management."""
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional, Callable
 from enum import Enum
+from typing import Any, Callable, Dict, List, Optional
 
 
 class MessagePriority(Enum):

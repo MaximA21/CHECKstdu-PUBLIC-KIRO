@@ -4,11 +4,12 @@ Analyzes costs and provides optimization recommendations.
 """
 
 import json
-import boto3
+import logging
 import os
 from datetime import datetime, timedelta
-from typing import Dict, List, Any
-import logging
+from typing import Any, Dict, List
+
+import boto3
 
 # Configure logging
 logger = logging.getLogger()

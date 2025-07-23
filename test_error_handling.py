@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Simple test for error handling system."""
 
-import sys
 import os
+import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from src.shared.exceptions import InvalidAddressException, ProviderUnavailableException, ErrorSeverity, ErrorCategory
+from src.shared.exceptions import ErrorCategory, ErrorSeverity, InvalidAddressException, ProviderUnavailableException
 
 
 def test_exception_hierarchy():

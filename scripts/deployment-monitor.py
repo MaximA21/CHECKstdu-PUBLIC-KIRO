@@ -4,15 +4,16 @@ Deployment monitoring script for WebWunder.
 Monitors deployment health and performance metrics after deployment.
 """
 
-import json
-import sys
-import time
-import boto3
-from typing import Dict, List, Optional, Tuple, Any
 import argparse
-from datetime import datetime, timedelta
-import threading
+import json
 import signal
+import sys
+import threading
+import time
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Tuple
+
+import boto3
 
 
 class DeploymentMonitor:

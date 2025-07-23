@@ -1,11 +1,11 @@
 """Lambda handler for enforcing WebSocket connection limits."""
 
-from typing import Dict, Any
+from typing import Any, Dict
 
-from ..controllers.base_controller import HTTPController
-from ...application.use_cases.connection_management_use_case import ConnectionManagementUseCase
 from ...application.interfaces.logging import ILogger
+from ...application.use_cases.connection_management_use_case import ConnectionManagementUseCase
 from ...shared.exceptions.domain import DomainException
+from ..controllers.base_controller import HTTPController
 
 
 class ConnectionLimitEnforcerHandler(HTTPController):

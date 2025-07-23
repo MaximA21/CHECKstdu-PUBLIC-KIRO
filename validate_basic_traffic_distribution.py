@@ -9,7 +9,7 @@ import json
 import random
 import statistics
 import time
-from typing import Dict, List, Any
+from typing import Any, Dict, List
 
 
 class BasicTrafficDistributionValidator:

@@ -1,8 +1,9 @@
+import os
+import sys
+
 import pytest
 
 from lambda_functions.results_handler import results_handler
-import sys
-import os
 
 # Add both src and root directory to path
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

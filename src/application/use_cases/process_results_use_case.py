@@ -2,20 +2,20 @@
 
 import time
 from datetime import datetime
-from typing import Dict, Any, List, Optional, TYPE_CHECKING
 from decimal import Decimal
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 if TYPE_CHECKING:
     from .connection_management_use_case import ConnectionManagementUseCase
 
-from ..interfaces.repositories import ISearchResultRepository
-from ..interfaces.connections import IConnectionManager
-from ..interfaces.providers import IProviderRegistry
-from ..interfaces.logging import ILogger
+from ...domain.entities.provider_offer import ConnectionType, OfferStatus, ProviderOffer
 from ...domain.entities.search_result import SearchResult
-from ...domain.entities.provider_offer import ProviderOffer, ConnectionType, OfferStatus
 from ...domain.value_objects.address import Address
-from ...shared.exceptions.domain import ProviderUnavailableException, ProcessingException
+from ...shared.exceptions.domain import ProcessingException, ProviderUnavailableException
+from ..interfaces.connections import IConnectionManager
+from ..interfaces.logging import ILogger
+from ..interfaces.providers import IProviderRegistry
+from ..interfaces.repositories import ISearchResultRepository
 
 
 class ProcessResultsUseCase:

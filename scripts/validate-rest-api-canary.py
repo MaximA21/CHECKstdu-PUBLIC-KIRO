@@ -5,14 +5,15 @@ This script tests the canary deployment setup and traffic distribution.
 """
 
 import argparse
+import json
+import statistics
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Any, Dict, List, Optional
+
 import boto3
 import requests
-import json
-import time
-import statistics
-from typing import Dict, List, Any, Optional
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from botocore.exceptions import ClientError, BotoCoreError
+from botocore.exceptions import BotoCoreError, ClientError
 
 
 class RestApiCanaryValidator:

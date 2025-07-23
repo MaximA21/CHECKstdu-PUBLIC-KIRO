@@ -6,14 +6,14 @@ This example shows how to use the new logging abstraction layer
 that wraps the existing logging_config functionality.
 """
 
-import sys
 import os
+import sys
 
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.infrastructure.logging import LoggerFactory, create_logger, create_lambda_logger, LogConfiguration
-from src.application.interfaces.logging import LogLevel, LogFormat
+from src.application.interfaces.logging import LogFormat, LogLevel
+from src.infrastructure.logging import LogConfiguration, LoggerFactory, create_lambda_logger, create_logger
 
 
 def demonstrate_console_logging():

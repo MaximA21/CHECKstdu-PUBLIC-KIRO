@@ -1,16 +1,16 @@
 """Mock connection manager implementations for testing purposes."""
 
-from typing import Dict, Any, List, Optional, Set
-from datetime import datetime, timedelta
-from copy import deepcopy
-from collections import defaultdict
 import uuid
+from collections import defaultdict
+from copy import deepcopy
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Set
 
 from ...application.interfaces.connections import (
-    IConnectionManager,
-    ITopicManager,
-    IConnectionNotifier,
     ConnectionType,
+    IConnectionManager,
+    IConnectionNotifier,
+    ITopicManager,
     MessageType,
 )
 from ...domain.entities.connection_session import ConnectionSession

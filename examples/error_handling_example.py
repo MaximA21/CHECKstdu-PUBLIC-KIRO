@@ -2,20 +2,21 @@
 
 import asyncio
 import json
-from typing import Dict, Any
+from typing import Any, Dict
+
+from src.infrastructure.logging.console_logger import ConsoleLogger
 
 # Import our error handling components
 from src.shared.exceptions import (
-    InvalidAddressException,
-    ProviderUnavailableException,
-    ExternalServiceException,
-    ErrorSeverity,
     ErrorCategory,
     ErrorContext,
+    ErrorSeverity,
+    ExternalServiceException,
+    InvalidAddressException,
+    ProviderUnavailableException,
 )
 from src.shared.middleware.error_integration import ComprehensiveErrorHandler, initialize_error_handler
 from src.shared.monitoring import DatabaseHealthCheck, ExternalServiceHealthCheck, MemoryHealthCheck
-from src.infrastructure.logging.console_logger import ConsoleLogger
 
 
 async def simulate_database_connection():

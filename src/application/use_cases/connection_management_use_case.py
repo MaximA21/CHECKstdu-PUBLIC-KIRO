@@ -1,13 +1,13 @@
 """Connection management use case abstracting connect/disconnect handler logic."""
 
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
-from ..interfaces.repositories import IConnectionRepository
+from ...domain.entities.connection_session import ConnectionSession, ConnectionStatus, SessionConnectionType
+from ...shared.exceptions.domain import ConnectionException
 from ..interfaces.connections import IConnectionManager
 from ..interfaces.logging import ILogger
-from ...domain.entities.connection_session import ConnectionSession, SessionConnectionType, ConnectionStatus
-from ...shared.exceptions.domain import ConnectionException
+from ..interfaces.repositories import IConnectionRepository
 
 
 class ConnectionManagementUseCase:

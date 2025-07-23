@@ -3,12 +3,11 @@
 import os
 from typing import Optional
 
+from ...infrastructure.config.loader import ConfigLoader, ConfigurationError
+from ...infrastructure.config.service_selector import ServiceSelector
+from ...infrastructure.config.validator import ConfigValidator
 from .container import DIContainer
 from .factory import ServiceFactory
-from ...infrastructure.config.loader import ConfigLoader, ConfigurationError
-from ...infrastructure.config.validator import ConfigValidator
-from ...infrastructure.config.service_selector import ServiceSelector
-
 
 _container: Optional[DIContainer] = None
 
@@ -65,13 +64,13 @@ def _create_container() -> DIContainer:
 
 def _register_use_cases(container: DIContainer) -> None:
     """Register application use cases."""
-    from ...application.use_cases.search_offers_use_case import SearchOffersUseCase
-    from ...application.use_cases.share_results_use_case import ShareResultsUseCase
-    from ...application.use_cases.process_results_use_case import ProcessResultsUseCase
-    from ...application.use_cases.connection_management_use_case import ConnectionManagementUseCase
-    from ...application.use_cases.requestor_use_case import RequestorUseCase
     from ...application.use_cases.address_normalization_use_case import AddressNormalizationUseCase
     from ...application.use_cases.authorization_use_case import AuthorizationUseCase
+    from ...application.use_cases.connection_management_use_case import ConnectionManagementUseCase
+    from ...application.use_cases.process_results_use_case import ProcessResultsUseCase
+    from ...application.use_cases.requestor_use_case import RequestorUseCase
+    from ...application.use_cases.search_offers_use_case import SearchOffersUseCase
+    from ...application.use_cases.share_results_use_case import ShareResultsUseCase
 
     # Register use cases as transient (new instance each time)
     container.register_transient(SearchOffersUseCase, SearchOffersUseCase)
@@ -91,10 +90,10 @@ def reset_container() -> None:
 
 def _register_controllers(container: DIContainer) -> None:
     """Register presentation controllers."""
+    from ...application.interfaces.logging import ILogger
     from ...presentation.http_controllers.search_controller import SearchController
     from ...presentation.http_controllers.share_controller import ShareController
     from ...presentation.websocket_handlers.websocket_server import WebSocketServerController
-    from ...application.interfaces.logging import ILogger
 
     # Register a default logger instance
     default_logger = container.get_logger("default")

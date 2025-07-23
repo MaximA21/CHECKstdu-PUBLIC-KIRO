@@ -4,11 +4,12 @@ Script to remove expensive monitoring features for cost optimization.
 This script helps identify and remove costly monitoring resources.
 """
 
-import boto3
-import json
 import argparse
-from typing import List, Dict, Any
+import json
 import logging
+from typing import Any, Dict, List
+
+import boto3
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

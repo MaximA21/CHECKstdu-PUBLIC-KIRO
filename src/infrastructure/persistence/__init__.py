@@ -1,16 +1,16 @@
 """Infrastructure persistence layer."""
 
 # Import mock repositories (always available)
-from .mock_repositories import MockSearchResultRepository, MockConnectionRepository, MockProviderOfferRepository
+from .mock_repositories import MockConnectionRepository, MockProviderOfferRepository, MockSearchResultRepository
 
 # Legacy storage implementations removed - use repository pattern instead
 
 # Import AWS repositories (optional, requires boto3)
 try:
     from .aws_dynamodb_repository import (
-        AWSDynamoDBSearchResultRepository,
         AWSDynamoDBConnectionRepository,
         AWSDynamoDBProviderOfferRepository,
+        AWSDynamoDBSearchResultRepository,
         DynamoDBTypeConverter,
     )
 

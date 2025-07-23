@@ -4,10 +4,11 @@ Student Budget Validation Script
 Validates that cost optimizations are properly implemented and working.
 """
 
-import boto3
 import json
 import sys
-from typing import Dict, List, Any
+from typing import Any, Dict, List
+
+import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
 
 

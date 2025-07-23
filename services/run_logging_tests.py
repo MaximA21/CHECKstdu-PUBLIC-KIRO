@@ -6,9 +6,9 @@ This script runs the comprehensive logging tests with minimal output,
 suitable for CI/CD or quick validation.
 """
 
-import unittest
-import sys
 import os
+import sys
+import unittest
 from io import StringIO
 
 # Add the services directory to the path

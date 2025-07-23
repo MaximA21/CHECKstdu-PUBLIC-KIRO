@@ -2,15 +2,16 @@
 
 import asyncio
 import json
-import websockets
-from typing import Dict, Any, Optional, Set
 from datetime import datetime
+from typing import Any, Dict, Optional, Set
+
+import websockets
 from websockets.server import WebSocketServerProtocol
 
-from ..shared.dependency_injection.container import DIContainer
-from ..shared.dependency_injection.bootstrap import get_container
-from ..infrastructure.config.loader import ConfigLoader
 from ..application.interfaces.logging import ILogger
+from ..infrastructure.config.loader import ConfigLoader
+from ..shared.dependency_injection.bootstrap import get_container
+from ..shared.dependency_injection.container import DIContainer
 from .websocket_handlers.websocket_server import WebSocketServerController
 
 

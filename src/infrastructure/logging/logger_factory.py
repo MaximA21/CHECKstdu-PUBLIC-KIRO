@@ -1,11 +1,12 @@
 """Logger factory with dependency injection support."""
 
-from typing import Dict, Any, Optional, Type
+from typing import Any, Dict, Optional, Type
+
 from ...application.interfaces.logging import ILogger, ILoggerFactory, IStructuredLogger, LogLevel
-from .console_logger import ConsoleLoggerFactory
 from .cloudwatch_logger import CloudWatchLoggerFactory
-from .structured_logger import StructuredLogger
+from .console_logger import ConsoleLoggerFactory
 from .log_configuration import LogConfiguration
+from .structured_logger import StructuredLogger
 
 
 class LoggerFactory(ILoggerFactory):

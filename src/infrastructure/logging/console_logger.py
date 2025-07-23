@@ -1,8 +1,8 @@
 """Simple console logger implementation for dependency injection."""
 
-import logging
 import json
-from typing import Dict, Any, Optional
+import logging
+from typing import Any, Dict, Optional
 
 from ...application.interfaces.logging import ILogger, ILoggerFactory, LogLevel
 

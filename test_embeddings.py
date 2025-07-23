@@ -1,7 +1,8 @@
-from sentence_transformers import SentenceTransformer
-import numpy as np
-import faiss
 import json
+
+import faiss
+import numpy as np
+from sentence_transformers import SentenceTransformer
 
 print("Verfügbare Metriken:", faiss.METRIC_INNER_PRODUCT, faiss.METRIC_L2, faiss.METRIC_L1)
 

@@ -1,23 +1,23 @@
 """Mock provider service implementations for testing purposes."""
 
-from typing import List, Dict, Any, Optional
-from datetime import datetime
 import random
-from decimal import Decimal
 from copy import deepcopy
+from datetime import datetime
+from decimal import Decimal
+from typing import Any, Dict, List, Optional
 
 from ...application.interfaces.providers import (
-    IProviderService,
     IByteMe,
+    IPingPerfect,
+    IProviderAggregator,
+    IProviderRegistry,
+    IProviderService,
     IVerbynDich,
     IWebWunder,
-    IPingPerfect,
-    IProviderRegistry,
-    IProviderAggregator,
     ProviderStatus,
     ProviderType,
 )
-from ...domain.entities.provider_offer import ProviderOffer, ConnectionType, OfferStatus
+from ...domain.entities.provider_offer import ConnectionType, OfferStatus, ProviderOffer
 from ...domain.value_objects.address import Address
 
 

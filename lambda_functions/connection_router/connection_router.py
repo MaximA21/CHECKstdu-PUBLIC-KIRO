@@ -3,13 +3,14 @@ Connection Router Lambda Function
 Implements 50/50 traffic distribution between old and new WebSocket implementations
 """
 
-import json
-import os
 import hashlib
-import boto3
+import json
 import logging
+import os
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
+import boto3
 
 # Configure logging
 logger = logging.getLogger()

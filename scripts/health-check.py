@@ -4,14 +4,15 @@ Health check script for deployment validation.
 Used by the deployment pipeline to verify system health after deployments.
 """
 
+import argparse
 import json
 import sys
 import time
-import requests
-import boto3
-from typing import Dict, List, Optional, Tuple
-import argparse
 from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Tuple
+
+import boto3
+import requests
 
 
 class HealthChecker:

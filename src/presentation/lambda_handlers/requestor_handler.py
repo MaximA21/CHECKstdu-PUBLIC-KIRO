@@ -1,11 +1,11 @@
 """Lambda handler for requestor using dependency injection."""
 
-from typing import Dict, Any
+from typing import Any, Dict
 
-from ..controllers.base_controller import HTTPController
-from ...application.use_cases.requestor_use_case import RequestorUseCase
 from ...application.interfaces.logging import ILogger
+from ...application.use_cases.requestor_use_case import RequestorUseCase
 from ...shared.exceptions.domain import DomainException
+from ..controllers.base_controller import HTTPController
 
 
 class RequestorHandler(HTTPController):

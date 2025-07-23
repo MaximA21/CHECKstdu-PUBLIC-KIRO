@@ -1,14 +1,15 @@
 """Domain-specific exceptions for the application."""
 
+from typing import Any, Dict, Optional
+
 from .base import (
     BaseApplicationException,
     BusinessLogicException,
-    ValidationException,
-    ErrorSeverity,
     ErrorCategory,
     ErrorContext,
+    ErrorSeverity,
+    ValidationException,
 )
-from typing import Optional, Dict, Any
 
 
 class DomainException(BaseApplicationException):

@@ -5,12 +5,13 @@ This script allows gradual traffic shifting between old and new implementations.
 """
 
 import argparse
-import boto3
 import json
-import time
 import sys
-from typing import Dict, Any, Optional
-from botocore.exceptions import ClientError, BotoCoreError
+import time
+from typing import Any, Dict, Optional
+
+import boto3
+from botocore.exceptions import BotoCoreError, ClientError
 
 
 class CanaryDeploymentManager:

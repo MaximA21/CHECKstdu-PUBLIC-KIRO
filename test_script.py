@@ -4,11 +4,12 @@ WebWunder SOAP API Test Script
 Tests different parameters to understand API behavior
 """
 
-import requests
 import json
 import time
-from typing import Dict, List, Any
 import xml.etree.ElementTree as ET
+from typing import Any, Dict, List
+
+import requests
 
 # Configuration
 API_URL = "https://webwunder.gendev7.check24.fun/endpunkte/soap/ws/getInternetOffers.wsdl"  # Keep .wsdl as in Postman

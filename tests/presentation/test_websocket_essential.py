@@ -1,23 +1,24 @@
 """Essential WebSocket tests for connection limits, timeouts, and routing."""
 
-import pytest
 import asyncio
 import json
 from datetime import datetime, timedelta
-from unittest.mock import MagicMock, AsyncMock, patch
-from typing import Dict, Any
+from typing import Any, Dict
+from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
+
+from src.application.interfaces.connections import IConnectionManager
+from src.application.interfaces.logging import ILogger
+from src.application.interfaces.repositories import IConnectionRepository
+from src.application.use_cases.connection_management_use_case import ConnectionManagementUseCase
+from src.application.use_cases.process_results_use_case import ProcessResultsUseCase
+from src.domain.entities.connection_session import ConnectionSession, ConnectionStatus, SessionConnectionType
 from src.presentation.lambda_handlers.connect_handler import ConnectHandler
 from src.presentation.lambda_handlers.disconnect_handler import DisconnectHandler
 from src.presentation.lambda_handlers.results_handler import ResultsHandler
 from src.presentation.websocket_handlers.websocket_server import WebSocketServerController
-from src.application.use_cases.connection_management_use_case import ConnectionManagementUseCase
-from src.application.use_cases.process_results_use_case import ProcessResultsUseCase
-from src.domain.entities.connection_session import ConnectionSession, SessionConnectionType, ConnectionStatus
 from src.shared.exceptions.domain import ConnectionException
-from src.application.interfaces.logging import ILogger
-from src.application.interfaces.repositories import IConnectionRepository
-from src.application.interfaces.connections import IConnectionManager
 
 
 class TestWebSocketConnectionLimits:

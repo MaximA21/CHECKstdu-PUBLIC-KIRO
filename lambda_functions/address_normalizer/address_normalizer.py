@@ -1,22 +1,22 @@
 import json
-import sys
 import os
+import sys
 
 # Add src to path for imports
 sys.path.append("/opt/python")
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
 try:
-    from src.shared.dependency_injection.bootstrap import get_container
-    from src.presentation.lambda_handlers.address_normalizer_handler import AddressNormalizerHandler
     from src.application.use_cases.address_normalization_use_case import AddressNormalizationUseCase
+    from src.presentation.lambda_handlers.address_normalizer_handler import AddressNormalizerHandler
+    from src.shared.dependency_injection.bootstrap import get_container
 except ImportError as e:
     print(f"Import error: {e}")
     # Fallback for development/testing
     sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-    from src.shared.dependency_injection.bootstrap import get_container
-    from src.presentation.lambda_handlers.address_normalizer_handler import AddressNormalizerHandler
     from src.application.use_cases.address_normalization_use_case import AddressNormalizationUseCase
+    from src.presentation.lambda_handlers.address_normalizer_handler import AddressNormalizerHandler
+    from src.shared.dependency_injection.bootstrap import get_container
 
 
 def lambda_handler(event, context):

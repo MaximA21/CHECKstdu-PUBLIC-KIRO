@@ -1,22 +1,22 @@
 """AWS API Gateway WebSocket connection manager adapter implementation."""
 
-import boto3
 import json
 import logging
-from typing import Dict, Any, List, Optional, Set
-from botocore.exceptions import ClientError
 from datetime import datetime
+from typing import Any, Dict, List, Optional, Set
+
+import boto3
+from botocore.exceptions import ClientError
 
 from ...application.interfaces.connections import (
-    IConnectionManager,
-    ITopicManager,
-    IConnectionNotifier,
     ConnectionType,
+    IConnectionManager,
+    IConnectionNotifier,
+    ITopicManager,
     MessageType,
 )
 from ...application.interfaces.repositories import IConnectionRepository
 from ...domain.entities.connection_session import ConnectionSession
-
 
 logger = logging.getLogger(__name__)
 

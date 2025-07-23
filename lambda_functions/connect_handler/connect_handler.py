@@ -1,6 +1,6 @@
-import sys
-import os
 import json
+import os
+import sys
 
 # Add src directory to path for importing the new DI-based handler
 sys.path.append("/opt/python")
@@ -8,16 +8,16 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
 try:
     # Import the new DI-based handler
-    from src.shared.dependency_injection.bootstrap import get_container
-    from src.presentation.lambda_handlers.connect_handler import ConnectHandler
     from src.application.use_cases.connection_management_use_case import ConnectionManagementUseCase
+    from src.presentation.lambda_handlers.connect_handler import ConnectHandler
+    from src.shared.dependency_injection.bootstrap import get_container
 except ImportError as e:
     print(f"Import error: {e}")
     # Fallback for development/testing
     sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-    from src.shared.dependency_injection.bootstrap import get_container
-    from src.presentation.lambda_handlers.connect_handler import ConnectHandler
     from src.application.use_cases.connection_management_use_case import ConnectionManagementUseCase
+    from src.presentation.lambda_handlers.connect_handler import ConnectHandler
+    from src.shared.dependency_injection.bootstrap import get_container
 
 
 def lambda_handler(event, context):

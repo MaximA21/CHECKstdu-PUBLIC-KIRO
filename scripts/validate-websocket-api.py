@@ -10,10 +10,11 @@ import logging
 import os
 import sys
 import time
-import websockets
-import boto3
 from datetime import datetime
 from typing import Dict, List, Optional
+
+import boto3
+import websockets
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

@@ -2,14 +2,14 @@
 
 import time
 from datetime import datetime
-from typing import Dict, Any, List, Optional
 from decimal import Decimal
+from typing import Any, Dict, List, Optional
 
-from ..interfaces.repositories import ISearchResultRepository
-from ..interfaces.logging import ILogger
-from ...domain.entities.search_result import SearchResult
 from ...domain.entities.provider_offer import ProviderOffer
-from ...shared.exceptions.domain import ShareTokenNotFoundException, ShareResultsException
+from ...domain.entities.search_result import SearchResult
+from ...shared.exceptions.domain import ShareResultsException, ShareTokenNotFoundException
+from ..interfaces.logging import ILogger
+from ..interfaces.repositories import ISearchResultRepository
 
 
 class ShareResultsUseCase:

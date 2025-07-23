@@ -1,8 +1,8 @@
 """Connection management interfaces for WebSocket and HTTP connections."""
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional, Set
 from enum import Enum
+from typing import Any, Dict, List, Optional, Set
 
 from ...domain.entities.connection_session import ConnectionSession
 

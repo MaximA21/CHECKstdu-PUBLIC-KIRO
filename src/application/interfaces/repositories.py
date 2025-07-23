@@ -1,12 +1,12 @@
 """Repository interfaces extending the existing IStorageService pattern."""
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional, List
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from ...domain.entities.search_result import SearchResult
 from ...domain.entities.connection_session import ConnectionSession
 from ...domain.entities.provider_offer import ProviderOffer
+from ...domain.entities.search_result import SearchResult
 from ...domain.value_objects.address import Address
 
 

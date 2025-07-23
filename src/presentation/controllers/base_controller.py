@@ -1,10 +1,10 @@
 """Base controller classes for different entry point types."""
 
-from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional, Union
 import json
 import time
+from abc import ABC, abstractmethod
 from datetime import datetime
+from typing import Any, Dict, Optional, Union
 
 from ...application.interfaces.logging import ILogger
 from ...shared.exceptions.domain import DomainException

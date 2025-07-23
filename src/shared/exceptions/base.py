@@ -1,10 +1,10 @@
 """Base exception classes with enhanced error handling capabilities."""
 
 import traceback
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, Any, Optional, List
-from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional
 
 
 class ErrorSeverity(Enum):

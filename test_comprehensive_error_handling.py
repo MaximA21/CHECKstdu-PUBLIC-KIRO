@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 """Comprehensive test for the error handling system."""
 
-import sys
-import os
 import asyncio
 import json
+import os
+import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+from src.infrastructure.logging.console_logger import ConsoleLogger
 from src.shared.exceptions import (
+    ErrorCategory,
+    ErrorSeverity,
+    ExternalServiceException,
     InvalidAddressException,
     ProviderUnavailableException,
-    ExternalServiceException,
-    ErrorSeverity,
-    ErrorCategory,
 )
 from src.shared.middleware.error_handler import LambdaErrorHandler
 from src.shared.monitoring.error_monitor import ErrorMonitor
-from src.infrastructure.logging.console_logger import ConsoleLogger
 
 
 async def test_error_monitoring():

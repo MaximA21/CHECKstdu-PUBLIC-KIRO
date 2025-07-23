@@ -1,8 +1,8 @@
 """Provider service interfaces for external internet service providers."""
 
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Optional
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 from ...domain.entities.provider_offer import ProviderOffer
 from ...domain.value_objects.address import Address

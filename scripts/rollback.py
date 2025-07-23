@@ -4,13 +4,14 @@ Rollback script for WebWunder deployments.
 Provides manual rollback capabilities for production deployments.
 """
 
+import argparse
 import json
 import sys
-import boto3
-import argparse
+import time
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
-import time
+
+import boto3
 
 
 class RollbackManager:

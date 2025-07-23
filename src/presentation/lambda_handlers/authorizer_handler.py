@@ -1,13 +1,13 @@
 """Lambda handler for API Gateway authorization using dependency injection."""
 
 import os
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
-from ..controllers.base_controller import BaseController
-from ...application.use_cases.authorization_use_case import AuthorizationUseCase
 from ...application.interfaces.logging import ILogger
+from ...application.use_cases.authorization_use_case import AuthorizationUseCase
 from ...domain.value_objects.address import Address
 from ...shared.exceptions.domain import DomainException
+from ..controllers.base_controller import BaseController
 
 
 class AuthorizerHandler(BaseController):

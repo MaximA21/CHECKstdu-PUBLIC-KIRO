@@ -5,16 +5,17 @@ Tests basic CI/CD pipeline functionality and validates rollback mechanisms.
 Focuses on core functionality rather than comprehensive coverage (task 7.3).
 """
 
-import json
-import sys
-import time
-import subprocess
-import requests
-import os
-import tempfile
-from typing import Dict, List, Optional, Tuple, Any
 import argparse
+import json
+import os
+import subprocess
+import sys
+import tempfile
+import time
 from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Tuple
+
+import requests
 
 try:
     import boto3

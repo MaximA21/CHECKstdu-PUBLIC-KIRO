@@ -1,13 +1,13 @@
 """Lambda handler for address normalization using dependency injection."""
 
 import time
-from typing import Dict, Any
+from typing import Any, Dict
 
-from ..controllers.base_controller import BaseController
-from ...application.use_cases.address_normalization_use_case import AddressNormalizationUseCase
 from ...application.interfaces.logging import ILogger
+from ...application.use_cases.address_normalization_use_case import AddressNormalizationUseCase
 from ...domain.value_objects.address import Address
 from ...shared.exceptions.domain import DomainException
+from ..controllers.base_controller import BaseController
 
 
 class AddressNormalizerHandler(BaseController):

@@ -1,13 +1,13 @@
 """Lambda handler for WebSocket connections using dependency injection."""
 
 import os
-from typing import Dict, Any
+from typing import Any, Dict
 
-from ..controllers.base_controller import WebSocketController
-from ...application.use_cases.connection_management_use_case import ConnectionManagementUseCase
 from ...application.interfaces.logging import ILogger
+from ...application.use_cases.connection_management_use_case import ConnectionManagementUseCase
 from ...domain.entities.connection_session import SessionConnectionType
 from ...shared.exceptions.domain import DomainException
+from ..controllers.base_controller import WebSocketController
 
 
 class ConnectHandler(WebSocketController):

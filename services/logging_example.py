@@ -6,9 +6,8 @@ This demonstrates how Lambda functions should use the logging configuration.
 """
 
 import os
-import time
 import sys
-import os
+import time
 
 # Add both src and root directory to path
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -16,8 +15,9 @@ src_dir = os.path.join(root_dir, "src")
 sys.path.insert(0, root_dir)
 sys.path.insert(0, src_dir)
 
-from src.infrastructure.logging.logger_factory import LoggerFactory
 import logging
+
+from src.infrastructure.logging.logger_factory import LoggerFactory
 
 
 def example_lambda_handler(event, context):

@@ -4,11 +4,12 @@ AWS Cost Optimization Script for Shared Resources
 Analyzes current usage and provides cost optimization recommendations.
 """
 
-import boto3
 import json
 import sys
 from datetime import datetime, timedelta
-from typing import Dict, List, Any
+from typing import Any, Dict, List
+
+import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
 
 

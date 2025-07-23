@@ -4,10 +4,11 @@ Validation script for shared AWS resources configuration.
 Validates DynamoDB tables, SQS queues, Step Functions, and backup configuration.
 """
 
-import boto3
 import json
 import sys
-from typing import Dict, List, Any
+from typing import Any, Dict, List
+
+import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
 
 

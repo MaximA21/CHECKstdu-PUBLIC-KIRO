@@ -1,9 +1,9 @@
 """Provider aggregator implementation for combining results from multiple providers."""
 
-import logging
 import asyncio
-from typing import List, Dict, Any, Optional
+import logging
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 from ...application.interfaces.providers import IProviderAggregator, IProviderRegistry, IProviderService, ProviderStatus
 from ...domain.entities.provider_offer import ProviderOffer

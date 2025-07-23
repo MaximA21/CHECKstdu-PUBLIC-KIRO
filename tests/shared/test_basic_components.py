@@ -1,56 +1,58 @@
 """Einfache Tests für grundlegende Shared-Komponenten."""
 
-import pytest
-from src.shared.dependency_injection.container import DIContainer
-from src.shared.dependency_injection.bootstrap import get_container, reset_container
-from src.shared.exceptions.domain import SearchRequestException, ShareTokenNotFoundException
-from src.shared.exceptions.base import BaseApplicationException, ErrorSeverity, ErrorCategory, ErrorContext
-from src.shared.exceptions.infrastructure import InfrastructureException
-from src.infrastructure.config.models import AppConfig, Environment, DatabaseConfig, DatabaseProvider
-from src.infrastructure.config.loader import ConfigLoader
-from src.infrastructure.logging.console_logger import ConsoleLogger
-from src.infrastructure.logging.logger_factory import LoggerFactory
-from src.infrastructure.logging.structured_logger import StructuredLogger
-from src.infrastructure.logging.cloudwatch_logger import CloudWatchLogger
-from src.infrastructure.external_services.provider_registry import ProviderRegistry
-from src.infrastructure.external_services.provider_aggregator import ProviderAggregator
-from src.infrastructure.external_services.mock_providers import MockProviderService
-from src.infrastructure.persistence.mock_repositories import MockSearchResultRepository
-from src.infrastructure.messaging.mock_messaging import MockMessageQueue, MockWorkflowOrchestrator, MockEventBus
-from src.infrastructure.messaging.mock_connection_manager import MockConnectionManager
-from src.domain.entities.connection_session import ConnectionSession
-from src.domain.entities.search_result import SearchResult
-from src.domain.entities.provider_offer import ProviderOffer
-from src.domain.value_objects.address import Address
-from src.application.interfaces.providers import IProviderService
-from src.application.interfaces.repositories import ISearchResultRepository
-from src.application.interfaces.messaging import IMessagingAdapter, IConnectionManager
-from src.application.interfaces.logging import ILogger
-from src.application.use_cases.search_offers_use_case import SearchOffersUseCase
-from src.application.use_cases.share_results_use_case import ShareResultsUseCase
-from src.application.use_cases.connection_management_use_case import ConnectionManagementUseCase
-from src.application.use_cases.process_results_use_case import ProcessResultsUseCase
-from src.application.use_cases.requestor_use_case import RequestorUseCase
-from src.application.use_cases.address_normalization_use_case import AddressNormalizationUseCase
-from src.application.use_cases.authorization_use_case import AuthorizationUseCase
-from src.presentation.controllers.base_controller import BaseController
-from src.presentation.http_controllers.search_controller import SearchController
-from src.presentation.http_controllers.share_controller import ShareController
-from src.presentation.websocket_handlers.connection_handler import ConnectionHandler
-from src.presentation.websocket_handlers.websocket_server import WebSocketServer
-from src.presentation.lambda_handlers.search_handler import SearchHandler
-from src.presentation.lambda_handlers.share_api_handler import ShareApiHandler
-from src.presentation.lambda_handlers.connect_handler import ConnectHandler
-from src.presentation.lambda_handlers.requestor_handler import RequestorHandler
-from src.presentation.lambda_handlers.results_handler import ResultsHandler
-from src.presentation.lambda_handlers.address_normalizer_handler import AddressNormalizerHandler
-from src.presentation.lambda_handlers.authorizer_handler import AuthorizerHandler
-from src.presentation.lambda_handlers.disconnect_handler import DisconnectHandler
-from src.presentation.lambda_handlers.connection_limit_enforcer_handler import ConnectionLimitEnforcerHandler
-from unittest.mock import MagicMock, patch
 import asyncio
 import json
 from datetime import datetime, timedelta
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+from src.application.interfaces.logging import ILogger
+from src.application.interfaces.messaging import IConnectionManager, IMessagingAdapter
+from src.application.interfaces.providers import IProviderService
+from src.application.interfaces.repositories import ISearchResultRepository
+from src.application.use_cases.address_normalization_use_case import AddressNormalizationUseCase
+from src.application.use_cases.authorization_use_case import AuthorizationUseCase
+from src.application.use_cases.connection_management_use_case import ConnectionManagementUseCase
+from src.application.use_cases.process_results_use_case import ProcessResultsUseCase
+from src.application.use_cases.requestor_use_case import RequestorUseCase
+from src.application.use_cases.search_offers_use_case import SearchOffersUseCase
+from src.application.use_cases.share_results_use_case import ShareResultsUseCase
+from src.domain.entities.connection_session import ConnectionSession
+from src.domain.entities.provider_offer import ProviderOffer
+from src.domain.entities.search_result import SearchResult
+from src.domain.value_objects.address import Address
+from src.infrastructure.config.loader import ConfigLoader
+from src.infrastructure.config.models import AppConfig, DatabaseConfig, DatabaseProvider, Environment
+from src.infrastructure.external_services.mock_providers import MockProviderService
+from src.infrastructure.external_services.provider_aggregator import ProviderAggregator
+from src.infrastructure.external_services.provider_registry import ProviderRegistry
+from src.infrastructure.logging.cloudwatch_logger import CloudWatchLogger
+from src.infrastructure.logging.console_logger import ConsoleLogger
+from src.infrastructure.logging.logger_factory import LoggerFactory
+from src.infrastructure.logging.structured_logger import StructuredLogger
+from src.infrastructure.messaging.mock_connection_manager import MockConnectionManager
+from src.infrastructure.messaging.mock_messaging import MockEventBus, MockMessageQueue, MockWorkflowOrchestrator
+from src.infrastructure.persistence.mock_repositories import MockSearchResultRepository
+from src.presentation.controllers.base_controller import BaseController
+from src.presentation.http_controllers.search_controller import SearchController
+from src.presentation.http_controllers.share_controller import ShareController
+from src.presentation.lambda_handlers.address_normalizer_handler import AddressNormalizerHandler
+from src.presentation.lambda_handlers.authorizer_handler import AuthorizerHandler
+from src.presentation.lambda_handlers.connect_handler import ConnectHandler
+from src.presentation.lambda_handlers.connection_limit_enforcer_handler import ConnectionLimitEnforcerHandler
+from src.presentation.lambda_handlers.disconnect_handler import DisconnectHandler
+from src.presentation.lambda_handlers.requestor_handler import RequestorHandler
+from src.presentation.lambda_handlers.results_handler import ResultsHandler
+from src.presentation.lambda_handlers.search_handler import SearchHandler
+from src.presentation.lambda_handlers.share_api_handler import ShareApiHandler
+from src.presentation.websocket_handlers.connection_handler import ConnectionHandler
+from src.presentation.websocket_handlers.websocket_server import WebSocketServer
+from src.shared.dependency_injection.bootstrap import get_container, reset_container
+from src.shared.dependency_injection.container import DIContainer
+from src.shared.exceptions.base import BaseApplicationException, ErrorCategory, ErrorContext, ErrorSeverity
+from src.shared.exceptions.domain import SearchRequestException, ShareTokenNotFoundException
+from src.shared.exceptions.infrastructure import InfrastructureException
 
 
 class TestBasicDIContainer:

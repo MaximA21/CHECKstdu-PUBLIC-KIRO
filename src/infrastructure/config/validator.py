@@ -1,7 +1,8 @@
 """Configuration validation utilities."""
 
-from typing import List, Dict, Any, Optional
-from .models import AppConfig, Environment, DatabaseProvider, MessagingProvider, LoggingProvider
+from typing import Any, Dict, List, Optional
+
+from .models import AppConfig, DatabaseProvider, Environment, LoggingProvider, MessagingProvider
 
 
 class ConfigValidator:

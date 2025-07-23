@@ -5,16 +5,17 @@ Tests basic CI/CD pipeline functionality and rollback mechanisms.
 Focuses on core functionality rather than comprehensive coverage.
 """
 
-import pytest
+import json
 import os
 import subprocess
-import json
-import tempfile
-from unittest.mock import Mock, patch, MagicMock
-import boto3
-from moto import mock_lambda, mock_logs, mock_apigateway
 import sys
+import tempfile
 import time
+from unittest.mock import MagicMock, Mock, patch
+
+import boto3
+import pytest
+from moto import mock_apigateway, mock_lambda, mock_logs
 
 
 class TestStreamlinedDeployment:

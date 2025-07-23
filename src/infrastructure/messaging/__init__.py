@@ -1,14 +1,14 @@
 """Infrastructure messaging layer."""
 
 # Import mock implementations (always available)
-from .mock_messaging import MockMessageQueue, MockWorkflowOrchestrator, MockEventBus
-from .mock_connection_manager import MockConnectionManager, MockTopicManager, MockConnectionNotifier
+from .mock_connection_manager import MockConnectionManager, MockConnectionNotifier, MockTopicManager
+from .mock_messaging import MockEventBus, MockMessageQueue, MockWorkflowOrchestrator
 
 # Import AWS implementations (optional, requires boto3)
 try:
     from .aws_sqs_adapter import AWSSQSMessageQueue
     from .aws_step_functions_adapter import AWSStepFunctionsOrchestrator
-    from .aws_websocket_adapter import AWSAPIGatewayWebSocketManager, AWSWebSocketTopicManager, AWSWebSocketNotifier
+    from .aws_websocket_adapter import AWSAPIGatewayWebSocketManager, AWSWebSocketNotifier, AWSWebSocketTopicManager
 
     _aws_available = True
 except ImportError:

@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 try:
     from infrastructure.config.loader import ConfigLoader
-    from infrastructure.config.models import Environment, ContainerConfig
+    from infrastructure.config.models import ContainerConfig, Environment
 
     def test_configuration():
         """Test configuration loading."""

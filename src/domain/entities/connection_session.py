@@ -1,9 +1,9 @@
 """Connection session entity for managing WebSocket connections."""
 
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, Set
 from datetime import datetime, timedelta
 from enum import Enum
+from typing import Any, Dict, Optional, Set
 
 
 class ConnectionStatus(Enum):

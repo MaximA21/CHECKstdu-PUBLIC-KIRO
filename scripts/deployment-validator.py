@@ -5,17 +5,18 @@ Performs comprehensive validation of deployments including functional tests,
 performance checks, and integration validation.
 """
 
+import argparse
+import concurrent.futures
 import json
 import sys
-import time
-import requests
-import boto3
-import websocket
 import threading
-from typing import Dict, List, Optional, Tuple, Any
-import argparse
+import time
 from datetime import datetime, timedelta
-import concurrent.futures
+from typing import Any, Dict, List, Optional, Tuple
+
+import boto3
+import requests
+import websocket
 import yaml
 
 

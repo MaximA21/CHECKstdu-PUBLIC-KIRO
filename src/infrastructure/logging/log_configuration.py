@@ -1,8 +1,9 @@
 """Log configuration implementation wrapping existing logging_config functionality."""
 
 import os
-from typing import Dict, Any
-from ...application.interfaces.logging import ILogConfiguration, LogLevel, LogFormat
+from typing import Any, Dict
+
+from ...application.interfaces.logging import ILogConfiguration, LogFormat, LogLevel
 
 
 class LogConfiguration(ILogConfiguration):

@@ -3,11 +3,11 @@
 Test script to validate GitHub OIDC Terraform configuration syntax
 """
 
+import os
+import shutil
 import subprocess
 import sys
 import tempfile
-import os
-import shutil
 
 
 def test_github_oidc_config():

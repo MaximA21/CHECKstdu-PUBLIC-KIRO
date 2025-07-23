@@ -1,9 +1,10 @@
 """Log destination implementations for different output targets."""
 
+import asyncio
 import json
 import sys
-import asyncio
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
+
 from ...application.interfaces.logging import ILogDestination
 
 

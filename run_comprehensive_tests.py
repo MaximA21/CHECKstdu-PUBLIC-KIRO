@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Comprehensive test runner for the enterprise refactoring test suite."""
 
-import sys
+import argparse
 import os
 import subprocess
-import argparse
+import sys
 import time
 from pathlib import Path
 

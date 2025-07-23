@@ -2,15 +2,15 @@
 
 import uuid
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
-from ..interfaces.repositories import ISearchResultRepository, IConnectionRepository
-from ..interfaces.messaging import IMessageQueue, MessagePriority
-from ..interfaces.logging import ILogger
-from ...domain.entities.search_result import SearchResult
 from ...domain.entities.connection_session import ConnectionSession
+from ...domain.entities.search_result import SearchResult
 from ...domain.value_objects.address import Address
 from ...shared.exceptions.domain import InvalidAddressException, SearchRequestException
+from ..interfaces.logging import ILogger
+from ..interfaces.messaging import IMessageQueue, MessagePriority
+from ..interfaces.repositories import IConnectionRepository, ISearchResultRepository
 
 
 class SearchOffersUseCase:

@@ -1,15 +1,15 @@
 """Service factory for creating environment-specific service implementations."""
 
-from typing import Type, TypeVar, Dict, Any
 from abc import ABC, abstractmethod
+from typing import Any, Dict, Type, TypeVar
 
-from .container import DIContainer, ServiceLifetime
-from ...infrastructure.config.models import AppConfig, DatabaseProvider, MessagingProvider, LoggingProvider
-from ...application.interfaces.repositories import ISearchResultRepository, IConnectionRepository
-from ...application.interfaces.messaging import IMessageQueue, IWorkflowOrchestrator
 from ...application.interfaces.connections import IConnectionManager
 from ...application.interfaces.logging import ILogger, ILoggerFactory
+from ...application.interfaces.messaging import IMessageQueue, IWorkflowOrchestrator
 from ...application.interfaces.providers import IProviderService
+from ...application.interfaces.repositories import IConnectionRepository, ISearchResultRepository
+from ...infrastructure.config.models import AppConfig, DatabaseProvider, LoggingProvider, MessagingProvider
+from .container import DIContainer, ServiceLifetime
 
 # Legacy IStorageService removed - using repository pattern instead
 
@@ -93,8 +93,8 @@ class AWSServiceFactory(ServiceFactory):
     def _register_aws_repositories(self, container: DIContainer, config: AppConfig) -> None:
         """Register AWS DynamoDB repository implementations."""
         from ...infrastructure.persistence.aws_dynamodb_repository import (
-            AWSDynamoDBSearchResultRepository,
             AWSDynamoDBConnectionRepository,
+            AWSDynamoDBSearchResultRepository,
         )
 
         container.register_singleton(ISearchResultRepository, AWSDynamoDBSearchResultRepository)
@@ -102,7 +102,7 @@ class AWSServiceFactory(ServiceFactory):
 
     def _register_mock_repositories(self, container: DIContainer, config: AppConfig) -> None:
         """Register mock repository implementations."""
-        from ...infrastructure.persistence.mock_repositories import MockSearchResultRepository, MockConnectionRepository
+        from ...infrastructure.persistence.mock_repositories import MockConnectionRepository, MockSearchResultRepository
 
         container.register_singleton(ISearchResultRepository, MockSearchResultRepository)
         container.register_singleton(IConnectionRepository, MockConnectionRepository)
@@ -189,15 +189,15 @@ class MockServiceFactory(ServiceFactory):
 
     def _register_mock_repositories(self, container: DIContainer, config: AppConfig) -> None:
         """Register mock repository implementations."""
-        from ...infrastructure.persistence.mock_repositories import MockSearchResultRepository, MockConnectionRepository
+        from ...infrastructure.persistence.mock_repositories import MockConnectionRepository, MockSearchResultRepository
 
         container.register_singleton(ISearchResultRepository, MockSearchResultRepository)
         container.register_singleton(IConnectionRepository, MockConnectionRepository)
 
     def _register_mock_messaging(self, container: DIContainer, config: AppConfig) -> None:
         """Register mock messaging implementations."""
-        from ...infrastructure.messaging.mock_messaging import MockMessageQueue, MockWorkflowOrchestrator
         from ...infrastructure.messaging.mock_connection_manager import MockConnectionManager
+        from ...infrastructure.messaging.mock_messaging import MockMessageQueue, MockWorkflowOrchestrator
 
         container.register_singleton(IMessageQueue, MockMessageQueue)
         container.register_singleton(IWorkflowOrchestrator, MockWorkflowOrchestrator)

@@ -3,17 +3,17 @@
 import asyncio
 import time
 from abc import ABC, abstractmethod
-from typing import Callable, Any, Optional, Dict, List, Type
 from functools import wraps
+from typing import Any, Callable, Dict, List, Optional, Type
 
+from ...application.interfaces.logging import ILogger
 from ..exceptions import (
     BaseApplicationException,
-    RetryableException,
+    ErrorSeverity,
     ExternalServiceException,
     InfrastructureException,
-    ErrorSeverity,
+    RetryableException,
 )
-from ...application.interfaces.logging import ILogger
 
 
 class RetryHandler(ABC):

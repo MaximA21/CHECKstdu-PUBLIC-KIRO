@@ -4,12 +4,13 @@ CloudWatch Logs Insights query runner for cost-effective log analysis.
 This replaces expensive Kinesis streams with CloudWatch Logs Insights queries.
 """
 
-import boto3
+import argparse
 import json
 import time
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
-import argparse
+
+import boto3
 
 
 class CloudWatchInsightsRunner:

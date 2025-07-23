@@ -8,18 +8,16 @@ This test suite covers:
 - Performance impact testing of different logging levels
 """
 
-import os
-import logging
 import json
-import unittest
-import time
-import threading
-from unittest.mock import patch, MagicMock
-from io import StringIO
-from contextlib import contextmanager
-
-import sys
+import logging
 import os
+import sys
+import threading
+import time
+import unittest
+from contextlib import contextmanager
+from io import StringIO
+from unittest.mock import MagicMock, patch
 
 # Add both src and root directory to path
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -27,8 +25,8 @@ src_dir = os.path.join(root_dir, "src")
 sys.path.insert(0, root_dir)
 sys.path.insert(0, src_dir)
 
-from src.infrastructure.logging.logger_factory import LoggerFactory
 from src.application.interfaces.logging import LogLevel
+from src.infrastructure.logging.logger_factory import LoggerFactory
 
 
 class TestLoggingConfig(unittest.TestCase):

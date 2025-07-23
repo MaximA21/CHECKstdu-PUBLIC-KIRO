@@ -6,11 +6,12 @@ This script validates that basic security controls are properly configured
 according to task 6.2 requirements.
 """
 
-import json
-import boto3
-import sys
 import argparse
-from typing import Dict, List, Any
+import json
+import sys
+from typing import Any, Dict, List
+
+import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
 
 

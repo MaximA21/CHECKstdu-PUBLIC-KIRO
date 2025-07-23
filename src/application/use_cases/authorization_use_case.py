@@ -1,13 +1,13 @@
 """Authorization use case for API Gateway authorization."""
 
-from typing import Dict, Any, Optional
-import urllib.request
-import urllib.parse
 import json
+import urllib.parse
+import urllib.request
+from typing import Any, Dict, Optional
 
-from ..interfaces.logging import ILogger
 from ...domain.value_objects.address import Address
 from ...shared.exceptions.domain import AuthorizationException, DomainException
+from ..interfaces.logging import ILogger
 
 
 class AuthorizationUseCase:

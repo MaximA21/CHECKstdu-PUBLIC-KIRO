@@ -3,21 +3,21 @@
 import json
 import traceback
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional, Callable, Union
 from datetime import datetime
+from typing import Any, Callable, Dict, Optional, Union
 
+from ...application.interfaces.logging import ILogger
+from ..dependency_injection.container import DIContainer
 from ..exceptions import (
     BaseApplicationException,
-    ValidationException,
     BusinessLogicException,
-    ExternalServiceException,
-    InfrastructureException,
-    ErrorSeverity,
     ErrorCategory,
     ErrorContext,
+    ErrorSeverity,
+    ExternalServiceException,
+    InfrastructureException,
+    ValidationException,
 )
-from ..dependency_injection.container import DIContainer
-from ...application.interfaces.logging import ILogger
 
 
 class ErrorHandlerMiddleware(ABC):

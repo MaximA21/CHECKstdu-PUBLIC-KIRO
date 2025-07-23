@@ -2,7 +2,8 @@
 
 import json
 import time
-from typing import Dict, Any, Optional, List
+from typing import Any, Dict, List, Optional
+
 from ...application.interfaces.logging import ILogger, ILoggerFactory, LogLevel
 from .console_logger import ConsoleLogger
 

@@ -2,22 +2,22 @@
 
 import asyncio
 import logging
-import sys
 import os
+import sys
 from decimal import Decimal
 
 # Add the src directory to the Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
+from domain.value_objects.address import Address
 from infrastructure.external_services import (
     ByteMeAdapter,
+    PingPerfectAdapter,
+    ProviderAggregator,
+    ProviderRegistry,
     VerbynDichAdapter,
     WebWunderAdapter,
-    PingPerfectAdapter,
-    ProviderRegistry,
-    ProviderAggregator,
 )
-from domain.value_objects.address import Address
 
 
 async def main():

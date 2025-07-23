@@ -1,12 +1,13 @@
 """Search result entity representing a collection of provider offers for an address."""
 
-from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any
-from datetime import datetime, timedelta
-from uuid import uuid4
 import secrets
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
+from uuid import uuid4
+
 from ..value_objects.address import Address
-from .provider_offer import ProviderOffer, ConnectionType
+from .provider_offer import ConnectionType, ProviderOffer
 
 
 @dataclass

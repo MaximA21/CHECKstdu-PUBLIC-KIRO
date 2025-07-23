@@ -1,14 +1,14 @@
 """Error monitoring and alerting system."""
 
 import time
+from collections import defaultdict, deque
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, List, Optional, Callable, Any
-from dataclasses import dataclass, field
-from collections import defaultdict, deque
+from typing import Any, Callable, Dict, List, Optional
 
-from ..exceptions import BaseApplicationException, ErrorSeverity, ErrorCategory
 from ...application.interfaces.logging import ILogger
+from ..exceptions import BaseApplicationException, ErrorCategory, ErrorSeverity
 
 
 class AlertSeverity(Enum):

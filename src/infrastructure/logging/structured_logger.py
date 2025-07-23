@@ -2,7 +2,8 @@
 
 import time
 import uuid
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 from ...application.interfaces.logging import IStructuredLogger, LogLevel
 from .console_logger import ConsoleLogger
 

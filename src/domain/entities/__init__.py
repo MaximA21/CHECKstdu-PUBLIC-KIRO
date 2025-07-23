@@ -1,8 +1,8 @@
 """Domain entities - Core business entities."""
 
-from .provider_offer import ProviderOffer, ConnectionType, OfferStatus
-from .search_result import SearchResult
 from .connection_session import ConnectionSession, ConnectionStatus, SessionConnectionType
+from .provider_offer import ConnectionType, OfferStatus, ProviderOffer
+from .search_result import SearchResult
 
 __all__ = [
     "ProviderOffer",

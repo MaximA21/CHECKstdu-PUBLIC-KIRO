@@ -1,11 +1,11 @@
 """HTTP controllers for container deployment scenarios."""
 
-from typing import Dict, Any
+from typing import Any, Dict
 
-from ..controllers.base_controller import ContainerController
-from ...application.use_cases.share_results_use_case import ShareResultsUseCase
 from ...application.interfaces.logging import ILogger
-from ...shared.exceptions.domain import ShareTokenNotFoundException, ShareResultsException
+from ...application.use_cases.share_results_use_case import ShareResultsUseCase
+from ...shared.exceptions.domain import ShareResultsException, ShareTokenNotFoundException
+from ..controllers.base_controller import ContainerController
 
 
 class ShareController(ContainerController):

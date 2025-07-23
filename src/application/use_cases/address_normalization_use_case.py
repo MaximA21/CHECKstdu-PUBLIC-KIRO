@@ -1,10 +1,10 @@
 """Address normalization use case for API compatibility."""
 
-from typing import Dict, Any
+from typing import Any, Dict
 
-from ..interfaces.logging import ILogger
 from ...domain.value_objects.address import Address
 from ...shared.exceptions.domain import DomainException
+from ..interfaces.logging import ILogger
 
 
 class AddressNormalizationUseCase:

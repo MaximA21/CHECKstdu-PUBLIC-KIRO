@@ -2,8 +2,8 @@
 """Simple test for refactored Lambda handlers."""
 
 import json
-import sys
 import os
+import sys
 
 
 def test_connect_handler_basic():

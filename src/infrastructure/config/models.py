@@ -1,8 +1,8 @@
 """Configuration models for the application."""
 
 from dataclasses import dataclass, field
-from typing import Dict, Any, Optional
 from enum import Enum
+from typing import Any, Dict, Optional
 
 
 class Environment(Enum):

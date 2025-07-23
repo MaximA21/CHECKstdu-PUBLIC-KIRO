@@ -1,11 +1,10 @@
 """Dependency injection container for service management."""
 
-from abc import ABC, abstractmethod
-from typing import Dict, Any, Type, TypeVar, Callable, Optional, Union
-from enum import Enum
 import inspect
 import threading
-
+from abc import ABC, abstractmethod
+from enum import Enum
+from typing import Any, Callable, Dict, Optional, Type, TypeVar, Union
 
 T = TypeVar("T")
 

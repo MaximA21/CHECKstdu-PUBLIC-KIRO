@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Simple test for core error handling functionality."""
 
-import sys
-import os
 import json
+import os
+import sys
 from datetime import datetime
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -11,11 +11,11 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 # Test the core exception functionality
 from src.shared.exceptions.base import (
     BaseApplicationException,
-    ValidationException,
-    ExternalServiceException,
-    ErrorSeverity,
     ErrorCategory,
     ErrorContext,
+    ErrorSeverity,
+    ExternalServiceException,
+    ValidationException,
 )
 from src.shared.exceptions.domain import InvalidAddressException, ProviderUnavailableException
 

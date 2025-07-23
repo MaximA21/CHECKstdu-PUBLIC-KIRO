@@ -1,19 +1,21 @@
 """Service selection based on configuration and environment."""
 
-from typing import Type, Dict, Any
-from .models import AppConfig, DatabaseProvider, MessagingProvider, LoggingProvider
+from typing import Any, Dict, Type
 
-# Import interfaces
-from src.application.interfaces.repositories import ISearchResultRepository, IConnectionRepository
-from src.application.interfaces.messaging import IMessageQueue, IWorkflowOrchestrator
 from src.application.interfaces.connections import IConnectionManager
 from src.application.interfaces.logging import ILogger, ILoggerFactory
+from src.application.interfaces.messaging import IMessageQueue, IWorkflowOrchestrator
+
+# Import interfaces
+from src.application.interfaces.repositories import IConnectionRepository, ISearchResultRepository
+from src.infrastructure.logging.logger_factory import LoggerFactory
+from src.infrastructure.messaging.mock_connection_manager import MockConnectionManager
+from src.infrastructure.messaging.mock_messaging import MockMessageQueue, MockWorkflowOrchestrator
 
 # Import mock implementations (always available)
-from src.infrastructure.persistence.mock_repositories import MockSearchResultRepository, MockConnectionRepository
-from src.infrastructure.messaging.mock_messaging import MockMessageQueue, MockWorkflowOrchestrator
-from src.infrastructure.messaging.mock_connection_manager import MockConnectionManager
-from src.infrastructure.logging.logger_factory import LoggerFactory
+from src.infrastructure.persistence.mock_repositories import MockConnectionRepository, MockSearchResultRepository
+
+from .models import AppConfig, DatabaseProvider, LoggingProvider, MessagingProvider
 
 
 class ServiceSelector:

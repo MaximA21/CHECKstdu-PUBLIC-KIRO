@@ -8,7 +8,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.shared.dependency_injection import initialize_application, get_container, get_config
+from src.shared.dependency_injection import get_config, get_container, initialize_application
 
 
 def main():

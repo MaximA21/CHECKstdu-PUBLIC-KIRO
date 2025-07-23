@@ -1,8 +1,8 @@
 """Address value object with validation logic."""
 
+import re
 from dataclasses import dataclass
 from typing import Optional
-import re
 
 
 @dataclass(frozen=True)

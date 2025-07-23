@@ -1,19 +1,19 @@
 """Circuit breaker pattern implementation for service resilience."""
 
-import time
 import asyncio
+import time
 from enum import Enum
-from typing import Callable, Any, Optional, Dict
 from functools import wraps
+from typing import Any, Callable, Dict, Optional
 
+from ...application.interfaces.logging import ILogger
 from ..exceptions import (
     BaseApplicationException,
+    ErrorCategory,
+    ErrorSeverity,
     ExternalServiceException,
     InfrastructureException,
-    ErrorSeverity,
-    ErrorCategory,
 )
-from ...application.interfaces.logging import ILogger
 
 
 class CircuitBreakerState(Enum):

@@ -10,9 +10,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from src.infrastructure.config.loader import ConfigLoader
-from src.shared.dependency_injection.bootstrap import get_container
 from src.presentation.http_controllers.search_controller import SearchController
 from src.presentation.http_controllers.share_controller import ShareController
+from src.shared.dependency_injection.bootstrap import get_container
 
 
 async def test_container_configuration():

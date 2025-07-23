@@ -1,15 +1,15 @@
 """ByteMe provider service adapter implementation."""
 
 import logging
-from typing import List, Dict, Any, Optional
+import time
 from decimal import Decimal
 from io import StringIO
-import time
+from typing import Any, Dict, List, Optional
 
 from ...application.interfaces.providers import IByteMe, ProviderStatus, ProviderType
-from ...domain.entities.provider_offer import ProviderOffer, ConnectionType, OfferStatus
+from ...domain.entities.provider_offer import ConnectionType, OfferStatus, ProviderOffer
 from ...domain.value_objects.address import Address
-from ...shared.exceptions.domain import ProviderUnavailableException, InvalidAddressException
+from ...shared.exceptions.domain import InvalidAddressException, ProviderUnavailableException
 
 # Try to import high-performance libraries, fall back to standard library
 try:

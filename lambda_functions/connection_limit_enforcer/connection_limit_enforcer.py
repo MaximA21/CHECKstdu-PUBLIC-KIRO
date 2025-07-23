@@ -4,11 +4,12 @@ Periodically checks and enforces connection limits for all active WebSocket conn
 """
 
 import json
-import sys
-import os
-import boto3
 import logging
+import os
+import sys
 from datetime import datetime
+
+import boto3
 
 # Add src to path for imports
 sys.path.append("/opt/python")
@@ -22,14 +23,14 @@ logger.setLevel(logging.INFO)
 cloudwatch = boto3.client("cloudwatch")
 
 try:
-    from src.shared.dependency_injection.bootstrap import get_container
     from src.application.use_cases.connection_management_use_case import ConnectionManagementUseCase
+    from src.shared.dependency_injection.bootstrap import get_container
 except ImportError as e:
     print(f"Import error: {e}")
     # Fallback for development/testing
     sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-    from src.shared.dependency_injection.bootstrap import get_container
     from src.application.use_cases.connection_management_use_case import ConnectionManagementUseCase
+    from src.shared.dependency_injection.bootstrap import get_container
 
 
 def lambda_handler(event, context):
@@ -150,8 +151,8 @@ def cleanup_handler(event, context):
         logger.info("Starting connection cleanup")
 
         # Import DI components
-        from src.shared.dependency_injection.bootstrap import get_container
         from src.application.use_cases.connection_management_use_case import ConnectionManagementUseCase
+        from src.shared.dependency_injection.bootstrap import get_container
 
         # Get DI container
         container = get_container()

@@ -1,9 +1,9 @@
 """Provider offer entity representing internet service offers."""
 
 from dataclasses import dataclass
-from typing import Optional, Dict, Any
 from decimal import Decimal
 from enum import Enum
+from typing import Any, Dict, Optional
 
 
 class ConnectionType(Enum):

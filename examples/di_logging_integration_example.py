@@ -6,14 +6,14 @@ This example shows how the logging abstraction layer can be integrated
 with the dependency injection system for enterprise applications.
 """
 
-import sys
 import os
+import sys
 
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.infrastructure.logging import LoggerFactory
 from src.application.interfaces.logging import ILogger, ILoggerFactory, LogLevel
+from src.infrastructure.logging import LoggerFactory
 from src.shared.dependency_injection.container import DIContainer
 
 

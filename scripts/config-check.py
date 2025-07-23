@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Configuration validation and testing utility."""
 
+import argparse
 import os
 import sys
-import argparse
 from pathlib import Path
 
 # Add project root to path
@@ -11,8 +11,8 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from src.infrastructure.config.loader import ConfigLoader, ConfigurationError, ConfigurationValidationError
-from src.infrastructure.config.validator import ConfigValidator
 from src.infrastructure.config.service_selector import ServiceSelector
+from src.infrastructure.config.validator import ConfigValidator
 
 
 def main():

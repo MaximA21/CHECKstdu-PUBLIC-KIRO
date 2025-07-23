@@ -6,10 +6,11 @@ This script validates that the GitHub OIDC configuration is properly set up
 and can be used by GitHub Actions to authenticate with AWS.
 """
 
-import boto3
+import argparse
 import json
 import sys
-import argparse
+
+import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
 
 
