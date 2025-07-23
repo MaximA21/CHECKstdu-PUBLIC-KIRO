@@ -16,7 +16,7 @@ import sys
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from src.shared.dependency_injection.bootstrap import bootstrap_container
+from src.shared.dependency_injection.bootstrap import get_container
 from src.application.use_cases.search_offers_use_case import SearchOffersUseCase
 from src.application.use_cases.connection_management_use_case import ConnectionManagementUseCase
 from src.domain.value_objects.address import Address
@@ -188,7 +188,7 @@ def run_basic_load_tests():
         
         # Test 1: Search offers load test
         def search_offers_test(request_id: int):
-            container = bootstrap_container()
+            container = get_container()
             search_use_case = container.get(SearchOffersUseCase)
             
             address = Address(
@@ -199,11 +199,13 @@ def run_basic_load_tests():
                 country="DE"
             )
             
+            connection_id = f"load-test-conn-{request_id}"
+            
             # Execute search
-            result = asyncio.run(search_use_case.execute(address))
+            result = asyncio.run(search_use_case.execute(address, connection_id))
             
             # Basic validation
-            if not result or not hasattr(result, 'request_id'):
+            if not result or 'request_id' not in result:
                 raise Exception("Invalid search result")
         
         print("Running search offers load test...")
@@ -216,20 +218,20 @@ def run_basic_load_tests():
         
         # Test 2: Connection management load test
         def connection_test(request_id: int):
-            container = bootstrap_container()
+            container = get_container()
             connection_use_case = container.get(ConnectionManagementUseCase)
             
             connection_id = f"test-connection-{request_id}"
             
             # Create connection
-            session = asyncio.run(connection_use_case.create_connection(connection_id))
+            result = asyncio.run(connection_use_case.handle_connect(connection_id))
             
             # Validate connection
-            if not session or not session.connection_id:
+            if not result or 'connection_id' not in result:
                 raise Exception("Failed to create connection")
             
             # Close connection
-            asyncio.run(connection_use_case.close_connection(connection_id))
+            asyncio.run(connection_use_case.handle_disconnect(connection_id, "Load test completed"))
         
         print("Running connection management load test...")
         connection_result = runner.run_concurrent_requests(
@@ -242,7 +244,7 @@ def run_basic_load_tests():
         # Test 3: Dependency injection container load test
         def di_container_test(request_id: int):
             # Test container resolution performance
-            container = bootstrap_container()
+            container = get_container()
             
             # Resolve multiple services
             search_use_case = container.get(SearchOffersUseCase)

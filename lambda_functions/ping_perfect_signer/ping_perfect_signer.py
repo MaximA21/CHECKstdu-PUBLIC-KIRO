@@ -6,12 +6,26 @@ import logging
 import sys
 import os
 
-# Add src directory to path for importing new logging infrastructure
+# Add src to path for imports
+sys.path.append('/opt/python')
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
-from infrastructure.logging.legacy_logging_config import get_lambda_logger
+
+try:
+    from src.shared.dependency_injection.bootstrap import get_container
+except ImportError as e:
+    print(f"Import error: {e}")
+    # Fallback for development/testing
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+    from src.shared.dependency_injection.bootstrap import get_container
 
 # Configure logger with centralized configuration
-logger = get_lambda_logger('ping_perfect_signer')
+try:
+    container = get_container()
+    logger = container.get_logger('ping_perfect_signer')
+except:
+    # Fallback logging
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger('ping_perfect_signer')
 
 
 def generate_hmac_signature(request_body: str, secret: str) -> tuple:
@@ -41,6 +55,16 @@ def lambda_handler(event, context):
     """🔐 Ping Perfect HMAC Signature Generator (returns signature to Step Functions)"""
 
     try:
+        # Handle warmer requests efficiently
+        if event.get('warmer'):
+            return {
+                "statusCode": 200,
+                "body": json.dumps({
+                    "message": "Lambda warmed successfully",
+                    "function": "ping_perfect_signer"
+                })
+            }
+        
         logger.info("🔐 Ping Perfect signature generator started")
         logger.debug(f"Input event: {json.dumps(event)}")
 

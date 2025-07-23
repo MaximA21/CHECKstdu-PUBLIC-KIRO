@@ -145,10 +145,9 @@ class TestFullSearchFlow:
         # Step 3: Process results (simulate provider responses)
         process_result = await infra['use_cases']['process_results'].execute(
             request_id=request_id,
-            connection_id=connection_id,
             provider_name="TestProvider1",
-            status="success",
-            raw_response={"offers": [{"product_id": "TEST-001", "speed": 100}]},
+            raw_results={"offers": [{"product_id": "TEST-001", "speed": 100}]},
+            connection_id=connection_id,
             share_token=share_token,
             address_data=sample_address.__dict__
         )
@@ -191,10 +190,9 @@ class TestFullSearchFlow:
         # Process results
         process_result = await infra['use_cases']['process_results'].execute(
             request_id=search_result['request_id'],
-            connection_id=connection_id,
             provider_name="TestProvider1",
-            status="success",
-            raw_response={"offers": [{"product_id": "TEST-001", "speed": 100}]},
+            raw_results={"offers": [{"product_id": "TEST-001", "speed": 100}]},
+            connection_id=connection_id,
             share_token=search_result['share_token'],
             address_data=sample_address.__dict__
         )
@@ -228,10 +226,9 @@ class TestFullSearchFlow:
         # Test processing with invalid request ID
         process_result = await infra['use_cases']['process_results'].execute(
             request_id="invalid-request",
-            connection_id="test-conn",
             provider_name="TestProvider1",
-            status="success",
-            raw_response={"offers": []},
+            raw_results={"offers": []},
+            connection_id="test-conn",
             share_token="invalid-token",
             address_data=sample_address.__dict__
         )
@@ -273,10 +270,9 @@ class TestFullSearchFlow:
         for i, result in enumerate(search_results):
             task = infra['use_cases']['process_results'].execute(
                 request_id=result['request_id'],
-                connection_id=connection_ids[i],
                 provider_name="TestProvider1",
-                status="success",
-                raw_response={"offers": [{"product_id": f"TEST-{i}", "speed": 100}]},
+                raw_results={"offers": [{"product_id": f"TEST-{i}", "speed": 100}]},
+                connection_id=connection_ids[i],
                 share_token=result['share_token'],
                 address_data=sample_address.__dict__
             )
@@ -304,10 +300,9 @@ class TestFullSearchFlow:
         # Process results
         await infra['use_cases']['process_results'].execute(
             request_id=search_result['request_id'],
-            connection_id=connection_id,
             provider_name="TestProvider1",
-            status="success",
-            raw_response={"offers": [{"product_id": "TEST-001", "speed": 100}]},
+            raw_results={"offers": [{"product_id": "TEST-001", "speed": 100}]},
+            connection_id=connection_id,
             share_token=search_result['share_token'],
             address_data=sample_address.__dict__
         )

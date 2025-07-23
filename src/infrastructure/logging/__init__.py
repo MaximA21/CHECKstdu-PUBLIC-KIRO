@@ -7,8 +7,7 @@ from .log_configuration import LogConfiguration
 from .log_destinations import ConsoleDestination, CloudWatchDestination, FileDestination
 from .logger_factory import LoggerFactory, create_logger, create_lambda_logger
 
-# Legacy logging configuration for backward compatibility
-from . import legacy_logging_config
+# Legacy logging configuration removed - use logger_factory instead
 
 __all__ = [
     'ConsoleLogger',

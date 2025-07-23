@@ -10,7 +10,7 @@ from ...application.interfaces.messaging import IMessageQueue, IWorkflowOrchestr
 from ...application.interfaces.connections import IConnectionManager
 from ...application.interfaces.logging import ILogger, ILoggerFactory
 from ...application.interfaces.providers import IProviderService
-from ...application.interfaces.storage import IStorageService
+# Legacy IStorageService removed - using repository pattern instead
 
 
 T = TypeVar('T')
@@ -138,14 +138,7 @@ class AWSServiceFactory(ServiceFactory):
         container.register_singleton(ProviderRegistry, ProviderRegistry)
         container.register_singleton(IConnectionManager, AWSWebSocketConnectionManager)
     
-    def _register_legacy_storage_service(self, container: DIContainer, config: AppConfig) -> None:
-        """Register legacy storage service for backward compatibility."""
-        if config.database.provider == DatabaseProvider.AWS_DYNAMODB:
-            from ...infrastructure.persistence.legacy_aws_storage import AWSDynamoDBService
-            container.register_singleton(IStorageService, AWSDynamoDBService)
-        else:
-            from ...infrastructure.persistence.legacy_mock_storage import MockStorageService
-            container.register_singleton(IStorageService, MockStorageService)
+    # Legacy storage service registration removed - using repository pattern instead
 
 
 class MockServiceFactory(ServiceFactory):
@@ -167,7 +160,7 @@ class MockServiceFactory(ServiceFactory):
             self._register_mock_messaging(container, config)
             self._register_mock_logging(container, config)
             self._register_mock_providers(container, config)
-            self._register_mock_legacy_storage(container, config)
+            # Legacy storage registration removed - using repository pattern
         
         return container
     
@@ -188,8 +181,7 @@ class MockServiceFactory(ServiceFactory):
         # Register provider services
         self._register_mock_providers(container, config)
         
-        # Register legacy storage service for backward compatibility
-        self._register_mock_legacy_storage(container, config)
+        # Legacy storage service registration removed - using repository pattern
     
     def _register_mock_repositories(self, container: DIContainer, config: AppConfig) -> None:
         """Register mock repository implementations."""
@@ -219,10 +211,7 @@ class MockServiceFactory(ServiceFactory):
         
         container.register_singleton(MockProviderRegistry, MockProviderRegistry)
     
-    def _register_mock_legacy_storage(self, container: DIContainer, config: AppConfig) -> None:
-        """Register mock legacy storage service for backward compatibility."""
-        from ...infrastructure.persistence.legacy_mock_storage import MockStorageService
-        container.register_singleton(IStorageService, MockStorageService)
+    # Legacy mock storage service registration removed - using repository pattern instead
 
 
 class ContainerServiceFactory(ServiceFactory):

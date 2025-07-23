@@ -1,0 +1,167 @@
+name: Code Quality and Security
+
+on:
+  push:
+    branches: [ kiro-rewrite ]
+  pull_request:
+    branches: [ kiro-rewrite ]
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.9, 3.10, 3.11]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install flake8 black isort mypy bandit safety pip-audit pytest-cov
+
+    - name: Code formatting check with Black
+      run: |
+        black --check --diff src/ tests/ lambda_functions/ examples/
+
+    - name: Import sorting check with isort
+      run: |
+        isort --check-only --diff src/ tests/ lambda_functions/ examples/
+
+    - name: Linting with flake8
+      run: |
+        # Stop the build if there are Python syntax errors or undefined names
+        flake8 src/ tests/ lambda_functions/ examples/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Exit-zero treats all errors as warnings. GitHub editor is 127 chars wide
+        flake8 src/ tests/ lambda_functions/ examples/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Type checking with mypy
+      run: |
+        mypy src/ --ignore-missing-imports --no-strict-optional
+      continue-on-error: true  # Allow type checking to fail without stopping the workflow
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: code-quality
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install bandit safety pip-audit
+
+    - name: Security scanning with Bandit
+      run: |
+        bandit -r src/ lambda_functions/ -f json -o bandit-report.json || true
+        bandit -r src/ lambda_functions/ -f txt
+
+    - name: Dependency vulnerability check with Safety
+      run: |
+        safety check --json --output safety-report.json || true
+        safety check
+
+    - name: Dependency audit with pip-audit
+      run: |
+        pip-audit --format=json --output=pip-audit-report.json || true
+        pip-audit
+
+    - name: Upload security reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: security-reports-${{ github.sha }}
+        path: |
+          bandit-report.json
+          safety-report.json
+          pip-audit-report.json
+
+  test-coverage:
+    runs-on: ubuntu-latest
+    needs: code-quality
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest-cov
+
+    - name: Run tests with coverage
+      run: |
+        pytest tests/ --cov=src --cov-report=xml --cov-report=html --cov-report=term-missing --cov-fail-under=80
+
+    - name: Upload coverage reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: coverage-reports-${{ github.sha }}
+        path: |
+          coverage.xml
+          htmlcov/
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      if: always()
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  quality-gate:
+    runs-on: ubuntu-latest
+    needs: [code-quality, security-scan, test-coverage]
+    if: always()
+
+    steps:
+    - name: Check job results
+      run: |
+        echo "Code Quality: ${{ needs.code-quality.result }}"
+        echo "Security Scan: ${{ needs.security-scan.result }}"
+        echo "Test Coverage: ${{ needs.test-coverage.result }}"
+        
+        if [[ "${{ needs.code-quality.result }}" != "success" ]]; then
+          echo "❌ Code quality checks failed"
+          exit 1
+        fi
+        
+        if [[ "${{ needs.security-scan.result }}" != "success" ]]; then
+          echo "⚠️ Security scan completed with warnings - check artifacts"
+        fi
+        
+        if [[ "${{ needs.test-coverage.result }}" != "success" ]]; then
+          echo "❌ Test coverage requirements not met"
+          exit 1
+        fi
+        
+        echo "✅ All quality gates passed"

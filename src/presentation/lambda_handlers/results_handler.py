@@ -37,11 +37,21 @@ class ResultsHandler(HTTPController):
             if not all([request_id, provider_name, raw_results]):
                 return self._create_error_response(400, "request_id, provider_name, and results are required")
             
+            # Extract optional fields
+            connection_id = request_body.get("connection_id")
+            share_token = request_body.get("share_token")
+            address_data = request_body.get("address_data")
+            metadata = request_body.get("metadata")
+            
             # Execute processing use case
             result = await self._process_results_use_case.execute(
                 request_id=request_id,
                 provider_name=provider_name,
-                raw_results=raw_results
+                raw_results=raw_results,
+                connection_id=connection_id,
+                share_token=share_token,
+                address_data=address_data,
+                metadata=metadata
             )
             
             # Log success
@@ -66,13 +76,21 @@ class ResultsHandler(HTTPController):
 def lambda_handler(event, context):
     """Lambda entry point for results processing."""
     from ...shared.dependency_injection.bootstrap import get_container
+    from ...application.use_cases.connection_management_use_case import ConnectionManagementUseCase
     
     # Get DI container
     container = get_container()
     
+    # Get process results use case and inject connection management
+    process_results_use_case = container.get(ProcessResultsUseCase)
+    connection_management_use_case = container.get(ConnectionManagementUseCase)
+    
+    # Inject connection management use case
+    process_results_use_case._connection_management_use_case = connection_management_use_case
+    
     # Create handler with dependencies
     handler = ResultsHandler(
-        process_results_use_case=container.get(ProcessResultsUseCase),
+        process_results_use_case=process_results_use_case,
         logger=container.get_logger("results_handler")
     )
     

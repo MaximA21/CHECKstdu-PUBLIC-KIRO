@@ -16,7 +16,7 @@ src_dir = os.path.join(root_dir, 'src')
 sys.path.insert(0, root_dir)
 sys.path.insert(0, src_dir)
 
-from src.infrastructure.logging.legacy_logging_config import get_lambda_logger, safe_json_log, log_with_context
+from src.infrastructure.logging.logger_factory import LoggerFactory
 import logging
 
 

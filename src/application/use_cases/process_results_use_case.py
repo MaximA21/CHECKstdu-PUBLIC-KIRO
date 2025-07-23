@@ -2,8 +2,11 @@
 
 import time
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, TYPE_CHECKING
 from decimal import Decimal
+
+if TYPE_CHECKING:
+    from .connection_management_use_case import ConnectionManagementUseCase
 
 from ..interfaces.repositories import ISearchResultRepository
 from ..interfaces.connections import IConnectionManager
@@ -23,21 +26,22 @@ class ProcessResultsUseCase:
         search_result_repository: ISearchResultRepository,
         connection_manager: IConnectionManager,
         provider_registry: IProviderRegistry,
-        logger: ILogger
+        logger: ILogger,
+        connection_management_use_case: Optional['ConnectionManagementUseCase'] = None
     ):
         self._search_result_repository = search_result_repository
         self._connection_manager = connection_manager
         self._provider_registry = provider_registry
         self._logger = logger
+        self._connection_management_use_case = connection_management_use_case
     
     async def execute(
         self,
         request_id: str,
-        connection_id: str,
         provider_name: str,
-        status: str,
-        raw_response: Any,
-        share_token: str,
+        raw_results: Any,
+        connection_id: Optional[str] = None,
+        share_token: Optional[str] = None,
         address_data: Optional[Dict[str, Any]] = None,
         metadata: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
@@ -46,11 +50,10 @@ class ProcessResultsUseCase:
         
         Args:
             request_id: ID of the search request
-            connection_id: WebSocket connection ID for notifications
             provider_name: Name of the provider that returned results
-            status: Status of the provider response ('success' or 'failed')
-            raw_response: Raw response data from the provider
-            share_token: Token for sharing results
+            raw_results: Raw response data from the provider
+            connection_id: Optional WebSocket connection ID for notifications
+            share_token: Optional token for sharing results
             address_data: Optional address data from search request
             metadata: Optional metadata about the processing
             
@@ -66,7 +69,6 @@ class ProcessResultsUseCase:
             self._logger.info("Starting process results use case", {
                 "request_id": request_id,
                 "provider_name": provider_name,
-                "status": status,
                 "connection_id": connection_id
             })
             
@@ -75,24 +77,46 @@ class ProcessResultsUseCase:
                 request_id, share_token, address_data
             )
             
-            if status == "success":
-                # Process successful provider response
-                processing_result = await self._process_successful_response(
-                    search_result, provider_name, raw_response, metadata or {}
-                )
-            else:
-                # Process failed provider response
-                processing_result = await self._process_failed_response(
-                    search_result, provider_name, raw_response, metadata or {}
-                )
+            # Process provider response (assuming success for now)
+            processing_result = await self._process_successful_response(
+                search_result, provider_name, raw_results, metadata or {}
+            )
             
             # Update search result in repository
             await self._search_result_repository.update_result(search_result)
             
-            # Send notification to WebSocket connection
-            await self._notify_connection(
-                connection_id, request_id, provider_name, processing_result
-            )
+            # Handle connection limit checking and notification
+            connection_limit_result = None
+            if connection_id and self._connection_management_use_case:
+                try:
+                    # Increment result count and check limits
+                    connection_limit_result = await self._connection_management_use_case.increment_result_count_and_check_limits(
+                        connection_id
+                    )
+                    
+                    self._logger.info("Connection limit check completed", {
+                        "connection_id": connection_id,
+                        "result_count": connection_limit_result.get("result_count", 0),
+                        "should_disconnect": connection_limit_result.get("should_disconnect", False),
+                        "disconnect_reason": connection_limit_result.get("disconnect_reason")
+                    })
+                    
+                except Exception as e:
+                    self._logger.warning("Failed to check connection limits", {
+                        "connection_id": connection_id,
+                        "error": str(e)
+                    })
+            
+            # Send notification to WebSocket connection if still active
+            if connection_id and (not connection_limit_result or not connection_limit_result.get("should_disconnect", False)):
+                await self._notify_connection(
+                    connection_id, request_id, provider_name, processing_result
+                )
+            elif connection_id and connection_limit_result and connection_limit_result.get("should_disconnect", False):
+                # Send final notification before disconnection
+                await self._notify_connection_with_disconnect_info(
+                    connection_id, request_id, provider_name, processing_result, connection_limit_result
+                )
             
             processing_time = (time.time() - start_time) * 1000
             
@@ -100,10 +124,11 @@ class ProcessResultsUseCase:
                 "request_id": request_id,
                 "provider_name": provider_name,
                 "processing_time_ms": round(processing_time, 1),
-                "offers_processed": processing_result.get("offers_count", 0)
+                "offers_processed": processing_result.get("offers_count", 0),
+                "connection_disconnected": connection_limit_result.get("should_disconnect", False) if connection_limit_result else False
             })
             
-            return {
+            result = {
                 "request_id": request_id,
                 "provider_name": provider_name,
                 "status": "processed",
@@ -111,6 +136,16 @@ class ProcessResultsUseCase:
                 "offers_count": processing_result.get("offers_count", 0),
                 "share_token": search_result.share_token
             }
+            
+            # Add connection limit information if available
+            if connection_limit_result:
+                result["connection_limit_info"] = {
+                    "result_count": connection_limit_result.get("result_count", 0),
+                    "should_disconnect": connection_limit_result.get("should_disconnect", False),
+                    "disconnect_reason": connection_limit_result.get("disconnect_reason")
+                }
+            
+            return result
             
         except Exception as e:
             processing_time = (time.time() - start_time) * 1000
@@ -347,3 +382,48 @@ class ProcessResultsUseCase:
         }
         
         await self._connection_manager.send_to_connection(connection_id, message)
+    
+    async def _notify_connection_with_disconnect_info(
+        self,
+        connection_id: str,
+        request_id: str,
+        provider_name: str,
+        processing_result: Dict[str, Any],
+        connection_limit_result: Dict[str, Any]
+    ) -> None:
+        """Send processing result notification with disconnect information to WebSocket connection."""
+        message = {
+            "type": "PROVIDER_RESULT",
+            "request_id": request_id,
+            "provider": provider_name,
+            "status": processing_result["status"],
+            "offers": processing_result.get("offers_data", []),
+            "total_offers": processing_result.get("offers_count", 0),
+            "timestamp": datetime.utcnow().isoformat(),
+            "metadata": processing_result.get("metadata", {}),
+            "connection_info": {
+                "will_disconnect": True,
+                "disconnect_reason": connection_limit_result.get("disconnect_reason", "Limit reached"),
+                "result_count": connection_limit_result.get("result_count", 0),
+                "max_results": connection_limit_result.get("max_results", 5)
+            }
+        }
+        
+        if processing_result["status"] == "failed":
+            message["error"] = processing_result.get("error", "Unknown error")
+        
+        success = await self._connection_manager.send_to_connection(connection_id, message)
+        
+        if success:
+            self._logger.debug("Final notification sent to connection before disconnect", {
+                "connection_id": connection_id,
+                "request_id": request_id,
+                "provider_name": provider_name,
+                "disconnect_reason": connection_limit_result.get("disconnect_reason")
+            })
+        else:
+            self._logger.warning("Failed to send final notification to connection", {
+                "connection_id": connection_id,
+                "request_id": request_id,
+                "provider_name": provider_name
+            })

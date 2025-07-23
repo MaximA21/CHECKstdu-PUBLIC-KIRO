@@ -1,7 +1,7 @@
 #!/bin/bash
 
-echo "🚀 SPLIT LAYERS Strategy - Multiple Optimized Layers"
-echo "===================================================="
+echo "🚀 Enhanced Lambda Layers for New DI Architecture"
+echo "================================================="
 
 # Configuration
 PYTHON_VERSION="3.9"
@@ -19,7 +19,7 @@ mkdir -p lambda_packages
 # Clean up any existing build artifacts
 echo -e "${YELLOW}🧹 Cleaning up previous build artifacts...${NC}"
 rm -rf lambda_layers/
-rm -f lambda_packages/*_layer.zip
+rm -f lambda_packages/*_layer*.zip
 
 echo -e "${BLUE}🎯 Creating Layer 1: Ultra-Fast JSON (orjson)${NC}"
 

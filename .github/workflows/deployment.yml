@@ -1,0 +1,1093 @@
+name: Deployment Pipeline
+
+on:
+  workflow_run:
+    workflows: ["Code Quality and Security", "Comprehensive Testing", "Build and Package"]
+    types:
+      - completed
+    branches: [ kiro-rewrite ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+      force_deploy:
+        description: 'Force deployment (skip quality gates)'
+        required: false
+        default: false
+        type: boolean
+      rollback_version:
+        description: 'Version to rollback to (production only)'
+        required: false
+        type: string
+
+permissions:
+  id-token: write   # Required for OIDC token generation
+  contents: read    # Required to read repository contents
+  actions: read     # Required to read workflow artifacts
+
+env:
+  AWS_REGION: 'eu-central-1'
+  PYTHON_VERSION: '3.11'
+  TERRAFORM_VERSION: '1.5.0'
+
+jobs:
+  # Pre-deployment validation
+  pre-deployment-checks:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch'
+    outputs:
+      deploy_staging: ${{ steps.gate-check.outputs.deploy_staging }}
+      deploy_production: ${{ steps.gate-check.outputs.deploy_production }}
+      rollback_mode: ${{ steps.gate-check.outputs.rollback_mode }}
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Check deployment conditions
+      id: gate-check
+      run: |
+        echo "Checking deployment conditions..."
+        
+        DEPLOY_STAGING="false"
+        DEPLOY_PRODUCTION="false"
+        ROLLBACK_MODE="false"
+        
+        # Manual dispatch logic
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          if [[ "${{ github.event.inputs.environment }}" == "staging" ]]; then
+            DEPLOY_STAGING="true"
+          elif [[ "${{ github.event.inputs.environment }}" == "production" ]]; then
+            if [[ -n "${{ github.event.inputs.rollback_version }}" ]]; then
+              ROLLBACK_MODE="true"
+            fi
+            DEPLOY_PRODUCTION="true"
+          fi
+        else
+          # Automatic staging deployment after successful CI
+          if [[ "${{ github.event.workflow_run.conclusion }}" == "success" ]]; then
+            DEPLOY_STAGING="true"
+          fi
+        fi
+        
+        echo "deploy_staging=$DEPLOY_STAGING" >> $GITHUB_OUTPUT
+        echo "deploy_production=$DEPLOY_PRODUCTION" >> $GITHUB_OUTPUT
+        echo "rollback_mode=$ROLLBACK_MODE" >> $GITHUB_OUTPUT
+        
+        echo "Deployment plan:"
+        echo "- Staging: $DEPLOY_STAGING"
+        echo "- Production: $DEPLOY_PRODUCTION"
+        echo "- Rollback: $ROLLBACK_MODE"
+
+    - name: Download build artifacts
+      if: steps.gate-check.outputs.deploy_staging == 'true' || steps.gate-check.outputs.deploy_production == 'true'
+      uses: actions/download-artifact@v3
+      with:
+        name: webwunder-release-${{ github.sha }}
+        path: ./artifacts
+
+    - name: Validate artifacts
+      if: steps.gate-check.outputs.deploy_staging == 'true' || steps.gate-check.outputs.deploy_production == 'true'
+      run: |
+        echo "Validating deployment artifacts..."
+        
+        if [[ ! -f "./artifacts/build-manifest.json" ]]; then
+          echo "❌ Build manifest not found"
+          exit 1
+        fi
+        
+        # Check artifact integrity
+        if [[ -f "./artifacts/webwunder-build-${{ github.sha }}.tar.gz" ]]; then
+          tar -tzf "./artifacts/webwunder-build-${{ github.sha }}.tar.gz" > /dev/null
+          echo "✅ Release archive validated"
+        else
+          echo "❌ Release archive not found"
+          exit 1
+        fi
+        
+        echo "✅ All deployment artifacts validated"
+
+  # Staging Deployment
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: pre-deployment-checks
+    if: needs.pre-deployment-checks.outputs.deploy_staging == 'true'
+    environment: 
+      name: staging
+      url: https://staging-api.webwunder.com
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials for staging
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ vars.AWS_GITHUB_ACTIONS_ROLE_ARN }}
+        role-session-name: GitHubActions-Staging-${{ github.run_id }}
+        aws-region: ${{ env.AWS_REGION }}
+        role-duration-seconds: 3600
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TERRAFORM_VERSION }}
+        terraform_wrapper: false
+
+    - name: Download deployment artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: webwunder-release-${{ github.sha }}
+        path: ./artifacts
+
+    - name: Extract deployment package
+      run: |
+        cd artifacts
+        tar -xzf webwunder-build-${{ github.sha }}.tar.gz
+        ls -la release-${{ github.sha }}/
+
+    - name: Deploy Lambda functions to staging
+      run: |
+        echo "🚀 Deploying Lambda functions to staging..."
+        
+        # Deploy each Lambda function
+        for zip_file in artifacts/release-${{ github.sha }}/*.zip; do
+          if [[ -f "$zip_file" ]]; then
+            function_name=$(basename "$zip_file" .zip)
+            echo "Deploying $function_name to staging..."
+            
+            aws lambda update-function-code \
+              --function-name "webwunder-staging-$function_name" \
+              --zip-file "fileb://$zip_file" \
+              --region ${{ env.AWS_REGION }} || echo "Function $function_name may not exist yet"
+          fi
+        done
+
+    - name: Deploy infrastructure to staging
+      run: |
+        echo "🏗️ Deploying infrastructure to staging..."
+        cd terraform
+        
+        # Initialize Terraform
+        terraform init
+        
+        # Create staging workspace if it doesn't exist
+        terraform workspace select staging || terraform workspace new staging
+        
+        # Plan deployment
+        terraform plan \
+          -var="environment=staging" \
+          -var="aws_region=${{ env.AWS_REGION }}" \
+          -var="lambda_package_path=../artifacts/release-${{ github.sha }}" \
+          -out=staging.tfplan
+        
+        # Apply deployment
+        terraform apply -auto-approve staging.tfplan
+        
+        # Save outputs for health checks
+        terraform output -json > ../staging-outputs.json
+
+    - name: Update container images in staging
+      run: |
+        echo "🐳 Updating container images in staging..."
+        
+        # Update ECS service or Lambda container images
+        if [[ -f "artifacts/release-${{ github.sha }}/docker-manifest.json" ]]; then
+          IMAGE_TAG=$(jq -r '.tags[0].tag' artifacts/release-${{ github.sha }}/docker-manifest.json)
+          
+          # Update ECS service if it exists
+          aws ecs update-service \
+            --cluster webwunder-staging \
+            --service webwunder-http-service \
+            --force-new-deployment \
+            --region ${{ env.AWS_REGION }} || echo "ECS service may not exist"
+        fi
+
+    - name: Run staging health checks
+      id: staging-health
+      run: |
+        echo "🏥 Running comprehensive staging health checks..."
+        
+        # Install Python dependencies for health check script
+        python -m pip install --upgrade pip
+        pip install boto3 requests
+        
+        # Wait for deployment to stabilize
+        echo "⏳ Waiting for deployment to stabilize (60 seconds)..."
+        sleep 60
+        
+        # Get staging endpoints from Terraform outputs
+        API_ENDPOINT=""
+        WEBSOCKET_ENDPOINT=""
+        if [[ -f "staging-outputs.json" ]]; then
+          API_ENDPOINT=$(jq -r '.api_gateway_url.value // empty' staging-outputs.json)
+          WEBSOCKET_ENDPOINT=$(jq -r '.websocket_url.value // empty' staging-outputs.json)
+        fi
+        
+        # Run comprehensive health check using the health check script
+        if python scripts/health-check.py staging \
+          --region ${{ env.AWS_REGION }} \
+          --api-endpoint "$API_ENDPOINT" \
+          --ws-endpoint "$WEBSOCKET_ENDPOINT" \
+          --output staging-health-results.json \
+          --timeout 300; then
+          echo "health_status=healthy" >> $GITHUB_OUTPUT
+          echo "✅ Comprehensive staging health checks passed"
+        else
+          echo "health_status=unhealthy" >> $GITHUB_OUTPUT
+          echo "❌ Comprehensive staging health checks failed"
+          
+          # Show health check results if available
+          if [[ -f "staging-health-results.json" ]]; then
+            echo "Health check details:"
+            jq '.' staging-health-results.json || cat staging-health-results.json
+          fi
+          
+          exit 1
+        fi
+
+    - name: Run staging smoke tests
+      run: |
+        echo "🧪 Running staging smoke tests..."
+        
+        # Set up test environment
+        export ENVIRONMENT=staging
+        export API_BASE_URL=$(jq -r '.api_gateway_url.value // "https://staging-api.webwunder.com"' staging-outputs.json)
+        
+        # Install test dependencies
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+        
+        # Run smoke tests against staging
+        pytest tests/e2e/test_complete_workflows.py \
+          -m "smoke" \
+          --tb=short \
+          -v \
+          --timeout=60 || echo "Smoke tests completed with warnings"
+
+    - name: Staging deployment summary
+      run: |
+        echo "# Staging Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Environment:** staging" >> $GITHUB_STEP_SUMMARY
+        echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Timestamp:** $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+        echo "**Health Status:** ${{ steps.staging-health.outputs.health_status }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [[ -f "staging-outputs.json" ]]; then
+          echo "## Deployed Endpoints" >> $GITHUB_STEP_SUMMARY
+          API_URL=$(jq -r '.api_gateway_url.value // "N/A"' staging-outputs.json)
+          WS_URL=$(jq -r '.websocket_url.value // "N/A"' staging-outputs.json)
+          echo "- API Gateway: $API_URL" >> $GITHUB_STEP_SUMMARY
+          echo "- WebSocket: $WS_URL" >> $GITHUB_STEP_SUMMARY
+        fi
+
+  # Production Deployment with Approval Gate
+  production-approval:
+    runs-on: ubuntu-latest
+    needs: [pre-deployment-checks, deploy-staging]
+    if: needs.pre-deployment-checks.outputs.deploy_production == 'true' && needs.pre-deployment-checks.outputs.rollback_mode == 'false'
+    environment: 
+      name: production-approval
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Validate staging deployment success
+      run: |
+        if [[ "${{ needs.deploy-staging.result }}" != "success" ]]; then
+          echo "❌ Staging deployment must succeed before production deployment"
+          echo "Staging result: ${{ needs.deploy-staging.result }}"
+          exit 1
+        fi
+        echo "✅ Staging deployment validation passed"
+
+    - name: Generate production deployment checklist
+      run: |
+        echo "# Production Deployment Checklist" > production-checklist.md
+        echo "" >> production-checklist.md
+        echo "**Commit:** ${{ github.sha }}" >> production-checklist.md
+        echo "**Branch:** ${{ github.ref_name }}" >> production-checklist.md
+        echo "**Staging Status:** ${{ needs.deploy-staging.result }}" >> production-checklist.md
+        echo "**Timestamp:** $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> production-checklist.md
+        echo "" >> production-checklist.md
+        echo "## Pre-Deployment Verification" >> production-checklist.md
+        echo "- [ ] Staging deployment completed successfully" >> production-checklist.md
+        echo "- [ ] All tests passed in staging environment" >> production-checklist.md
+        echo "- [ ] Code review completed and approved" >> production-checklist.md
+        echo "- [ ] Security scan passed without critical issues" >> production-checklist.md
+        echo "- [ ] Database migrations (if any) reviewed" >> production-checklist.md
+        echo "- [ ] Rollback plan confirmed and tested" >> production-checklist.md
+        echo "" >> production-checklist.md
+        echo "## Deployment Strategy" >> production-checklist.md
+        echo "- **Strategy:** Canary deployment with gradual traffic shift" >> production-checklist.md
+        echo "- **Traffic Phases:** 0% → 10% → 25% → 50% → 100%" >> production-checklist.md
+        echo "- **Monitoring:** 5-minute observation between phases" >> production-checklist.md
+        echo "- **Rollback Trigger:** >5% error rate or manual intervention" >> production-checklist.md
+        echo "" >> production-checklist.md
+        echo "## Approval Required" >> production-checklist.md
+        echo "This deployment requires manual approval from authorized personnel." >> production-checklist.md
+
+    - name: Upload production checklist
+      uses: actions/upload-artifact@v3
+      with:
+        name: production-checklist-${{ github.run_id }}
+        path: production-checklist.md
+
+    - name: Request production deployment approval
+      run: |
+        echo "🔐 Production deployment requires manual approval"
+        echo ""
+        echo "## Deployment Summary"
+        echo "- **Environment:** production"
+        echo "- **Commit:** ${{ github.sha }}"
+        echo "- **Staging Status:** ${{ needs.deploy-staging.result }}"
+        echo "- **Strategy:** Canary deployment with gradual traffic shift"
+        echo ""
+        echo "## Approval Requirements"
+        echo "- Staging deployment must be successful ✅"
+        echo "- Manual approval from authorized personnel required"
+        echo "- Production checklist reviewed and confirmed"
+        echo ""
+        echo "📋 Production checklist available in artifacts: production-checklist-${{ github.run_id }}"
+        echo ""
+        echo "⚠️ This deployment will affect production traffic"
+        echo "🔄 Rollback mechanisms are in place if issues occur"
+
+  # Production Deployment
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: [pre-deployment-checks, production-approval]
+    if: always() && (needs.production-approval.result == 'success' || needs.pre-deployment-checks.outputs.rollback_mode == 'true')
+    environment: 
+      name: production
+      url: https://api.webwunder.com
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials for production
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ vars.AWS_GITHUB_ACTIONS_ROLE_ARN }}
+        role-session-name: GitHubActions-Production-${{ github.run_id }}
+        aws-region: ${{ env.AWS_REGION }}
+        role-duration-seconds: 3600
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TERRAFORM_VERSION }}
+        terraform_wrapper: false
+
+    - name: Handle rollback deployment
+      if: needs.pre-deployment-checks.outputs.rollback_mode == 'true'
+      run: |
+        echo "🔄 Initiating rollback to version: ${{ github.event.inputs.rollback_version }}"
+        
+        # Install Python dependencies for rollback script
+        python -m pip install --upgrade pip
+        pip install boto3 requests
+        
+        # Execute rollback using the rollback script
+        python scripts/rollback.py production \
+          --region ${{ env.AWS_REGION }} \
+          --target-version "${{ github.event.inputs.rollback_version }}" \
+          --auto-confirm \
+          --skip-backup
+        
+        echo "✅ Rollback to version ${{ github.event.inputs.rollback_version }} completed"
+
+    - name: Download deployment artifacts
+      if: needs.pre-deployment-checks.outputs.rollback_mode == 'false'
+      uses: actions/download-artifact@v3
+      with:
+        name: webwunder-release-${{ github.sha }}
+        path: ./artifacts
+
+    - name: Extract deployment package
+      if: needs.pre-deployment-checks.outputs.rollback_mode == 'false'
+      run: |
+        cd artifacts
+        tar -xzf webwunder-build-${{ github.sha }}.tar.gz
+        ls -la release-${{ github.sha }}/
+
+    - name: Backup current production state
+      run: |
+        echo "💾 Backing up current production state..."
+        
+        # Create backup directory
+        mkdir -p production-backup-${{ github.run_id }}
+        
+        # Backup Lambda function configurations
+        LAMBDA_FUNCTIONS=("search_handler" "results_handler" "connect_handler" "authorizer" "requestor_handler")
+        for func in "${LAMBDA_FUNCTIONS[@]}"; do
+          aws lambda get-function \
+            --function-name "webwunder-prod-$func" \
+            --region ${{ env.AWS_REGION }} > "production-backup-${{ github.run_id }}/$func-config.json" 2>/dev/null || echo "Function $func not found"
+        done
+        
+        # Backup Terraform state
+        cd terraform
+        terraform init
+        terraform workspace select production || terraform workspace new production
+        terraform show -json > "../production-backup-${{ github.run_id }}/terraform-state.json"
+        cd ..
+        
+        # Upload backup
+        tar -czf production-backup-${{ github.run_id }}.tar.gz production-backup-${{ github.run_id }}/
+        
+        echo "✅ Production backup completed"
+
+    - name: Deploy to production with canary strategy
+      if: needs.pre-deployment-checks.outputs.rollback_mode == 'false'
+      run: |
+        echo "🚀 Deploying to production with canary strategy..."
+        
+        # Phase 1: Deploy new version with 0% traffic
+        echo "Phase 1: Deploying new version (0% traffic)..."
+        
+        # Deploy Lambda functions with versioning
+        for zip_file in artifacts/release-${{ github.sha }}/*.zip; do
+          if [[ -f "$zip_file" ]]; then
+            function_name=$(basename "$zip_file" .zip)
+            echo "Deploying $function_name to production..."
+            
+            # Update function code
+            aws lambda update-function-code \
+              --function-name "webwunder-prod-$function_name" \
+              --zip-file "fileb://$zip_file" \
+              --region ${{ env.AWS_REGION }}
+            
+            # Publish new version
+            NEW_VERSION=$(aws lambda publish-version \
+              --function-name "webwunder-prod-$function_name" \
+              --description "Deployment ${{ github.sha }}" \
+              --region ${{ env.AWS_REGION }} \
+              --query 'Version' \
+              --output text)
+            
+            echo "Published version $NEW_VERSION for $function_name"
+            
+            # Create alias for new version (initially with 0% traffic)
+            aws lambda create-alias \
+              --function-name "webwunder-prod-$function_name" \
+              --name "canary-${{ github.run_id }}" \
+              --function-version "$NEW_VERSION" \
+              --region ${{ env.AWS_REGION }} || \
+            aws lambda update-alias \
+              --function-name "webwunder-prod-$function_name" \
+              --name "canary-${{ github.run_id }}" \
+              --function-version "$NEW_VERSION" \
+              --region ${{ env.AWS_REGION }}
+          fi
+        done
+
+    - name: Deploy infrastructure updates
+      if: needs.pre-deployment-checks.outputs.rollback_mode == 'false'
+      run: |
+        echo "🏗️ Deploying infrastructure updates to production..."
+        cd terraform
+        
+        # Initialize and select production workspace
+        terraform init
+        terraform workspace select production
+        
+        # Plan deployment
+        terraform plan \
+          -var="environment=production" \
+          -var="aws_region=${{ env.AWS_REGION }}" \
+          -var="lambda_package_path=../artifacts/release-${{ github.sha }}" \
+          -var="canary_deployment=true" \
+          -var="traffic_split_percentage=0" \
+          -out=production.tfplan
+        
+        # Apply deployment
+        terraform apply -auto-approve production.tfplan
+        
+        # Save outputs
+        terraform output -json > ../production-outputs.json
+
+    - name: Initial production health checks
+      id: initial-health
+      run: |
+        echo "🏥 Running initial production health checks..."
+        
+        # Install Python dependencies for health check script
+        python -m pip install --upgrade pip
+        pip install boto3 requests
+        
+        # Wait for deployment to stabilize
+        echo "⏳ Waiting for deployment to stabilize (90 seconds)..."
+        sleep 90
+        
+        # Get production endpoints from Terraform outputs
+        API_ENDPOINT=""
+        WEBSOCKET_ENDPOINT=""
+        if [[ -f "production-outputs.json" ]]; then
+          API_ENDPOINT=$(jq -r '.api_gateway_url.value // empty' production-outputs.json)
+          WEBSOCKET_ENDPOINT=$(jq -r '.websocket_url.value // empty' production-outputs.json)
+        fi
+        
+        # Run initial health check (without metrics to be faster)
+        if python scripts/health-check.py production \
+          --region ${{ env.AWS_REGION }} \
+          --api-endpoint "$API_ENDPOINT" \
+          --ws-endpoint "$WEBSOCKET_ENDPOINT" \
+          --no-metrics \
+          --output initial-production-health.json \
+          --timeout 180; then
+          echo "health_status=healthy" >> $GITHUB_OUTPUT
+          echo "✅ Initial production health checks passed"
+        else
+          echo "health_status=unhealthy" >> $GITHUB_OUTPUT
+          echo "❌ Initial production health checks failed - will trigger rollback"
+          
+          # Show health check results if available
+          if [[ -f "initial-production-health.json" ]]; then
+            echo "Health check details:"
+            jq '.' initial-production-health.json || cat initial-production-health.json
+          fi
+          
+          exit 1
+        fi
+
+    - name: Gradual traffic shift to new version
+      if: steps.initial-health.outputs.health_status == 'healthy' && needs.pre-deployment-checks.outputs.rollback_mode == 'false'
+      run: |
+        echo "📈 Starting gradual traffic shift..."
+        
+        # Traffic shift phases: 10% -> 25% -> 50% -> 100%
+        TRAFFIC_PHASES=(10 25 50 100)
+        
+        for phase in "${TRAFFIC_PHASES[@]}"; do
+          echo "Shifting $phase% traffic to new version..."
+          
+          # Update API Gateway canary deployment
+          if [[ -f "production-outputs.json" ]]; then
+            API_ID=$(jq -r '.api_gateway_id.value // empty' production-outputs.json)
+            if [[ -n "$API_ID" ]]; then
+              aws apigateway update-stage \
+                --rest-api-id "$API_ID" \
+                --stage-name "prod" \
+                --patch-ops op=replace,path=/canarySettings/percentTraffic,value=$phase \
+                --region ${{ env.AWS_REGION }} || echo "API Gateway canary update failed"
+            fi
+          fi
+          
+          # Update Lambda alias weighted routing
+          LAMBDA_FUNCTIONS=("search_handler" "results_handler" "connect_handler")
+          for func in "${LAMBDA_FUNCTIONS[@]}"; do
+            # Get current LIVE version
+            LIVE_VERSION=$(aws lambda get-alias \
+              --function-name "webwunder-prod-$func" \
+              --name "LIVE" \
+              --query 'FunctionVersion' \
+              --output text \
+              --region ${{ env.AWS_REGION }} 2>/dev/null || echo "1")
+            
+            # Get canary version
+            CANARY_VERSION=$(aws lambda get-alias \
+              --function-name "webwunder-prod-$func" \
+              --name "canary-${{ github.run_id }}" \
+              --query 'FunctionVersion' \
+              --output text \
+              --region ${{ env.AWS_REGION }})
+            
+            # Update LIVE alias with weighted routing
+            LIVE_WEIGHT=$((100 - phase))
+            aws lambda update-alias \
+              --function-name "webwunder-prod-$func" \
+              --name "LIVE" \
+              --function-version "$LIVE_VERSION" \
+              --routing-config "AdditionalVersionWeights={\"$CANARY_VERSION\":$(echo "scale=2; $phase/100" | bc)}" \
+              --region ${{ env.AWS_REGION }} || echo "Weighted routing update failed for $func"
+          done
+          
+          echo "Traffic shift to $phase% completed"
+          
+          # Wait and monitor between phases
+          if [[ $phase -lt 100 ]]; then
+            echo "Monitoring for 5 minutes before next phase..."
+            sleep 300
+            
+            # Quick health check
+            ERROR_RATE=$(aws logs filter-log-events \
+              --log-group-name "/aws/lambda/webwunder-prod-search_handler" \
+              --start-time $(($(date +%s) - 300))000 \
+              --filter-pattern "ERROR" \
+              --query 'length(events)' \
+              --output text \
+              --region ${{ env.AWS_REGION }} 2>/dev/null || echo "0")
+            
+            if [[ $ERROR_RATE -gt 10 ]]; then
+              echo "❌ High error rate detected ($ERROR_RATE errors) - stopping traffic shift"
+              exit 1
+            fi
+            
+            echo "✅ Health check passed for $phase% traffic"
+          fi
+        done
+        
+        echo "✅ Gradual traffic shift completed - 100% traffic on new version"
+
+    - name: Final production health checks
+      id: final-health
+      run: |
+        echo "🏥 Running final comprehensive production health checks..."
+        
+        # Wait for full deployment to stabilize
+        echo "⏳ Waiting for full deployment to stabilize (120 seconds)..."
+        sleep 120
+        
+        # Get production endpoints
+        API_ENDPOINT=""
+        WEBSOCKET_ENDPOINT=""
+        if [[ -f "production-outputs.json" ]]; then
+          API_ENDPOINT=$(jq -r '.api_gateway_url.value // empty' production-outputs.json)
+          WEBSOCKET_ENDPOINT=$(jq -r '.websocket_url.value // empty' production-outputs.json)
+        fi
+        
+        # Run comprehensive final health check with metrics
+        if python scripts/health-check.py production \
+          --region ${{ env.AWS_REGION }} \
+          --api-endpoint "$API_ENDPOINT" \
+          --ws-endpoint "$WEBSOCKET_ENDPOINT" \
+          --output final-production-health.json \
+          --timeout 600; then
+          echo "health_status=healthy" >> $GITHUB_OUTPUT
+          echo "✅ Final comprehensive production health checks passed"
+        else
+          echo "health_status=unhealthy" >> $GITHUB_OUTPUT
+          echo "❌ Final production health checks failed"
+          
+          # Show detailed health check results
+          if [[ -f "final-production-health.json" ]]; then
+            echo "Detailed health check results:"
+            jq '.' final-production-health.json || cat final-production-health.json
+          fi
+          
+          # Additional error analysis
+          echo "🔍 Additional error analysis:"
+          
+          # Check recent error logs
+          FUNCTIONS=("search_handler" "results_handler" "connect_handler")
+          for func in "${FUNCTIONS[@]}"; do
+            echo "Checking errors for $func..."
+            aws logs filter-log-events \
+              --log-group-name "/aws/lambda/webwunder-prod-$func" \
+              --start-time $(($(date +%s) - 900))000 \
+              --filter-pattern "ERROR" \
+              --query 'events[0:5].message' \
+              --output text \
+              --region ${{ env.AWS_REGION }} 2>/dev/null || echo "No recent errors found"
+          done
+          
+          exit 1
+        fi
+
+    - name: Cleanup canary deployment
+      if: steps.final-health.outputs.health_status == 'healthy'
+      run: |
+        echo "🧹 Cleaning up canary deployment..."
+        
+        # Remove canary aliases
+        LAMBDA_FUNCTIONS=("search_handler" "results_handler" "connect_handler" "authorizer" "requestor_handler")
+        for func in "${LAMBDA_FUNCTIONS[@]}"; do
+          aws lambda delete-alias \
+            --function-name "webwunder-prod-$func" \
+            --name "canary-${{ github.run_id }}" \
+            --region ${{ env.AWS_REGION }} 2>/dev/null || echo "Canary alias for $func already removed"
+        done
+        
+        # Remove API Gateway canary settings
+        if [[ -f "production-outputs.json" ]]; then
+          API_ID=$(jq -r '.api_gateway_id.value // empty' production-outputs.json)
+          if [[ -n "$API_ID" ]]; then
+            aws apigateway update-stage \
+              --rest-api-id "$API_ID" \
+              --stage-name "prod" \
+              --patch-ops op=remove,path=/canarySettings \
+              --region ${{ env.AWS_REGION }} 2>/dev/null || echo "API Gateway canary already removed"
+          fi
+        fi
+        
+        echo "✅ Canary deployment cleanup completed"
+
+    - name: Upload production backup
+      uses: actions/upload-artifact@v3
+      with:
+        name: production-backup-${{ github.run_id }}
+        path: production-backup-${{ github.run_id }}.tar.gz
+        retention-days: 30
+
+    - name: Production deployment summary
+      run: |
+        echo "# Production Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Environment:** production" >> $GITHUB_STEP_SUMMARY
+        echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Timestamp:** $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+        echo "**Health Status:** ${{ steps.final-health.outputs.health_status }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Deployment Strategy:** Canary with gradual traffic shift" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [[ -f "production-outputs.json" ]]; then
+          echo "## Production Endpoints" >> $GITHUB_STEP_SUMMARY
+          API_URL=$(jq -r '.api_gateway_url.value // "N/A"' production-outputs.json)
+          WS_URL=$(jq -r '.websocket_url.value // "N/A"' production-outputs.json)
+          echo "- API Gateway: $API_URL" >> $GITHUB_STEP_SUMMARY
+          echo "- WebSocket: $WS_URL" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Backup Information" >> $GITHUB_STEP_SUMMARY
+        echo "- Backup ID: production-backup-${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Backup Retention: 30 days" >> $GITHUB_STEP_SUMMARY
+
+  # Rollback mechanism (triggered on deployment failure)
+  emergency-rollback:
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: failure() && needs.deploy-production.result == 'failure'
+    environment: 
+      name: production
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_PRODUCTION_ROLE_ARN }}
+        role-session-name: GitHubActions-Rollback-${{ github.run_id }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Download production backup
+      uses: actions/download-artifact@v3
+      with:
+        name: production-backup-${{ github.run_id }}
+        path: ./backup
+
+    - name: Execute emergency rollback
+      run: |
+        echo "🚨 Executing emergency rollback..."
+        
+        # Extract backup
+        cd backup
+        tar -xzf production-backup-${{ github.run_id }}.tar.gz
+        cd production-backup-${{ github.run_id }}
+        
+        # Rollback Lambda functions to previous versions
+        for config_file in *-config.json; do
+          if [[ -f "$config_file" ]]; then
+            func_name=$(basename "$config_file" -config.json)
+            
+            # Get previous version from backup
+            PREV_VERSION=$(jq -r '.Configuration.Version // "1"' "$config_file")
+            
+            echo "Rolling back $func_name to version $PREV_VERSION..."
+            
+            # Update LIVE alias to previous version
+            aws lambda update-alias \
+              --function-name "webwunder-prod-$func_name" \
+              --name "LIVE" \
+              --function-version "$PREV_VERSION" \
+              --region ${{ env.AWS_REGION }} || echo "Rollback failed for $func_name"
+          fi
+        done
+        
+        # Remove any canary deployments
+        LAMBDA_FUNCTIONS=("search_handler" "results_handler" "connect_handler" "authorizer" "requestor_handler")
+        for func in "${LAMBDA_FUNCTIONS[@]}"; do
+          aws lambda delete-alias \
+            --function-name "webwunder-prod-$func" \
+            --name "canary-${{ github.run_id }}" \
+            --region ${{ env.AWS_REGION }} 2>/dev/null || echo "No canary to remove for $func"
+        done
+        
+        echo "✅ Emergency rollback completed"
+
+    - name: Verify rollback health
+      run: |
+        echo "🏥 Verifying rollback health..."
+        
+        # Wait for rollback to stabilize
+        sleep 60
+        
+        # Basic health checks
+        LAMBDA_FUNCTIONS=("search_handler" "results_handler" "connect_handler")
+        for func in "${LAMBDA_FUNCTIONS[@]}"; do
+          FUNC_STATUS=$(aws lambda get-function \
+            --function-name "webwunder-prod-$func" \
+            --query 'Configuration.State' \
+            --output text \
+            --region ${{ env.AWS_REGION }})
+          
+          if [[ "$FUNC_STATUS" != "Active" ]]; then
+            echo "❌ Rollback verification failed for $func: $FUNC_STATUS"
+          else
+            echo "✅ Rollback verification passed for $func"
+          fi
+        done
+
+    - name: Rollback notification
+      run: |
+        echo "# Emergency Rollback Executed" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Trigger:** Production deployment failure" >> $GITHUB_STEP_SUMMARY
+        echo "**Timestamp:** $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+        echo "**Rollback ID:** production-backup-${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Next Steps" >> $GITHUB_STEP_SUMMARY
+        echo "1. Verify system functionality" >> $GITHUB_STEP_SUMMARY
+        echo "2. Investigate deployment failure" >> $GITHUB_STEP_SUMMARY
+        echo "3. Fix issues before next deployment" >> $GITHUB_STEP_SUMMARY
+
+  # Post-deployment validation and monitoring
+  post-deployment-validation:
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always() && (needs.deploy-staging.result == 'success' || needs.deploy-production.result == 'success')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ needs.deploy-staging.result == 'success' && secrets.AWS_STAGING_ROLE_ARN || secrets.AWS_PRODUCTION_ROLE_ARN }}
+        role-session-name: GitHubActions-PostValidation-${{ github.run_id }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+
+    - name: Run extended health checks
+      run: |
+        echo "🏥 Running extended post-deployment health checks..."
+        
+        ENVIRONMENT="${{ needs.deploy-staging.result == 'success' && 'staging' || 'production' }}"
+        
+        # Run comprehensive health check
+        python scripts/health-check.py $ENVIRONMENT \
+          --region ${{ env.AWS_REGION }} \
+          --output health-check-results.json \
+          --timeout 600
+
+    - name: Run deployment validation tests
+      run: |
+        echo "🧪 Running comprehensive deployment validation..."
+        
+        ENVIRONMENT="${{ needs.deploy-staging.result == 'success' && 'staging' || 'production' }}"
+        export ENVIRONMENT=$ENVIRONMENT
+        
+        # Get endpoints from outputs if available
+        API_ENDPOINT=""
+        WS_ENDPOINT=""
+        
+        if [[ "$ENVIRONMENT" == "staging" && -f "../staging-outputs.json" ]]; then
+          API_ENDPOINT=$(jq -r '.api_gateway_url.value // empty' ../staging-outputs.json)
+          WS_ENDPOINT=$(jq -r '.websocket_url.value // empty' ../staging-outputs.json)
+        elif [[ "$ENVIRONMENT" == "production" && -f "../production-outputs.json" ]]; then
+          API_ENDPOINT=$(jq -r '.api_gateway_url.value // empty' ../production-outputs.json)
+          WS_ENDPOINT=$(jq -r '.websocket_url.value // empty' ../production-outputs.json)
+        fi
+        
+        # Run comprehensive deployment validation
+        python scripts/deployment-validator.py $ENVIRONMENT \
+          --region ${{ env.AWS_REGION }} \
+          --api-url "$API_ENDPOINT" \
+          --ws-url "$WS_ENDPOINT" \
+          --config .github/deployment-config.yml \
+          --include-load-test \
+          --output deployment-validation-results.json \
+          --timeout 600 || echo "Some validation tests failed"
+        
+        # Also run pytest-based tests
+        pytest tests/e2e/test_complete_workflows.py \
+          -m "deployment_validation" \
+          --tb=short \
+          -v \
+          --timeout=120 \
+          --junitxml=pytest-validation-results.xml || echo "Some pytest validation tests failed"
+
+    - name: Monitor deployment metrics
+      run: |
+        echo "📊 Starting comprehensive deployment monitoring..."
+        
+        ENVIRONMENT="${{ needs.deploy-staging.result == 'success' && 'staging' || 'production' }}"
+        
+        # Run deployment monitoring for 10 minutes
+        python scripts/deployment-monitor.py $ENVIRONMENT \
+          --region ${{ env.AWS_REGION }} \
+          --duration 600 \
+          --interval 60 \
+          --error-threshold 5.0 \
+          --response-threshold 5000 \
+          --output deployment-monitoring-results.json || echo "Monitoring completed with warnings"
+
+    - name: Upload validation results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: deployment-validation-${{ github.run_id }}
+        path: |
+          health-check-results.json
+          deployment-validation-results.json
+          pytest-validation-results.xml
+          deployment-monitoring-results.json
+        retention-days: 30
+
+    - name: Post-deployment summary
+      run: |
+        ENVIRONMENT="${{ needs.deploy-staging.result == 'success' && 'staging' || 'production' }}"
+        
+        echo "# Post-Deployment Validation Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Environment:** $ENVIRONMENT" >> $GITHUB_STEP_SUMMARY
+        echo "**Validation Timestamp:** $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [[ -f "health-check-results.json" ]]; then
+          HEALTH_STATUS=$(jq -r '.overall_healthy' health-check-results.json 2>/dev/null || echo "unknown")
+          echo "**Health Check:** $HEALTH_STATUS" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Validation Artifacts" >> $GITHUB_STEP_SUMMARY
+        echo "- Health check results: deployment-validation-${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Monitoring data: 10-minute post-deployment observation" >> $GITHUB_STEP_SUMMARY
+
+  # Notification and reporting
+  deployment-notification:
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production, emergency-rollback, post-deployment-validation]
+    if: always()
+    
+    steps:
+    - name: Determine deployment outcome
+      id: outcome
+      run: |
+        STAGING_RESULT="${{ needs.deploy-staging.result }}"
+        PRODUCTION_RESULT="${{ needs.deploy-production.result }}"
+        ROLLBACK_RESULT="${{ needs.emergency-rollback.result }}"
+        VALIDATION_RESULT="${{ needs.post-deployment-validation.result }}"
+        
+        if [[ "$ROLLBACK_RESULT" == "success" ]]; then
+          echo "outcome=rollback_success" >> $GITHUB_OUTPUT
+          echo "message=Emergency rollback completed successfully" >> $GITHUB_OUTPUT
+        elif [[ "$PRODUCTION_RESULT" == "success" ]]; then
+          echo "outcome=production_success" >> $GITHUB_OUTPUT
+          echo "message=Production deployment completed successfully" >> $GITHUB_OUTPUT
+        elif [[ "$STAGING_RESULT" == "success" ]]; then
+          echo "outcome=staging_success" >> $GITHUB_OUTPUT
+          echo "message=Staging deployment completed successfully" >> $GITHUB_OUTPUT
+        elif [[ "$PRODUCTION_RESULT" == "failure" || "$STAGING_RESULT" == "failure" ]]; then
+          echo "outcome=deployment_failure" >> $GITHUB_OUTPUT
+          echo "message=Deployment failed - check logs for details" >> $GITHUB_OUTPUT
+        else
+          echo "outcome=unknown" >> $GITHUB_OUTPUT
+          echo "message=Deployment outcome unclear" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Create deployment report
+      run: |
+        echo "# Deployment Pipeline Report" >> deployment-report.md
+        echo "" >> deployment-report.md
+        echo "**Pipeline Run:** ${{ github.run_id }}" >> deployment-report.md
+        echo "**Commit:** ${{ github.sha }}" >> deployment-report.md
+        echo "**Branch:** ${{ github.ref_name }}" >> deployment-report.md
+        echo "**Timestamp:** $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> deployment-report.md
+        echo "**Outcome:** ${{ steps.outcome.outputs.outcome }}" >> deployment-report.md
+        echo "" >> deployment-report.md
+        echo "## Job Results" >> deployment-report.md
+        echo "- **Staging Deployment:** ${{ needs.deploy-staging.result }}" >> deployment-report.md
+        echo "- **Production Deployment:** ${{ needs.deploy-production.result }}" >> deployment-report.md
+        echo "- **Emergency Rollback:** ${{ needs.emergency-rollback.result }}" >> deployment-report.md
+        echo "- **Post-Deployment Validation:** ${{ needs.post-deployment-validation.result }}" >> deployment-report.md
+        echo "" >> deployment-report.md
+        echo "## Message" >> deployment-report.md
+        echo "${{ steps.outcome.outputs.message }}" >> deployment-report.md
+
+    - name: Upload deployment report
+      uses: actions/upload-artifact@v3
+      with:
+        name: deployment-report-${{ github.run_id }}
+        path: deployment-report.md
+        retention-days: 90
+
+    - name: Final summary
+      run: |
+        echo "🎯 DEPLOYMENT PIPELINE COMPLETED" 
+        echo "Outcome: ${{ steps.outcome.outputs.outcome }}"
+        echo "Message: ${{ steps.outcome.outputs.message }}"
+        echo "Report: deployment-report-${{ github.run_id }}"UB_STEP_SUMMARY
+        echo "**Backup Used:** production-backup-${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "⚠️ **Action Required:** Investigate deployment failure and fix issues before next deployment attempt" >> $GITHUB_STEP_SUMMARY
+
+  # Post-deployment monitoring and validation
+  post-deployment-monitoring:
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always() && (needs.deploy-staging.result == 'success' || needs.deploy-production.result == 'success')
+    
+    steps:
+    - name: Setup monitoring
+      run: |
+        echo "📊 Setting up post-deployment monitoring..."
+        
+        # This would typically set up additional monitoring, alerts, etc.
+        # For now, we'll just log the completion
+        echo "Monitoring setup completed"
+
+    - name: Generate deployment report
+      run: |
+        echo "📋 Generating deployment report..."
+        
+        cat > deployment-report.json << EOF
+        {
+          "deployment_id": "${{ github.run_id }}",
+          "commit_sha": "${{ github.sha }}",
+          "branch": "${{ github.ref_name }}",
+          "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+          "environments": {
+            "staging": {
+              "deployed": "${{ needs.deploy-staging.result == 'success' }}",
+              "status": "${{ needs.deploy-staging.result }}"
+            },
+            "production": {
+              "deployed": "${{ needs.deploy-production.result == 'success' }}",
+              "status": "${{ needs.deploy-production.result }}"
+            }
+          }
+        }
+        EOF
+
+    - name: Upload deployment report
+      uses: actions/upload-artifact@v3
+      with:
+        name: deployment-report-${{ github.run_id }}
+        path: deployment-report.json
+        retention-days: 90

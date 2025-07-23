@@ -415,3 +415,83 @@ class TestConnectionSession:
         assert session.client_info == {"ip": "192.168.1.1"}
         assert session.session_data == {"user_id": "user123"}
         assert session.subscribed_topics == {"topic1", "topic2"}
+    
+    def test_result_count_increment(self):
+        """Test result count increment functionality."""
+        session = ConnectionSession.create_new("test-123")
+        session.connect()
+        
+        # Initial result count should be 0
+        assert session.result_count == 0
+        
+        # Increment result count
+        new_count = session.increment_result_count()
+        assert new_count == 1
+        assert session.result_count == 1
+        
+        # Increment again
+        new_count = session.increment_result_count()
+        assert new_count == 2
+        assert session.result_count == 2
+    
+    def test_should_disconnect_due_to_result_limit(self):
+        """Test disconnection due to result limit."""
+        session = ConnectionSession.create_new("test-123")
+        session.connect()
+        
+        # Should not disconnect initially
+        assert not session.should_disconnect_due_to_limits()
+        
+        # Increment to max results
+        for i in range(5):
+            session.increment_result_count()
+        
+        # Should disconnect after reaching max results
+        assert session.should_disconnect_due_to_limits()
+        assert "Result limit reached" in session.get_disconnect_reason_for_limits()
+    
+    def test_should_disconnect_due_to_time_limit(self):
+        """Test disconnection due to time limit."""
+        # Create session with past connected_at time
+        past_time = datetime.utcnow() - timedelta(minutes=3)
+        session = ConnectionSession(
+            connection_id="test-123",
+            status=ConnectionStatus.CONNECTED,
+            connected_at=past_time,
+            last_activity_at=past_time
+        )
+        
+        # Should disconnect due to time limit
+        assert session.should_disconnect_due_to_limits()
+        assert "Time limit reached" in session.get_disconnect_reason_for_limits()
+    
+    def test_should_not_disconnect_within_limits(self):
+        """Test that connection doesn't disconnect within limits."""
+        session = ConnectionSession.create_new("test-123")
+        session.connect()
+        
+        # Increment result count but stay under limit
+        for i in range(3):
+            session.increment_result_count()
+        
+        # Should not disconnect
+        assert not session.should_disconnect_due_to_limits()
+    
+    def test_connection_summary_includes_limit_info(self):
+        """Test that connection summary includes limit information."""
+        session = ConnectionSession.create_new("test-123")
+        session.connect()
+        session.increment_result_count()
+        session.increment_result_count()
+        
+        summary = session.get_connection_summary()
+        
+        assert "result_count" in summary
+        assert "max_results" in summary
+        assert "max_connection_minutes" in summary
+        assert "should_disconnect_due_to_limits" in summary
+        
+        assert summary["result_count"] == 2
+        assert summary["max_results"] == 5
+        assert summary["max_connection_minutes"] == 2
+        assert summary["should_disconnect_due_to_limits"] == False

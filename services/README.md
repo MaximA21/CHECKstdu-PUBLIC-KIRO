@@ -19,26 +19,19 @@ The services in this folder have been moved to the new clean architecture struct
 
 If you need to use these services, update your imports:
 
-#### Legacy Storage Service
+#### Repository Pattern (Replaces Legacy Storage)
 ```python
-# Old import
-from services.aws_storage import AWSDynamoDBService
-from services.mock_storage import MockStorageService
-from services.storage_interface import IStorageService
-
-# New import
-from src.infrastructure.persistence.legacy_aws_storage import AWSDynamoDBService
-from src.infrastructure.persistence.legacy_mock_storage import MockStorageService
-from src.application.interfaces.storage import IStorageService
+# Use repository interfaces instead of legacy storage
+from src.application.interfaces.repositories import ISearchResultRepository, IConnectionRepository
+from src.infrastructure.persistence.mock_repositories import MockSearchResultRepository
+from src.infrastructure.persistence.aws_dynamodb_repository import DynamoDBSearchResultRepository
 ```
 
-#### Legacy Logging Configuration
+#### Modern Logging Configuration
 ```python
-# Old import
-from services.logging_config import get_lambda_logger, configure_logger
-
-# New import
-from src.infrastructure.logging.legacy_logging_config import get_lambda_logger, configure_logger
+# Use logger factory instead of legacy logging
+from src.infrastructure.logging.logger_factory import LoggerFactory
+from src.application.interfaces.logging import ILogger, LogLevel
 ```
 
 ### Recommended Migration Path

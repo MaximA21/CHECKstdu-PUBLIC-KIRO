@@ -301,7 +301,7 @@ class ConnectionManagementUseCase:
         """Subscribe a connection to topic updates."""
         try:
             # Get connection session
-            connection_session = await self._connection_repository.get_connection_session(connection_id)
+            connection_session = await self._connection_repository.get_connection(connection_id)
             if not connection_session:
                 raise ConnectionException(f"Connection {connection_id} not found")
             
@@ -309,7 +309,7 @@ class ConnectionManagementUseCase:
             connection_session.subscribed_topics.add(topic)
             
             # Update in repository
-            await self._connection_repository.update_connection_session(connection_session)
+            await self._connection_repository.update_connection(connection_session)
             
             self._logger.info("Connection subscribed to topic", {
                 "connection_id": connection_id,
@@ -335,7 +335,7 @@ class ConnectionManagementUseCase:
         """Unsubscribe a connection from topic updates."""
         try:
             # Get connection session
-            connection_session = await self._connection_repository.get_connection_session(connection_id)
+            connection_session = await self._connection_repository.get_connection(connection_id)
             if not connection_session:
                 raise ConnectionException(f"Connection {connection_id} not found")
             
@@ -343,7 +343,7 @@ class ConnectionManagementUseCase:
             connection_session.subscribed_topics.discard(topic)
             
             # Update in repository
-            await self._connection_repository.update_connection_session(connection_session)
+            await self._connection_repository.update_connection(connection_session)
             
             self._logger.info("Connection unsubscribed from topic", {
                 "connection_id": connection_id,
@@ -369,13 +369,13 @@ class ConnectionManagementUseCase:
         """Handle ping message from connection."""
         try:
             # Get connection session
-            connection_session = await self._connection_repository.get_connection_session(connection_id)
+            connection_session = await self._connection_repository.get_connection(connection_id)
             if not connection_session:
                 raise ConnectionException(f"Connection {connection_id} not found")
             
             # Update last activity
             connection_session.update_activity()
-            await self._connection_repository.update_connection_session(connection_session)
+            await self._connection_repository.update_connection(connection_session)
             
             return {
                 "connection_id": connection_id,
@@ -389,6 +389,209 @@ class ConnectionManagementUseCase:
                 "error": str(e)
             }, exception=e)
             raise ConnectionException(f"Failed to handle ping: {str(e)}")
+    
+    async def increment_result_count_and_check_limits(self, connection_id: str) -> Dict[str, Any]:
+        """
+        Increment result count for a connection and check if limits are reached.
+        
+        Args:
+            connection_id: Connection identifier
+            
+        Returns:
+            Dict containing result count and limit status
+            
+        Raises:
+            ConnectionException: If connection handling fails
+        """
+        try:
+            self._logger.debug("Incrementing result count and checking limits", {
+                "connection_id": connection_id
+            })
+            
+            # Get connection session
+            connection_session = await self._connection_repository.get_connection(connection_id)
+            if not connection_session:
+                raise ConnectionException(f"Connection {connection_id} not found")
+            
+            if not connection_session.is_connected:
+                raise ConnectionException(f"Connection {connection_id} is not active")
+            
+            # Increment result count
+            new_count = connection_session.increment_result_count()
+            
+            # Check if limits are reached
+            should_disconnect = connection_session.should_disconnect_due_to_limits()
+            disconnect_reason = None
+            
+            if should_disconnect:
+                disconnect_reason = connection_session.get_disconnect_reason_for_limits()
+                connection_session.disconnect(disconnect_reason)
+                
+                self._logger.info("Connection disconnected due to limits", {
+                    "connection_id": connection_id,
+                    "result_count": new_count,
+                    "reason": disconnect_reason
+                })
+            
+            # Update connection session
+            await self._connection_repository.update_connection(connection_session)
+            
+            # If disconnected, also close the actual connection
+            if should_disconnect:
+                try:
+                    await self._connection_manager.disconnect_connection(connection_id, disconnect_reason)
+                except Exception as e:
+                    self._logger.warning("Failed to disconnect connection via connection manager", {
+                        "connection_id": connection_id,
+                        "error": str(e)
+                    })
+            
+            return {
+                "connection_id": connection_id,
+                "result_count": new_count,
+                "max_results": connection_session.max_results,
+                "should_disconnect": should_disconnect,
+                "disconnect_reason": disconnect_reason,
+                "status": connection_session.status.value.lower()
+            }
+            
+        except Exception as e:
+            self._logger.error("Failed to increment result count and check limits", {
+                "connection_id": connection_id,
+                "error": str(e)
+            }, exception=e)
+            raise ConnectionException(f"Failed to handle result count: {str(e)}")
+    
+    async def check_connection_limits(self, connection_id: str) -> Dict[str, Any]:
+        """
+        Check if a connection has reached its limits without incrementing count.
+        
+        Args:
+            connection_id: Connection identifier
+            
+        Returns:
+            Dict containing limit status
+        """
+        try:
+            connection_session = await self._connection_repository.get_connection(connection_id)
+            if not connection_session:
+                return {
+                    "connection_id": connection_id,
+                    "status": "not_found",
+                    "should_disconnect": True,
+                    "disconnect_reason": "Connection not found"
+                }
+            
+            should_disconnect = connection_session.should_disconnect_due_to_limits()
+            disconnect_reason = None
+            
+            if should_disconnect:
+                disconnect_reason = connection_session.get_disconnect_reason_for_limits()
+            
+            return {
+                "connection_id": connection_id,
+                "result_count": connection_session.result_count,
+                "max_results": connection_session.max_results,
+                "should_disconnect": should_disconnect,
+                "disconnect_reason": disconnect_reason,
+                "status": connection_session.status.value.lower(),
+                "connection_duration_minutes": (
+                    int(connection_session.connection_duration.total_seconds() / 60)
+                    if connection_session.connection_duration else 0
+                ),
+                "max_connection_minutes": connection_session.max_connection_minutes
+            }
+            
+        except Exception as e:
+            self._logger.error("Failed to check connection limits", {
+                "connection_id": connection_id,
+                "error": str(e)
+            }, exception=e)
+            return {
+                "connection_id": connection_id,
+                "status": "error",
+                "should_disconnect": True,
+                "disconnect_reason": f"Error checking limits: {str(e)}"
+            }
+    
+    async def enforce_connection_limits_for_all(self) -> Dict[str, Any]:
+        """
+        Check and enforce connection limits for all active connections.
+        
+        Returns:
+            Dict containing enforcement statistics
+        """
+        try:
+            self._logger.info("Starting connection limit enforcement for all connections")
+            
+            # Get all active connections
+            active_connections = await self._connection_repository.get_active_connections()
+            
+            disconnected_count = 0
+            error_count = 0
+            checked_count = 0
+            
+            for connection_session in active_connections:
+                try:
+                    checked_count += 1
+                    
+                    # Check if connection should be disconnected due to limits
+                    if connection_session.should_disconnect_due_to_limits():
+                        disconnect_reason = connection_session.get_disconnect_reason_for_limits()
+                        
+                        # Disconnect the connection
+                        connection_session.disconnect(disconnect_reason)
+                        await self._connection_repository.update_connection(connection_session)
+                        
+                        # Also disconnect via connection manager
+                        try:
+                            await self._connection_manager.disconnect_connection(
+                                connection_session.connection_id, 
+                                disconnect_reason
+                            )
+                        except Exception as e:
+                            self._logger.warning("Failed to disconnect connection via manager", {
+                                "connection_id": connection_session.connection_id,
+                                "error": str(e)
+                            })
+                        
+                        disconnected_count += 1
+                        
+                        self._logger.info("Connection disconnected due to limits", {
+                            "connection_id": connection_session.connection_id,
+                            "reason": disconnect_reason,
+                            "result_count": connection_session.result_count,
+                            "connection_duration_minutes": (
+                                int(connection_session.connection_duration.total_seconds() / 60)
+                                if connection_session.connection_duration else 0
+                            )
+                        })
+                
+                except Exception as e:
+                    error_count += 1
+                    self._logger.warning("Error enforcing limits for connection", {
+                        "connection_id": connection_session.connection_id,
+                        "error": str(e)
+                    })
+            
+            self._logger.info("Connection limit enforcement completed", {
+                "connections_checked": checked_count,
+                "connections_disconnected": disconnected_count,
+                "errors": error_count
+            })
+            
+            return {
+                "connections_checked": checked_count,
+                "connections_disconnected": disconnected_count,
+                "errors": error_count,
+                "status": "completed"
+            }
+            
+        except Exception as e:
+            self._logger.error("Failed to enforce connection limits", {
+                "error": str(e)
+            }, exception=e)
+            raise ConnectionException(f"Failed to enforce connection limits: {str(e)}")
     
     async def _cleanup_connection_subscriptions(self, connection_session: ConnectionSession) -> None:
         """Clean up topic subscriptions for a disconnecting connection."""

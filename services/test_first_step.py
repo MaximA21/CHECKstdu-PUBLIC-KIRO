@@ -10,7 +10,7 @@ src_dir = os.path.join(root_dir, 'src')
 sys.path.insert(0, root_dir)
 sys.path.insert(0, src_dir)
 
-from src.infrastructure.persistence.legacy_mock_storage import MockStorageService
+from src.infrastructure.persistence.mock_repositories import MockSearchResultRepository
 
 
 @pytest.mark.asyncio

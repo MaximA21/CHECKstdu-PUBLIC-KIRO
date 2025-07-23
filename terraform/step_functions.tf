@@ -952,7 +952,7 @@ resource "aws_iam_role" "step_functions_role" {
   name = "${var.project_name}-${var.environment}-step-functions-role"
 
   assume_role_policy = jsonencode({
-    Version   = "2012-10-17"
+    Version = "2012-10-17"
     Statement = [
       {
         Action = "sts:AssumeRole"
@@ -976,7 +976,7 @@ resource "aws_iam_policy" "step_functions_policy" {
   description = "Policy for Step Functions state machine"
 
   policy = jsonencode({
-    Version   = "2012-10-17"
+    Version = "2012-10-17"
     Statement = [
       {
         Effect = "Allow"
@@ -1081,10 +1081,11 @@ resource "aws_iam_role_policy_attachment" "step_functions_policy_attachment" {
 # Add CloudWatch Log Group FIRST
 resource "aws_cloudwatch_log_group" "step_functions_logs" {
   name              = "/aws/stepfunctions/${var.project_name}-${var.environment}-provider-workflow"
-  retention_in_days = 7
+  retention_in_days = var.step_functions_log_retention_days
+  kms_key_id        = var.enable_custom_kms_keys ? aws_kms_key.logs_key[0].arn : null
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name        = "${var.project_name}-step-functions-logs"
     Environment = var.environment
-  }
+  })
 }

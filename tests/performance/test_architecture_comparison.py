@@ -396,5 +396,123 @@ class TestArchitecturePerformance:
             assert cleanup_time < 100  # Should cleanup quickly
 
 
+class TestBenchmarkPerformance:
+    """Benchmark tests using pytest-benchmark for precise performance measurement."""
+    
+    @pytest.fixture
+    def benchmark_event(self):
+        """Create a standard event for benchmarking."""
+        return {
+            'body': json.dumps({
+                'address': {
+                    'street': 'Benchmark Street',
+                    'house_number': '42',
+                    'city': 'Berlin',
+                    'postal_code': '10115',
+                    'country': 'DE'
+                },
+                'connection_id': 'benchmark-connection'
+            }),
+            'httpMethod': 'POST',
+            'path': '/search',
+            'headers': {'Content-Type': 'application/json'}
+        }
+    
+    @pytest.fixture
+    def benchmark_context(self):
+        """Create a mock Lambda context for benchmarking."""
+        context = MagicMock()
+        context.function_name = "benchmark-function"
+        context.function_version = "$LATEST"
+        context.memory_limit_in_mb = "512"
+        context.remaining_time_in_millis = lambda: 30000
+        context.aws_request_id = "benchmark-request-id"
+        return context
+    
+    @pytest.mark.performance
+    def test_benchmark_container_initialization(self, benchmark):
+        """Benchmark dependency injection container initialization."""
+        with patch.dict('os.environ', {'ENVIRONMENT': 'test', 'USE_MOCK_SERVICES': 'true'}):
+            def init_container():
+                return get_container()
+            
+            result = benchmark(init_container)
+            assert result is not None
+    
+    @pytest.mark.performance
+    @pytest.mark.asyncio
+    async def test_benchmark_search_handler(self, benchmark, benchmark_event, benchmark_context):
+        """Benchmark search handler execution."""
+        with patch.dict('os.environ', {'ENVIRONMENT': 'test', 'USE_MOCK_SERVICES': 'true'}):
+            container = get_container()
+            handler = SearchHandler(container)
+            
+            # Warm up
+            await handler.handle(benchmark_event, benchmark_context)
+            
+            def search_request():
+                return asyncio.run(handler.handle(benchmark_event, benchmark_context))
+            
+            result = benchmark(search_request)
+            assert result['statusCode'] == 200
+    
+    @pytest.mark.performance
+    def test_benchmark_service_resolution(self, benchmark):
+        """Benchmark service resolution from DI container."""
+        with patch.dict('os.environ', {'ENVIRONMENT': 'test', 'USE_MOCK_SERVICES': 'true'}):
+            container = get_container()
+            
+            def resolve_services():
+                # Resolve multiple services
+                search_repo = container.resolve('ISearchResultRepository')
+                connection_repo = container.resolve('IConnectionRepository')
+                message_queue = container.resolve('IMessageQueue')
+                logger_factory = container.resolve('ILoggerFactory')
+                
+                return search_repo, connection_repo, message_queue, logger_factory
+            
+            result = benchmark(resolve_services)
+            assert all(service is not None for service in result)
+    
+    @pytest.mark.performance
+    @pytest.mark.asyncio
+    async def test_benchmark_concurrent_requests(self, benchmark, benchmark_event, benchmark_context):
+        """Benchmark concurrent request handling."""
+        with patch.dict('os.environ', {'ENVIRONMENT': 'test', 'USE_MOCK_SERVICES': 'true'}):
+            container = get_container()
+            handler = SearchHandler(container)
+            
+            async def concurrent_requests():
+                tasks = []
+                for i in range(10):  # 10 concurrent requests
+                    task = handler.handle(benchmark_event, benchmark_context)
+                    tasks.append(task)
+                
+                results = await asyncio.gather(*tasks)
+                return results
+            
+            def run_concurrent():
+                return asyncio.run(concurrent_requests())
+            
+            results = benchmark(run_concurrent)
+            assert len(results) == 10
+            assert all(result['statusCode'] == 200 for result in results)
+    
+    @pytest.mark.performance
+    def test_benchmark_error_handling(self, benchmark, benchmark_context):
+        """Benchmark error handling performance."""
+        with patch.dict('os.environ', {'ENVIRONMENT': 'test', 'USE_MOCK_SERVICES': 'true'}):
+            container = get_container()
+            handler = SearchHandler(container)
+            
+            invalid_event = {'body': 'invalid json'}
+            
+            def handle_error():
+                return asyncio.run(handler.handle(invalid_event, benchmark_context))
+            
+            result = benchmark(handle_error)
+            assert result['statusCode'] == 400  # Should return error status
+
+
 if __name__ == "__main__":
     pytest.main([__file__])

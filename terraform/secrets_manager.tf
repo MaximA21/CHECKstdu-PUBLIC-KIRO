@@ -13,12 +13,12 @@ resource "aws_secretsmanager_secret" "provider_keys" {
 resource "aws_secretsmanager_secret_version" "provider_keys" {
   secret_id = aws_secretsmanager_secret.provider_keys.id
   secret_string = jsonencode({
-    byteme_api_key      = var.byteme_api_key
-    servus_speed_auth   = var.servus_speed_auth
+    byteme_api_key    = var.byteme_api_key
+    servus_speed_auth = var.servus_speed_auth
     #webwunder_api_key   = var.webwunder_api_key
-   # ping_perfect_client_id = var.ping_perfect_client_id
+    # ping_perfect_client_id = var.ping_perfect_client_id
     #ping_perfect_secret = var.ping_perfect_secret
-   # verbyndich_api_key  = var.verbyndich_api_key
+    # verbyndich_api_key  = var.verbyndich_api_key
   })
 }
 

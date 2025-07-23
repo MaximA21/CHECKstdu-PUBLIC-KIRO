@@ -1,7 +1,9 @@
 # shared_resources.tf - Shared AWS resources configuration for eu-central-1
 
-# KMS key for CloudWatch logs encryption
+# KMS key for CloudWatch logs encryption (conditional for cost optimization)
 resource "aws_kms_key" "logs_key" {
+  count = var.enable_custom_kms_keys ? 1 : 0
+  
   description             = "KMS key for CloudWatch logs encryption"
   deletion_window_in_days = 7
   enable_key_rotation     = true
@@ -47,8 +49,10 @@ resource "aws_kms_key" "logs_key" {
 }
 
 resource "aws_kms_alias" "logs_key_alias" {
+  count = var.enable_custom_kms_keys ? 1 : 0
+  
   name          = "alias/${var.project_name}-${var.environment}-logs-key"
-  target_key_id = aws_kms_key.logs_key.key_id
+  target_key_id = aws_kms_key.logs_key[0].key_id
 }
 
 # Lambda function log groups with proper retention and encryption
@@ -69,7 +73,7 @@ resource "aws_cloudwatch_log_group" "lambda_logs" {
 
   name              = "/aws/lambda/${var.project_name}-${var.environment}-${each.key}"
   retention_in_days = var.lambda_log_retention_days
-  kms_key_id        = aws_kms_key.logs_key.arn
+  kms_key_id        = var.enable_custom_kms_keys ? aws_kms_key.logs_key[0].arn : null
 
   tags = merge(local.common_tags, {
     Name     = "${var.project_name}-${each.key}-logs"
@@ -149,9 +153,9 @@ resource "aws_cloudwatch_dashboard" "shared_resources" {
   })
 }
 
-# CloudWatch alarms for shared resources
+# CloudWatch alarms for shared resources (conditional for cost optimization)
 resource "aws_cloudwatch_metric_alarm" "dynamodb_throttles" {
-  for_each = toset([
+  for_each = var.minimal_cloudwatch_alarms ? [] : toset([
     aws_dynamodb_table.provider_results.name,
     aws_dynamodb_table.analytics.name
   ])
@@ -174,6 +178,7 @@ resource "aws_cloudwatch_metric_alarm" "dynamodb_throttles" {
   tags = local.common_tags
 }
 
+# Essential alarm for Step Functions failures (always enabled)
 resource "aws_cloudwatch_metric_alarm" "step_functions_failures" {
   alarm_name          = "${var.project_name}-${var.environment}-step-functions-failures"
   comparison_operator = "GreaterThanThreshold"
@@ -182,7 +187,7 @@ resource "aws_cloudwatch_metric_alarm" "step_functions_failures" {
   namespace           = "AWS/States"
   period              = "300"
   statistic           = "Sum"
-  threshold           = "5"
+  threshold           = "10"  # Higher threshold for cost optimization
   alarm_description   = "This metric monitors Step Functions execution failures"
   alarm_actions       = [aws_sns_topic.alerts.arn]
 
@@ -193,27 +198,54 @@ resource "aws_cloudwatch_metric_alarm" "step_functions_failures" {
   tags = local.common_tags
 }
 
-# Data retention policy for CloudWatch Insights
+# Essential cost monitoring alarm
+resource "aws_cloudwatch_metric_alarm" "monthly_cost_alarm" {
+  alarm_name          = "${var.project_name}-${var.environment}-monthly-cost-alarm"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "EstimatedCharges"
+  namespace           = "AWS/Billing"
+  period              = "86400"
+  statistic           = "Maximum"
+  threshold           = var.monthly_cost_alert_threshold
+  alarm_description   = "Monthly AWS cost exceeded threshold of $${var.monthly_cost_alert_threshold}"
+  alarm_actions       = [aws_sns_topic.alerts.arn]
+
+  dimensions = {
+    Currency = "USD"
+  }
+
+  tags = local.common_tags
+}
+
+# Data retention policy for CloudWatch Insights (conditional - expensive Kinesis stream)
+# Kinesis stream disabled by default for cost optimization (saves ~$28/month)
 resource "aws_cloudwatch_log_destination" "log_destination" {
+  count = var.enable_kinesis_stream ? 1 : 0
+  
   name       = "${var.project_name}-${var.environment}-log-destination"
-  role_arn   = aws_iam_role.log_destination_role.arn
-  target_arn = aws_kinesis_stream.log_stream.arn
+  role_arn   = aws_iam_role.log_destination_role[0].arn
+  target_arn = aws_kinesis_stream.log_stream[0].arn
 
   tags = local.common_tags
 }
 
 resource "aws_kinesis_stream" "log_stream" {
+  count = var.enable_kinesis_stream ? 1 : 0
+  
   name             = "${var.project_name}-${var.environment}-log-stream"
   shard_count      = 1
   retention_period = 24
 
   encryption_type = "KMS"
-  kms_key_id      = aws_kms_key.logs_key.arn
+  kms_key_id      = var.enable_custom_kms_keys ? aws_kms_key.logs_key[0].arn : "alias/aws/kinesis"
 
   tags = local.common_tags
 }
 
 resource "aws_iam_role" "log_destination_role" {
+  count = var.enable_kinesis_stream ? 1 : 0
+  
   name = "${var.project_name}-${var.environment}-log-destination-role"
 
   assume_role_policy = jsonencode({
@@ -233,8 +265,10 @@ resource "aws_iam_role" "log_destination_role" {
 }
 
 resource "aws_iam_role_policy" "log_destination_policy" {
+  count = var.enable_kinesis_stream ? 1 : 0
+  
   name = "${var.project_name}-${var.environment}-log-destination-policy"
-  role = aws_iam_role.log_destination_role.id
+  role = aws_iam_role.log_destination_role[0].id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -245,7 +279,7 @@ resource "aws_iam_role_policy" "log_destination_policy" {
           "kinesis:PutRecord",
           "kinesis:PutRecords"
         ]
-        Resource = aws_kinesis_stream.log_stream.arn
+        Resource = aws_kinesis_stream.log_stream[0].arn
       }
     ]
   })

@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 from src.shared.dependency_injection import (
     DIContainer, ServiceLifetime, ServiceNotRegisteredException,
-    ServiceResolutionException, initialize_application, get_container
+    ServiceResolutionException, get_container
 )
 from src.infrastructure.config import AppConfig, Environment
 
@@ -23,7 +23,7 @@ class TestServiceImpl(ITestService):
         return "test_value"
 
 
-class TestServiceWithDependency:
+class ServiceWithDependency:
     """Test service with dependency."""
     def __init__(self, test_service: ITestService):
         self.test_service = test_service
@@ -71,10 +71,10 @@ class TestDIContainer:
         """Test automatic dependency injection."""
         container = DIContainer()
         container.register(ITestService, TestServiceImpl)
-        container.register(TestServiceWithDependency, TestServiceWithDependency)
+        container.register(ServiceWithDependency, ServiceWithDependency)
         
-        service = container.resolve(TestServiceWithDependency)
-        assert isinstance(service, TestServiceWithDependency)
+        service = container.resolve(ServiceWithDependency)
+        assert isinstance(service, ServiceWithDependency)
         assert service.get_combined_value() == "combined_test_value"
     
     def test_unregistered_service_raises_exception(self):
@@ -110,7 +110,7 @@ class TestApplicationBootstrap:
     @patch.dict(os.environ, {'APP_ENVIRONMENT': 'testing'})
     def test_initialize_application(self):
         """Test application initialization."""
-        container = initialize_application()
+        container = get_container()
         
         assert isinstance(container, DIContainer)
         assert container.is_registered(AppConfig)
@@ -121,7 +121,7 @@ class TestApplicationBootstrap:
     @patch.dict(os.environ, {'APP_ENVIRONMENT': 'testing'})
     def test_get_container_after_initialization(self):
         """Test getting container after initialization."""
-        initialize_application()
+        get_container()
         container = get_container()
         
         assert isinstance(container, DIContainer)

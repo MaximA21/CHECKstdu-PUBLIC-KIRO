@@ -30,11 +30,29 @@ class DisconnectHandler(WebSocketController):
                 self._logger.error("No connection ID found in event")
                 return self._create_error_response(400, "Connection ID missing")
             
+            # Check connection status before disconnecting
+            connection_status = await self._connection_management_use_case.get_connection_status(connection_id)
+            
+            # Determine disconnect reason
+            disconnect_reason = "Client disconnected"
+            if connection_status.get("should_disconnect_due_to_limits", False):
+                disconnect_reason = f"Limit enforcement: {connection_status.get('disconnect_reason', 'Unknown limit')}"
+            
             # Execute disconnection use case
             result = await self._connection_management_use_case.handle_disconnect(
                 connection_id=connection_id,
-                reason="Client disconnected"
+                reason=disconnect_reason
             )
+            
+            # Add connection statistics to result
+            if connection_status.get("status") != "not_found":
+                result["connection_statistics"] = {
+                    "result_count": connection_status.get("result_count", 0),
+                    "max_results": connection_status.get("max_results", 5),
+                    "connection_duration_minutes": connection_status.get("connection_duration_minutes", 0),
+                    "max_connection_minutes": connection_status.get("max_connection_minutes", 2),
+                    "was_limit_enforced": connection_status.get("should_disconnect_due_to_limits", False)
+                }
             
             # Log success
             self._log_request_success("WebSocket Disconnect", {

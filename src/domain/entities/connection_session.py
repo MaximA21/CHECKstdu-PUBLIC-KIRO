@@ -35,6 +35,9 @@ class ConnectionSession:
     client_info: Dict[str, Any] = field(default_factory=dict)
     session_data: Dict[str, Any] = field(default_factory=dict)
     subscribed_topics: Set[str] = field(default_factory=set)
+    result_count: int = 0
+    max_results: int = 5
+    max_connection_minutes: int = 2
     
     def __post_init__(self):
         """Initialize default values and validate the connection session."""
@@ -204,6 +207,41 @@ class ConnectionSession:
         """Check if the connection should be timed out due to inactivity."""
         return self.is_idle_for(timeout_minutes)
     
+    def increment_result_count(self) -> int:
+        """Increment the result count and return the new count."""
+        object.__setattr__(self, 'result_count', self.result_count + 1)
+        self.update_activity()
+        return self.result_count
+    
+    def should_disconnect_due_to_limits(self) -> bool:
+        """Check if connection should be disconnected due to result or time limits."""
+        if not self.is_connected:
+            return False
+        
+        # Check result limit
+        if self.result_count >= self.max_results:
+            return True
+        
+        # Check time limit
+        if self.connected_at:
+            connection_duration = datetime.utcnow() - self.connected_at
+            if connection_duration >= timedelta(minutes=self.max_connection_minutes):
+                return True
+        
+        return False
+    
+    def get_disconnect_reason_for_limits(self) -> str:
+        """Get the reason for disconnection due to limits."""
+        if self.result_count >= self.max_results:
+            return f"Result limit reached ({self.result_count}/{self.max_results})"
+        
+        if self.connected_at:
+            connection_duration = datetime.utcnow() - self.connected_at
+            if connection_duration >= timedelta(minutes=self.max_connection_minutes):
+                return f"Time limit reached ({self.max_connection_minutes} minutes)"
+        
+        return "Limit enforcement"
+    
     def get_connection_summary(self) -> Dict[str, Any]:
         """Get a summary of the connection session."""
         return {
@@ -222,5 +260,9 @@ class ConnectionSession:
             ),
             "subscribed_topics_count": len(self.subscribed_topics),
             "has_client_info": len(self.client_info) > 0,
-            "has_session_data": len(self.session_data) > 0
+            "has_session_data": len(self.session_data) > 0,
+            "result_count": self.result_count,
+            "max_results": self.max_results,
+            "max_connection_minutes": self.max_connection_minutes,
+            "should_disconnect_due_to_limits": self.should_disconnect_due_to_limits()
         }

@@ -5,7 +5,7 @@ from .repositories import (
     IConnectionRepository,
     IProviderOfferRepository
 )
-from .storage import IStorageService
+# Legacy IStorageService removed - use repository interfaces instead
 from .messaging import (
     IMessageQueue,
     IWorkflowOrchestrator,

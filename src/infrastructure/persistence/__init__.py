@@ -7,15 +7,7 @@ from .mock_repositories import (
     MockProviderOfferRepository
 )
 
-# Import legacy storage implementations for backward compatibility
-from .legacy_mock_storage import MockStorageService
-
-# Import AWS legacy storage (optional, requires boto3)
-try:
-    from .legacy_aws_storage import AWSDynamoDBService
-    _aws_legacy_available = True
-except ImportError:
-    _aws_legacy_available = False
+# Legacy storage implementations removed - use repository pattern instead
 
 # Import AWS repositories (optional, requires boto3)
 try:
@@ -32,12 +24,8 @@ except ImportError:
 __all__ = [
     'MockSearchResultRepository',
     'MockConnectionRepository',
-    'MockProviderOfferRepository',
-    'MockStorageService'
+    'MockProviderOfferRepository'
 ]
-
-if _aws_legacy_available:
-    __all__.append('AWSDynamoDBService')
 
 if _aws_available:
     __all__.extend([

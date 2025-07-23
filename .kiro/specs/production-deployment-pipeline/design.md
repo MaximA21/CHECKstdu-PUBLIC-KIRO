@@ -131,9 +131,8 @@ The system will use a **Blue-Green with Connection-Based Routing** deployment st
 #### Traffic Distribution Strategy
 - **WebSocket Traffic Distribution**: Primary focus using API Gateway WebSocket with connection-based routing
   - New connections distributed 50/50 between old and new implementations
-  - Existing connections maintain their implementation until disconnect
+  - Backend-enforced connection limits (2 minutes OR 5 results)
   - Connection routing based on connection ID hashing for consistency
-- **ALB Weighted Target Groups**: 50/50 traffic split for HTTP endpoints
 - **API Gateway Canary**: Gradual traffic shifting for REST API endpoints
 - **Feature Flags**: Runtime control over implementation selection
 

@@ -27,10 +27,8 @@ src_dir = os.path.join(root_dir, 'src')
 sys.path.insert(0, root_dir)
 sys.path.insert(0, src_dir)
 
-from src.infrastructure.logging.legacy_logging_config import (
-    LogConfig, LogLevel, get_log_level, configure_logger, create_lambda_logger,
-    StructuredFormatter, log_with_context, safe_json_log, get_lambda_logger
-)
+from src.infrastructure.logging.logger_factory import LoggerFactory
+from src.application.interfaces.logging import LogLevel
 
 
 class TestLoggingConfig(unittest.TestCase):

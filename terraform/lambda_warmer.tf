@@ -19,8 +19,8 @@ resource "aws_cloudwatch_event_target" "warm_results_handler" {
 
   # Send a special "warmer" payload
   input = jsonencode({
-    "warmer": true,
-    "timestamp": "scheduled-ping"
+    "warmer" : true,
+    "timestamp" : "scheduled-ping"
   })
 }
 

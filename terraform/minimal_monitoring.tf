@@ -223,6 +223,13 @@ resource "aws_sns_topic" "critical_alerts" {
   })
 }
 
+# SNS topic subscription for critical alerts
+resource "aws_sns_topic_subscription" "critical_alerts_email" {
+  topic_arn = aws_sns_topic.critical_alerts.arn
+  protocol  = "email"
+  endpoint  = var.budget_alert_email
+}
+
 # CloudWatch Logs Insights saved queries for cost-effective log analysis
 resource "aws_cloudwatch_query_definition" "websocket_connection_analysis" {
   name = "${var.project_name}-websocket-connection-analysis"

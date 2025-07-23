@@ -1,5 +1,6 @@
 """Lambda handler for WebSocket connections using dependency injection."""
 
+import os
 from typing import Dict, Any
 
 from ..controllers.base_controller import WebSocketController
@@ -58,6 +59,18 @@ class ConnectHandler(WebSocketController):
                 connection_type=SessionConnectionType.WEBSOCKET,
                 client_info=client_info if client_info else None
             )
+            
+            # Get implementation version from environment
+            implementation_version = os.environ.get('IMPLEMENTATION_VERSION', 'new')
+            
+            # Log connection limits for debugging
+            self._logger.info("WebSocket connection established with limits", {
+                "connection_id": connection_id,
+                "max_results": 5,
+                "max_connection_minutes": 2,
+                "result_count": 0,
+                "implementation_version": implementation_version
+            })
             
             # Log success
             self._log_request_success("WebSocket Connect", {
