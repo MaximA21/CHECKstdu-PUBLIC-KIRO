@@ -1,16 +1,17 @@
 """Pytest configuration and shared fixtures."""
 
-import pytest
-import os
 import asyncio
+import os
+from typing import Any, Dict
 from unittest.mock import Mock, patch
-from typing import Dict, Any
+
+import pytest
 
 # Set test environment
-os.environ['APP_ENVIRONMENT'] = 'testing'
+os.environ["APP_ENVIRONMENT"] = "testing"
 
-from src.shared.dependency_injection import DIContainer, get_container
 from src.infrastructure.config import AppConfig, Environment
+from src.shared.dependency_injection import DIContainer, get_container
 
 
 @pytest.fixture(scope="session")
@@ -37,48 +38,47 @@ def app_config():
         aws_region="eu-central-1",
         dynamodb_table_name="test-table",
         sqs_queue_url="https://sqs.eu-central-1.amazonaws.com/123456789012/test-queue",
-        websocket_api_endpoint="wss://test.execute-api.eu-central-1.amazonaws.com/test"
+        websocket_api_endpoint="wss://test.execute-api.eu-central-1.amazonaws.com/test",
     )
 
 
 @pytest.fixture
 def mock_aws_services():
     """Mock AWS services for testing."""
-    with patch('boto3.client') as mock_boto3_client, \
-         patch('boto3.resource') as mock_boto3_resource:
-        
+    with patch("boto3.client") as mock_boto3_client, patch("boto3.resource") as mock_boto3_resource:
+
         # Mock DynamoDB
         mock_dynamodb = Mock()
         mock_dynamodb_resource = Mock()
-        
+
         # Mock SQS
         mock_sqs = Mock()
-        
+
         # Mock API Gateway Management API
         mock_apigateway = Mock()
-        
+
         def client_side_effect(service_name, **kwargs):
-            if service_name == 'dynamodb':
+            if service_name == "dynamodb":
                 return mock_dynamodb
-            elif service_name == 'sqs':
+            elif service_name == "sqs":
                 return mock_sqs
-            elif service_name == 'apigatewaymanagementapi':
+            elif service_name == "apigatewaymanagementapi":
                 return mock_apigateway
             return Mock()
-        
+
         def resource_side_effect(service_name, **kwargs):
-            if service_name == 'dynamodb':
+            if service_name == "dynamodb":
                 return mock_dynamodb_resource
             return Mock()
-        
+
         mock_boto3_client.side_effect = client_side_effect
         mock_boto3_resource.side_effect = resource_side_effect
-        
+
         yield {
-            'dynamodb': mock_dynamodb,
-            'dynamodb_resource': mock_dynamodb_resource,
-            'sqs': mock_sqs,
-            'apigateway': mock_apigateway
+            "dynamodb": mock_dynamodb,
+            "dynamodb_resource": mock_dynamodb_resource,
+            "sqs": mock_sqs,
+            "apigateway": mock_apigateway,
         }
 
 
@@ -86,14 +86,9 @@ def mock_aws_services():
 def sample_search_request():
     """Provide sample search request data."""
     return {
-        "address": {
-            "street": "Musterstraße 1",
-            "city": "Berlin",
-            "postal_code": "10115",
-            "country": "Germany"
-        },
+        "address": {"street": "Musterstraße 1", "city": "Berlin", "postal_code": "10115", "country": "Germany"},
         "connection_id": "test-connection-123",
-        "request_id": "req-456"
+        "request_id": "req-456",
     }
 
 
@@ -107,7 +102,7 @@ def sample_provider_offer():
         "price_monthly": 29.99,
         "technology": "fiber",
         "availability": True,
-        "installation_fee": 0.0
+        "installation_fee": 0.0,
     }
 
 
@@ -119,7 +114,7 @@ def sample_connection_session():
         "user_id": "user-456",
         "connected_at": "2024-01-01T12:00:00Z",
         "last_activity": "2024-01-01T12:05:00Z",
-        "status": "active"
+        "status": "active",
     }
 
 
@@ -148,16 +143,11 @@ def websocket_event():
             "apiId": "test-api-id",
             "stage": "test",
             "requestId": "test-request-id",
-            "identity": {
-                "sourceIp": "127.0.0.1"
-            }
+            "identity": {"sourceIp": "127.0.0.1"},
         },
-        "headers": {
-            "Host": "test.execute-api.eu-central-1.amazonaws.com",
-            "User-Agent": "test-client"
-        },
+        "headers": {"Host": "test.execute-api.eu-central-1.amazonaws.com", "User-Agent": "test-client"},
         "body": None,
-        "isBase64Encoded": False
+        "isBase64Encoded": False,
     }
 
 
@@ -169,17 +159,10 @@ def rest_api_event():
         "path": "/search",
         "pathParameters": None,
         "queryStringParameters": None,
-        "headers": {
-            "Content-Type": "application/json",
-            "Host": "test.execute-api.eu-central-1.amazonaws.com"
-        },
+        "headers": {"Content-Type": "application/json", "Host": "test.execute-api.eu-central-1.amazonaws.com"},
         "body": '{"address": {"street": "Test St", "city": "Berlin"}}',
         "isBase64Encoded": False,
-        "requestContext": {
-            "requestId": "test-request-id",
-            "stage": "test",
-            "apiId": "test-api-id"
-        }
+        "requestContext": {"requestId": "test-request-id", "stage": "test", "apiId": "test-api-id"},
     }
 
 
@@ -189,7 +172,8 @@ def reset_di_container():
     yield
     # Clear the global container after each test
     import src.shared.dependency_injection.bootstrap as bootstrap_module
-    if hasattr(bootstrap_module, '_container'):
+
+    if hasattr(bootstrap_module, "_container"):
         bootstrap_module._container = None
 
 
