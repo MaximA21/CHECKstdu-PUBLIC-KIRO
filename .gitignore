@@ -12,4 +12,10 @@ build/
 dist/
 
 # Lambda layers (binary dependencies)
-lambda/lambda_layers/
+lambda/lambda_layers/# Terraform providers and state
+.terraform/
+terraform.tfstate*
+
+# Lambda build artifacts
+lambda_packages/
+lambda_functions/lambda_packages/
