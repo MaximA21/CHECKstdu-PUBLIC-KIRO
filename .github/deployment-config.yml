@@ -1,0 +1,186 @@
+# Deployment Configuration for WebWunder
+# This file defines deployment strategies, health check thresholds, and rollback triggers
+
+deployment:
+  # Staging environment configuration
+  staging:
+    region: "eu-central-1"
+    health_check:
+      timeout: 300
+      retry_attempts: 3
+      required_checks:
+        - lambda_functions
+        - api_gateway
+        - websocket_gateway
+        - error_rates
+      thresholds:
+        max_error_rate: 10  # errors per 10 minutes
+        max_response_time: 5000  # milliseconds
+        min_success_rate: 95  # percentage
+    
+    smoke_tests:
+      timeout: 120
+      required_endpoints:
+        - "/health"
+        - "/api/search"
+      websocket_tests: true
+    
+    rollback:
+      auto_rollback: false
+      backup_retention: 7  # days
+
+  # Production environment configuration  
+  production:
+    region: "eu-central-1"
+    
+    # Canary deployment strategy
+    canary:
+      enabled: true
+      traffic_phases: [0, 10, 25, 50, 100]  # percentage
+      phase_duration: 300  # seconds (5 minutes)
+      monitoring_window: 600  # seconds (10 minutes)
+      
+      # Automatic rollback triggers
+      rollback_triggers:
+        error_rate_threshold: 5.0  # percentage
+        response_time_threshold: 10000  # milliseconds
+        success_rate_threshold: 90  # percentage
+        consecutive_failures: 5
+    
+    health_check:
+      timeout: 600
+      retry_attempts: 5
+      required_checks:
+        - lambda_functions
+        - api_gateway
+        - websocket_gateway
+        - error_rates
+        - cloudwatch_metrics
+      thresholds:
+        max_error_rate: 5  # errors per 10 minutes
+        max_response_time: 3000  # milliseconds
+        min_success_rate: 98  # percentage
+    
+    # Approval gates
+    approval:
+      required: true
+      timeout: 3600  # 1 hour
+      required_reviewers: 2
+      bypass_on_hotfix: false
+    
+    # Rollback configuration
+    rollback:
+      auto_rollback: true
+      backup_retention: 30  # days
+      rollback_timeout: 600  # seconds
+      
+      # Conditions for automatic rollback
+      auto_conditions:
+        - error_rate_spike: 10.0  # percentage increase
+        - response_time_spike: 200  # percentage increase
+        - availability_drop: 95  # percentage threshold
+
+# Monitoring and alerting
+monitoring:
+  # CloudWatch metrics to track
+  metrics:
+    lambda:
+      - Invocations
+      - Errors
+      - Duration
+      - Throttles
+      - ConcurrentExecutions
+    
+    api_gateway:
+      - Count
+      - Latency
+      - IntegrationLatency
+      - 4XXError
+      - 5XXError
+    
+    custom:
+      - WebSocketConnections
+      - SearchRequests
+      - ResultsDelivered
+      - ConnectionLimitsReached
+
+  # Alert thresholds
+  alerts:
+    critical:
+      error_rate: 10.0  # percentage
+      response_time: 5000  # milliseconds
+      availability: 95  # percentage
+    
+    warning:
+      error_rate: 5.0  # percentage
+      response_time: 3000  # milliseconds
+      availability: 98  # percentage
+
+# Security and compliance
+security:
+  # Required security checks
+  required_scans:
+    - dependency_vulnerabilities
+    - static_code_analysis
+    - secrets_detection
+    - infrastructure_compliance
+  
+  # Security thresholds
+  thresholds:
+    max_critical_vulnerabilities: 0
+    max_high_vulnerabilities: 2
+    max_medium_vulnerabilities: 10
+  
+  # Compliance requirements
+  compliance:
+    - gdpr
+    - soc2
+    - aws_security_best_practices
+
+# Notification settings
+notifications:
+  # Slack/Teams integration
+  channels:
+    deployment_success: "#deployments"
+    deployment_failure: "#alerts"
+    rollback_executed: "#critical-alerts"
+  
+  # Email notifications
+  email:
+    deployment_approval: ["devops@webwunder.com"]
+    critical_failures: ["oncall@webwunder.com"]
+  
+  # Webhook notifications
+  webhooks:
+    deployment_status: "https://api.webwunder.com/webhooks/deployment"
+
+# Artifact management
+artifacts:
+  # Retention policies
+  retention:
+    build_artifacts: 90  # days
+    deployment_backups: 30  # days
+    health_check_results: 14  # days
+    deployment_reports: 365  # days
+  
+  # Storage configuration
+  storage:
+    type: "s3"
+    bucket: "webwunder-deployment-artifacts"
+    encryption: true
+    versioning: true
+
+# Feature flags for deployment behavior
+feature_flags:
+  # Enable/disable specific deployment features
+  canary_deployment: true
+  auto_rollback: true
+  extended_health_checks: true
+  post_deployment_monitoring: true
+  deployment_notifications: true
+  
+  # Experimental features
+  experimental:
+    blue_green_deployment: false
+    multi_region_deployment: false
+    progressive_delivery: false

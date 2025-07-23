@@ -1,0 +1,43 @@
+# Student Budget Cost-Optimized Terraform Variables
+# Target: 15-20 EUR/month total AWS costs
+# This configuration removes expensive services and optimizes for minimal cost
+
+# Basic configuration
+aws_region   = "eu-central-1"
+project_name = "provider-comparison"
+environment  = "dev"
+
+# API Keys (keep existing values)
+byteme_api_key         = "DC3515C9F8E6EB8287FD99F15FEA1190"
+servus_speed_auth      = "904E7D18FBC4"
+webwunder_api_key      = "D0156B21AE587299B0B1E9D17444BAAF8C308887C4E2A157269C58CCFCA092F2898F6C30F81EDF791C41E729F9088CA8172FD3F20E9E72881231CC06E9021266"
+verbyndich_api_key     = "88A864F6FFA2F72C79A88EB452CA20089F332DC36F031A0E84F297E509AC62ED"
+ping_perfect_client_id = "9A26C2B5"
+ping_perfect_secret    = "C6F8B73B5566FCFD2B47D58C93D75AEF"
+
+# AGGRESSIVE cost optimization for student budget (saves ~$60-80/month)
+log_retention_days                = 7   # Reduced from 30 days (saves ~$10-15/month)
+lambda_log_retention_days         = 7   # Reduced from 14 days (saves ~$5-10/month)
+step_functions_log_retention_days = 7   # Reduced from 7 days (minimal change)
+
+# Disable expensive backup service (saves ~$20-50/month)
+# Use DynamoDB point-in-time recovery only
+backup_retention_days     = 0    # Disable AWS Backup service
+backup_cold_storage_days  = 0    # Disable cold storage
+
+# API Gateway settings (keep existing for functionality)
+canary_enabled                = true
+canary_traffic_percentage     = 10
+rest_api_throttle_rate_limit  = 500
+rest_api_throttle_burst_limit = 1000
+rest_api_cache_ttl           = 300
+
+# Student budget cost controls
+enable_kinesis_stream     = false  # Remove Kinesis stream (saves ~$28/month)
+enable_custom_kms_keys    = false  # Use AWS managed keys (saves ~$2/month)
+enable_aws_backup         = false  # Disable AWS Backup service (saves ~$20-50/month)
+minimal_cloudwatch_alarms = true   # Only essential alarms (saves ~$3-5/month)
+
+# Cost monitoring thresholds for student budget
+monthly_cost_alert_threshold = 15   # Alert at 15 EUR/month
+monthly_cost_limit_threshold = 20   # Hard limit at 20 EUR/month

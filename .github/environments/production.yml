@@ -1,0 +1,27 @@
+# Production Environment Configuration
+name: production
+url: https://api.webwunder.com
+
+# Environment protection rules
+protection_rules:
+  - type: required_reviewers
+    required_reviewers:
+      - team: devops-team
+      - team: senior-developers
+    required_reviewer_count: 2
+  - type: wait_timer
+    minutes: 5  # 5 minute wait before deployment
+
+# Environment variables
+variables:
+  ENVIRONMENT: production
+  AWS_REGION: eu-central-1
+  LOG_LEVEL: INFO
+  USE_MOCK_SERVICES: false
+
+# Secrets (configured in GitHub repository settings)
+secrets:
+  - AWS_PRODUCTION_ROLE_ARN
+  - PRODUCTION_DATABASE_URL
+  - PRODUCTION_API_KEYS
+  - PRODUCTION_MONITORING_KEYS

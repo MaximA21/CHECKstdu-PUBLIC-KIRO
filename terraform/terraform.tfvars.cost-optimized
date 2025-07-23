@@ -1,0 +1,36 @@
+# Cost-optimized Terraform variables
+# Use this file to reduce AWS costs while maintaining essential functionality
+
+# Basic configuration
+aws_region   = "eu-central-1"
+project_name = "provider-comparison"
+environment  = "dev"
+
+# API Keys (keep existing values)
+byteme_api_key         = "DC3515C9F8E6EB8287FD99F15FEA1190"
+servus_speed_auth      = "904E7D18FBC4"
+webwunder_api_key      = "D0156B21AE587299B0B1E9D17444BAAF8C308887C4E2A157269C58CCFCA092F2898F6C30F81EDF791C41E729F9088CA8172FD3F20E9E72881231CC06E9021266"
+verbyndich_api_key     = "88A864F6FFA2F72C79A88EB452CA20089F332DC36F031A0E84F297E509AC62ED"
+ping_perfect_client_id = "9A26C2B5"
+ping_perfect_secret    = "C6F8B73B5566FCFD2B47D58C93D75AEF"
+
+# Cost-optimized log retention (reduces CloudWatch costs by ~40%)
+log_retention_days                = 14  # Instead of 30 days
+lambda_log_retention_days         = 7   # Instead of 14 days  
+step_functions_log_retention_days = 3   # Instead of 7 days
+
+# Cost-optimized backup settings (reduces backup costs by ~50%)
+backup_retention_days     = 180  # Instead of 365 days (6 months)
+backup_cold_storage_days  = 7    # Instead of 30 days (move to cold storage faster)
+
+# API Gateway settings (keep existing)
+canary_enabled                = true
+canary_traffic_percentage     = 10
+rest_api_throttle_rate_limit  = 500
+rest_api_throttle_burst_limit = 1000
+rest_api_cache_ttl           = 300
+
+# Cost monitoring thresholds
+# Set lower thresholds for cost-conscious environments
+# monthly_cost_alert_threshold = 100  # Alert at $100/month
+# monthly_cost_limit_threshold = 150  # Hard limit at $150/month

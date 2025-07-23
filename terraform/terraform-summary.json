@@ -1,0 +1,109 @@
+{
+  "validation_info": {
+    "timestamp": "2025-07-22T00:41:59Z",
+    "terraform_version": "1.11.4",
+    "aws_region": "eu-central-1",
+    "environment": "staging"
+  },
+  "validation_results": {
+    "format_check": "needs_formatting",
+    "configuration_validation": "passed",
+    "security_scan": "skipped",
+    "plan_generation": "success"
+  },
+  "plan_statistics": {
+    "resources_to_add": 70,
+    "resources_to_change": 6,
+    "resources_to_destroy": 60
+  },
+  "resource_types": [
+  {
+    "type": "aws_apigatewayv2_api",
+    "count": 2
+  },
+  {
+    "type": "aws_apigatewayv2_integration",
+    "count": 3
+  },
+  {
+    "type": "aws_apigatewayv2_route",
+    "count": 3
+  },
+  {
+    "type": "aws_apigatewayv2_stage",
+    "count": 2
+  },
+  {
+    "type": "aws_cloudwatch_dashboard",
+    "count": 1
+  },
+  {
+    "type": "aws_cloudwatch_event_connection",
+    "count": 5
+  },
+  {
+    "type": "aws_cloudwatch_event_rule",
+    "count": 1
+  },
+  {
+    "type": "aws_cloudwatch_event_target",
+    "count": 1
+  },
+  {
+    "type": "aws_cloudwatch_log_group",
+    "count": 1
+  },
+  {
+    "type": "aws_dynamodb_table",
+    "count": 2
+  },
+  {
+    "type": "aws_iam_policy",
+    "count": 9
+  },
+  {
+    "type": "aws_iam_role",
+    "count": 7
+  },
+  {
+    "type": "aws_iam_role_policy_attachment",
+    "count": 9
+  },
+  {
+    "type": "aws_lambda_event_source_mapping",
+    "count": 2
+  },
+  {
+    "type": "aws_lambda_function",
+    "count": 7
+  },
+  {
+    "type": "aws_lambda_layer_version",
+    "count": 2
+  },
+  {
+    "type": "aws_lambda_permission",
+    "count": 4
+  },
+  {
+    "type": "aws_secretsmanager_secret",
+    "count": 1
+  },
+  {
+    "type": "aws_secretsmanager_secret_version",
+    "count": 1
+  },
+  {
+    "type": "aws_sfn_state_machine",
+    "count": 1
+  },
+  {
+    "type": "aws_sqs_queue",
+    "count": 4
+  },
+  {
+    "type": "aws_sqs_queue_redrive_policy",
+    "count": 2
+  }
+]
+}

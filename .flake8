@@ -1,0 +1,41 @@
+[flake8]
+max-line-length = 127
+max-complexity = 10
+exclude = 
+    .git,
+    __pycache__,
+    .pytest_cache,
+    .coverage,
+    *.egg-info,
+    build,
+    dist,
+    venv,
+    env,
+    .venv,
+    .env
+
+# Error codes to ignore
+ignore = 
+    # Line too long (handled by black)
+    E501,
+    # Line break before binary operator (conflicts with black)
+    W503,
+    # Line break after binary operator (conflicts with black)  
+    W504
+
+# Error codes to always check
+select = 
+    # Python syntax errors
+    E9,
+    # Undefined names
+    F63,
+    F7,
+    F82
+
+per-file-ignores =
+    # Tests can have longer lines and more complex fixtures
+    tests/*:E501,C901
+    # Lambda functions may have specific AWS patterns
+    lambda_functions/*:E501
+    # Examples can be more relaxed
+    examples/*:E501,C901
