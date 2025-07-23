@@ -165,8 +165,8 @@ resource "aws_lambda_function" "disconnect_handler" {
   memory_size   = 256
   architectures = ["arm64"]
 
-  filename         = "./../lambda_packages/disconnect_handler.zip"
-  source_code_hash = filebase64sha256("./../lambda_packages/disconnect_handler.zip")
+  filename         = "../lambda_packages/disconnect_handler.zip"
+  source_code_hash = filebase64sha256("../lambda_packages/disconnect_handler.zip")
 
   layers = [
     aws_lambda_layer_version.json_layer_arm64.arn
@@ -383,8 +383,8 @@ resource "aws_lambda_function" "connection_limit_enforcer" {
   memory_size   = 256
   architectures = ["arm64"]
 
-  filename         = "./../lambda_packages/connection_limit_enforcer.zip"
-  source_code_hash = filebase64sha256("./../lambda_packages/connection_limit_enforcer.zip")
+  filename         = "../lambda_packages/connection_limit_enforcer.zip"
+  source_code_hash = filebase64sha256("../lambda_packages/connection_limit_enforcer.zip")
 
   layers = [
     aws_lambda_layer_version.json_layer_arm64.arn
@@ -414,8 +414,8 @@ resource "aws_lambda_function" "connection_router" {
   memory_size   = 256
   architectures = ["arm64"]
 
-  filename         = "./../lambda_packages/connection_router.zip"
-  source_code_hash = filebase64sha256("./../lambda_packages/connection_router.zip")
+  filename         = "../lambda_packages/connection_router.zip"
+  source_code_hash = filebase64sha256("../lambda_packages/connection_router.zip")
 
   layers = [
     aws_lambda_layer_version.json_layer_arm64.arn

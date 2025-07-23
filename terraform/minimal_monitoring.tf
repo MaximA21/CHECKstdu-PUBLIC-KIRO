@@ -98,7 +98,8 @@ resource "aws_cloudwatch_dashboard" "minimal_essential_dashboard" {
     ]
   })
 
-  tags = local.common_tags
+  # Note: CloudWatch dashboards don't support tags in older AWS provider versions
+  # tags = local.common_tags
 }
 
 # Critical alarm: API Gateway error rate > 10%

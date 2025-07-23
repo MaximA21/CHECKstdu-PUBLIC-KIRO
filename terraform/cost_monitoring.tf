@@ -10,16 +10,20 @@ resource "aws_budgets_budget" "monthly_student_budget" {
   time_unit    = "MONTHLY"
   time_period_start = "2025-01-01_00:00"
 
-  cost_filters = {
-    Service = [
-      "Amazon API Gateway",
-      "AWS Lambda",
-      "Amazon DynamoDB",
-      "Amazon CloudWatch",
-      "Amazon Simple Notification Service",
-      "Amazon Simple Queue Service",
-      "AWS Step Functions"
-    ]
+  cost_filter {
+    dimension {
+      key           = "Service"
+      values        = [
+        "Amazon API Gateway",
+        "AWS Lambda",
+        "Amazon DynamoDB",
+        "Amazon CloudWatch",
+        "Amazon Simple Notification Service",
+        "Amazon Simple Queue Service",
+        "AWS Step Functions"
+      ]
+      match_options = ["EQUALS"]
+    }
   }
 
   notification {

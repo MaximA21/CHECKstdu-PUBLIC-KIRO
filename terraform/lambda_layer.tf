@@ -37,9 +37,9 @@ resource "aws_lambda_layer_version" "json_layer_arm64" {
 
 # Lambda Layer for data processing (polars) - ARM64
 resource "aws_lambda_layer_version" "polars_layer_arm64" {
-  filename         = "./../lambda_packages/polars_layer_arm64.zip"
+  filename         = "../lambda_packages/polars_layer_arm64.zip"
   layer_name       = "${var.project_name}-${var.environment}-polars-arm64"
-  source_code_hash = filebase64sha256("./../lambda_packages/polars_layer_arm64.zip")
+  source_code_hash = filebase64sha256("../lambda_packages/polars_layer_arm64.zip")
 
   compatible_runtimes      = ["python3.9", "python3.10", "python3.11"]
   compatible_architectures = ["arm64"]
@@ -50,9 +50,9 @@ resource "aws_lambda_layer_version" "polars_layer_arm64" {
 
 # Lambda Layer for shared dependencies (boto3, requests, etc.) - ARM64
 resource "aws_lambda_layer_version" "shared_dependencies_layer_arm64" {
-  filename         = "./../lambda_packages/shared_dependencies_arm64.zip"
+  filename         = "../lambda_packages/shared_dependencies_arm64.zip"
   layer_name       = "${var.project_name}-${var.environment}-shared-deps-arm64"
-  source_code_hash = filebase64sha256("./../lambda_packages/shared_dependencies_arm64.zip")
+  source_code_hash = filebase64sha256("../lambda_packages/shared_dependencies_arm64.zip")
 
   compatible_runtimes      = ["python3.9", "python3.10", "python3.11"]
   compatible_architectures = ["arm64"]
