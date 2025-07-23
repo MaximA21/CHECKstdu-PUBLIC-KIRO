@@ -16,76 +16,16 @@ API_KEY = "D0156B21AE587299B0B1E9D17444BAAF8C308887C4E2A157269C58CCFCA092F2898F6
 
 # Extended test data - more addresses across Germany
 TEST_ADDRESSES = [
-    {
-        "name": "Munich",
-        "street": "Kiefernstrasse",
-        "houseNumber": "25",
-        "city": "Munich",
-        "plz": "81549"
-    },
-    {
-        "name": "Berlin",
-        "street": "Alexanderplatz",
-        "houseNumber": "1",
-        "city": "Berlin",
-        "plz": "10178"
-    },
-    {
-        "name": "Hamburg",
-        "street": "Reeperbahn",
-        "houseNumber": "10",
-        "city": "Hamburg",
-        "plz": "20359"
-    },
-    {
-        "name": "Cologne",
-        "street": "Hohe Strasse",
-        "houseNumber": "50",
-        "city": "Köln",
-        "plz": "50667"
-    },
-    {
-        "name": "Frankfurt",
-        "street": "Zeil",
-        "houseNumber": "106",
-        "city": "Frankfurt am Main",
-        "plz": "60313"
-    },
-    {
-        "name": "Stuttgart",
-        "street": "Königstrasse",
-        "houseNumber": "78",
-        "city": "Stuttgart",
-        "plz": "70173"
-    },
-    {
-        "name": "Düsseldorf",
-        "street": "Königsallee",
-        "houseNumber": "2",
-        "city": "Düsseldorf",
-        "plz": "40212"
-    },
-    {
-        "name": "Leipzig",
-        "street": "Augustusplatz",
-        "houseNumber": "9",
-        "city": "Leipzig",
-        "plz": "04109"
-    },
-    {
-        "name": "Nuremberg",
-        "street": "Hauptmarkt",
-        "houseNumber": "14",
-        "city": "Nürnberg",
-        "plz": "90403"
-    },
-    {
-        "name": "Dresden",
-        "street": "Prager Strasse",
-        "houseNumber": "2",
-        "city": "Dresden",
-        "plz": "01069"
-    }
+    {"name": "Munich", "street": "Kiefernstrasse", "houseNumber": "25", "city": "Munich", "plz": "81549"},
+    {"name": "Berlin", "street": "Alexanderplatz", "houseNumber": "1", "city": "Berlin", "plz": "10178"},
+    {"name": "Hamburg", "street": "Reeperbahn", "houseNumber": "10", "city": "Hamburg", "plz": "20359"},
+    {"name": "Cologne", "street": "Hohe Strasse", "houseNumber": "50", "city": "Köln", "plz": "50667"},
+    {"name": "Frankfurt", "street": "Zeil", "houseNumber": "106", "city": "Frankfurt am Main", "plz": "60313"},
+    {"name": "Stuttgart", "street": "Königstrasse", "houseNumber": "78", "city": "Stuttgart", "plz": "70173"},
+    {"name": "Düsseldorf", "street": "Königsallee", "houseNumber": "2", "city": "Düsseldorf", "plz": "40212"},
+    {"name": "Leipzig", "street": "Augustusplatz", "houseNumber": "9", "city": "Leipzig", "plz": "04109"},
+    {"name": "Nuremberg", "street": "Hauptmarkt", "houseNumber": "14", "city": "Nürnberg", "plz": "90403"},
+    {"name": "Dresden", "street": "Prager Strasse", "houseNumber": "2", "city": "Dresden", "plz": "01069"},
 ]
 
 # Try different connection type variations based on your working example
@@ -130,34 +70,34 @@ def extract_offer_details(xml_response: str) -> List[Dict]:
 
         # Register namespace to avoid issues
         namespaces = {
-            'ns2': 'http://webwunder.gendev7.check24.fun/offerservice',
-            'soap': 'http://schemas.xmlsoap.org/soap/envelope/'
+            "ns2": "http://webwunder.gendev7.check24.fun/offerservice",
+            "soap": "http://schemas.xmlsoap.org/soap/envelope/",
         }
 
         # Find all product elements using the correct namespace
-        product_elements = root.findall('.//ns2:products', namespaces)
+        product_elements = root.findall(".//ns2:products", namespaces)
 
         if not product_elements:
             # Fallback: try without namespace
-            product_elements = root.findall('.//products')
+            product_elements = root.findall(".//products")
 
         print(f"🔍 Found {len(product_elements)} product elements")
 
         for i, product_elem in enumerate(product_elements, 1):
             try:
                 # Extract basic product info
-                product_id = product_elem.find('ns2:productId', namespaces)
+                product_id = product_elem.find("ns2:productId", namespaces)
                 if product_id is None:
-                    product_id = product_elem.find('productId')
+                    product_id = product_elem.find("productId")
 
-                provider_name = product_elem.find('ns2:providerName', namespaces)
+                provider_name = product_elem.find("ns2:providerName", namespaces)
                 if provider_name is None:
-                    provider_name = product_elem.find('providerName')
+                    provider_name = product_elem.find("providerName")
 
                 # Find productInfo element
-                product_info = product_elem.find('ns2:productInfo', namespaces)
+                product_info = product_elem.find("ns2:productInfo", namespaces)
                 if product_info is None:
-                    product_info = product_elem.find('productInfo')
+                    product_info = product_elem.find("productInfo")
 
                 offer_details = {
                     "offer_id": i,
@@ -167,51 +107,49 @@ def extract_offer_details(xml_response: str) -> List[Dict]:
 
                 if product_info is not None:
                     # Extract details from productInfo
-                    speed = product_info.find('ns2:speed', namespaces)
+                    speed = product_info.find("ns2:speed", namespaces)
                     if speed is None:
-                        speed = product_info.find('speed')
+                        speed = product_info.find("speed")
                     offer_details["speed"] = speed.text if speed is not None else "N/A"
 
-                    monthly_cost = product_info.find('ns2:monthlyCostInCent', namespaces)
+                    monthly_cost = product_info.find("ns2:monthlyCostInCent", namespaces)
                     if monthly_cost is None:
-                        monthly_cost = product_info.find('monthlyCostInCent')
+                        monthly_cost = product_info.find("monthlyCostInCent")
                     offer_details["monthly_cost"] = monthly_cost.text if monthly_cost is not None else "N/A"
 
-                    monthly_cost_25 = product_info.find('ns2:monthlyCostInCentFrom25thMonth', namespaces)
+                    monthly_cost_25 = product_info.find("ns2:monthlyCostInCentFrom25thMonth", namespaces)
                     if monthly_cost_25 is None:
-                        monthly_cost_25 = product_info.find('monthlyCostInCentFrom25thMonth')
-                    offer_details[
-                        "monthly_cost_from_25th"] = monthly_cost_25.text if monthly_cost_25 is not None else "N/A"
+                        monthly_cost_25 = product_info.find("monthlyCostInCentFrom25thMonth")
+                    offer_details["monthly_cost_from_25th"] = monthly_cost_25.text if monthly_cost_25 is not None else "N/A"
 
-                    contract_duration = product_info.find('ns2:contractDurationInMonths', namespaces)
+                    contract_duration = product_info.find("ns2:contractDurationInMonths", namespaces)
                     if contract_duration is None:
-                        contract_duration = product_info.find('contractDurationInMonths')
-                    offer_details[
-                        "contract_duration"] = contract_duration.text if contract_duration is not None else "N/A"
+                        contract_duration = product_info.find("contractDurationInMonths")
+                    offer_details["contract_duration"] = contract_duration.text if contract_duration is not None else "N/A"
 
-                    connection_type = product_info.find('ns2:connectionType', namespaces)
+                    connection_type = product_info.find("ns2:connectionType", namespaces)
                     if connection_type is None:
-                        connection_type = product_info.find('connectionType')
+                        connection_type = product_info.find("connectionType")
                     offer_details["connection_type"] = connection_type.text if connection_type is not None else "N/A"
 
                     # Extract voucher info if present
-                    voucher = product_info.find('ns2:voucher', namespaces)
+                    voucher = product_info.find("ns2:voucher", namespaces)
                     if voucher is None:
-                        voucher = product_info.find('voucher')
+                        voucher = product_info.find("voucher")
 
                     if voucher is not None:
-                        percentage = voucher.find('ns2:percentage', namespaces)
+                        percentage = voucher.find("ns2:percentage", namespaces)
                         if percentage is None:
-                            percentage = voucher.find('percentage')
+                            percentage = voucher.find("percentage")
                         offer_details["voucher_percentage"] = percentage.text if percentage is not None else "N/A"
 
-                        max_discount = voucher.find('ns2:maxDiscountInCent', namespaces)
+                        max_discount = voucher.find("ns2:maxDiscountInCent", namespaces)
                         if max_discount is None:
-                            max_discount = voucher.find('maxDiscountInCent')
+                            max_discount = voucher.find("maxDiscountInCent")
                         offer_details["voucher_max_discount"] = max_discount.text if max_discount is not None else "N/A"
 
                 # Print the extracted offer info
-                speed_text = f" - {offer_details['speed']} Mbps" if offer_details['speed'] != "N/A" else ""
+                speed_text = f" - {offer_details['speed']} Mbps" if offer_details["speed"] != "N/A" else ""
                 print(f"📦 Extracted offer {i}: {offer_details['provider_name']}{speed_text}")
 
                 offers.append(offer_details)
@@ -237,22 +175,17 @@ def call_webwunder_api(address: Dict, installation: bool, connection_type: str) 
 
     headers = {
         "Content-Type": "text/xml; charset=utf-8",
-        "X-Api-Key": API_KEY
+        "X-Api-Key": API_KEY,
         # No SOAPAction needed based on your Postman example
     }
 
     try:
         print(f"🔄 Testing {address['name']} | {connection_type} | Installation: {installation}")
 
-        response = requests.post(
-            API_URL,
-            data=soap_body,
-            headers=headers,
-            timeout=30
-        )
+        response = requests.post(API_URL, data=soap_body, headers=headers, timeout=30)
 
         result = {
-            "address": address['name'],
+            "address": address["name"],
             "connection_type": connection_type,
             "installation": installation,
             "status_code": response.status_code,
@@ -260,7 +193,7 @@ def call_webwunder_api(address: Dict, installation: bool, connection_type: str) 
             "response_size": len(response.text),
             "offers_count": 0,
             "error": None,
-            "raw_response": response.text[:500] + "..." if len(response.text) > 500 else response.text
+            "raw_response": response.text[:500] + "..." if len(response.text) > 500 else response.text,
         }
 
         if response.status_code == 200:
@@ -271,11 +204,12 @@ def call_webwunder_api(address: Dict, installation: bool, connection_type: str) 
 
             if offers:
                 # Summary statistics
-                result["has_pricing"] = any(offer.get('monthly_cost') != 'N/A' for offer in offers)
-                result["has_discounts"] = any(offer.get('voucher_percentage') != 'N/A' for offer in offers)
+                result["has_pricing"] = any(offer.get("monthly_cost") != "N/A" for offer in offers)
+                result["has_discounts"] = any(offer.get("voucher_percentage") != "N/A" for offer in offers)
                 result["unique_names"] = list(
-                    set(offer.get('provider_name') for offer in offers if offer.get('provider_name') != 'N/A'))
-                result["speed_range"] = [offer.get('speed') for offer in offers if offer.get('speed') != 'N/A']
+                    set(offer.get("provider_name") for offer in offers if offer.get("provider_name") != "N/A")
+                )
+                result["speed_range"] = [offer.get("speed") for offer in offers if offer.get("speed") != "N/A"]
 
         else:
             result["error"] = f"HTTP {response.status_code}: {response.text[:500]}"
@@ -294,19 +228,19 @@ def call_webwunder_api(address: Dict, installation: bool, connection_type: str) 
 
     except requests.exceptions.Timeout:
         return {
-            "address": address['name'],
+            "address": address["name"],
             "connection_type": connection_type,
             "installation": installation,
             "error": "Request timeout",
-            "success": False
+            "success": False,
         }
     except Exception as e:
         return {
-            "address": address['name'],
+            "address": address["name"],
             "connection_type": connection_type,
             "installation": installation,
             "error": str(e),
-            "success": False
+            "success": False,
         }
 
 
@@ -323,42 +257,42 @@ def analyze_results(results: List[Dict]) -> None:
     by_address = {}
 
     for result in results:
-        if not result['success']:
+        if not result["success"]:
             continue
 
         # Group by installation parameter
-        inst_key = result['installation']
+        inst_key = result["installation"]
         if inst_key not in by_installation:
             by_installation[inst_key] = []
         by_installation[inst_key].append(result)
 
         # Group by connection type
-        conn_key = result['connection_type']
+        conn_key = result["connection_type"]
         if conn_key not in by_connection:
             by_connection[conn_key] = []
         by_connection[conn_key].append(result)
 
         # Group by address
-        addr_key = result['address']
+        addr_key = result["address"]
         if addr_key not in by_address:
             by_address[addr_key] = []
         by_address[addr_key].append(result)
 
     print("\n🔧 INSTALLATION PARAMETER IMPACT:")
     for installation, results_list in by_installation.items():
-        avg_offers = sum(r['offers_count'] for r in results_list) / len(results_list)
+        avg_offers = sum(r["offers_count"] for r in results_list) / len(results_list)
         total_tests = len(results_list)
         print(f"  Installation={installation}: {total_tests} tests, avg {avg_offers:.1f} offers")
 
     print("\n🌐 CONNECTION TYPE IMPACT:")
     for conn_type, results_list in by_connection.items():
-        avg_offers = sum(r['offers_count'] for r in results_list) / len(results_list)
+        avg_offers = sum(r["offers_count"] for r in results_list) / len(results_list)
         total_tests = len(results_list)
         print(f"  {conn_type}: {total_tests} tests, avg {avg_offers:.1f} offers")
 
     print("\n📍 ADDRESS IMPACT:")
     for address, results_list in by_address.items():
-        avg_offers = sum(r['offers_count'] for r in results_list) / len(results_list)
+        avg_offers = sum(r["offers_count"] for r in results_list) / len(results_list)
         total_tests = len(results_list)
         print(f"  {address}: {total_tests} tests, avg {avg_offers:.1f} offers")
 
@@ -368,19 +302,25 @@ def analyze_results(results: List[Dict]) -> None:
     # Get unique address/connection combinations from the results
     test_combinations = set()
     for result in results:
-        if result['success']:
-            test_combinations.add((result['address'], result['connection_type']))
+        if result["success"]:
+            test_combinations.add((result["address"], result["connection_type"]))
 
     for address, conn_type in test_combinations:
-        true_results = [r for r in results if r['address'] == address and
-                        r['connection_type'] == conn_type and r['installation'] == True and r['success']]
-        false_results = [r for r in results if r['address'] == address and
-                         r['connection_type'] == conn_type and r['installation'] == False and r['success']]
+        true_results = [
+            r
+            for r in results
+            if r["address"] == address and r["connection_type"] == conn_type and r["installation"] == True and r["success"]
+        ]
+        false_results = [
+            r
+            for r in results
+            if r["address"] == address and r["connection_type"] == conn_type and r["installation"] == False and r["success"]
+        ]
 
         if true_results and false_results:
             # Calculate averages across all rounds for this combination
-            true_avg = sum(r['offers_count'] for r in true_results) / len(true_results)
-            false_avg = sum(r['offers_count'] for r in false_results) / len(false_results)
+            true_avg = sum(r["offers_count"] for r in true_results) / len(true_results)
+            false_avg = sum(r["offers_count"] for r in false_results) / len(false_results)
 
             if abs(true_avg - false_avg) > 0.1:  # Any noticeable difference
                 print(f"  🎯 DIFFERENCE FOUND! {address} {conn_type}:")
@@ -398,20 +338,20 @@ def compare_installation_impact(results: List[Dict]) -> Dict[str, Any]:
         "no_differences": [],
         "price_differences": [],
         "offer_count_differences": [],
-        "summary_stats": {}
+        "summary_stats": {},
     }
 
     # Group results by address and connection type
     grouped = {}
     for result in results:
-        if not result['success']:
+        if not result["success"]:
             continue
 
         key = f"{result['address']}_{result['connection_type']}"
         if key not in grouped:
             grouped[key] = {"true": [], "false": []}
 
-        grouped[key][str(result['installation']).lower()].append(result)
+        grouped[key][str(result["installation"]).lower()].append(result)
 
     print("\n🔬 DETAILED INSTALLATION PARAMETER IMPACT ANALYSIS:")
     print("=" * 70)
@@ -428,8 +368,8 @@ def compare_installation_impact(results: List[Dict]) -> Dict[str, Any]:
         print(f"\n📍 {address} | {conn_type}:")
 
         # Compare offer counts across all rounds
-        true_counts = [r['offers_count'] for r in true_results]
-        false_counts = [r['offers_count'] for r in false_results]
+        true_counts = [r["offers_count"] for r in true_results]
+        false_counts = [r["offers_count"] for r in false_results]
 
         true_avg = sum(true_counts) / len(true_counts)
         false_avg = sum(false_counts) / len(false_counts)
@@ -439,12 +379,14 @@ def compare_installation_impact(results: List[Dict]) -> Dict[str, Any]:
 
         # Check for significant differences
         if abs(true_avg - false_avg) > 0.5:  # More than 0.5 offers difference on average
-            impact_analysis["significant_differences"].append({
-                "location": f"{address}_{conn_type}",
-                "true_avg": true_avg,
-                "false_avg": false_avg,
-                "difference": true_avg - false_avg
-            })
+            impact_analysis["significant_differences"].append(
+                {
+                    "location": f"{address}_{conn_type}",
+                    "true_avg": true_avg,
+                    "false_avg": false_avg,
+                    "difference": true_avg - false_avg,
+                }
+            )
             print(f"   🎯 SIGNIFICANT DIFFERENCE: {true_avg - false_avg:.1f} offers")
         else:
             impact_analysis["no_differences"].append(f"{address}_{conn_type}")
@@ -455,21 +397,21 @@ def compare_installation_impact(results: List[Dict]) -> Dict[str, Any]:
         false_prices = []
 
         for result in true_results:
-            if result.get('offers_details'):
-                for offer in result['offers_details']:
-                    if offer.get('monthly_cost') != 'N/A':
+            if result.get("offers_details"):
+                for offer in result["offers_details"]:
+                    if offer.get("monthly_cost") != "N/A":
                         try:
-                            price = int(offer['monthly_cost'])
+                            price = int(offer["monthly_cost"])
                             true_prices.append(price)
                         except:
                             pass
 
         for result in false_results:
-            if result.get('offers_details'):
-                for offer in result['offers_details']:
-                    if offer.get('monthly_cost') != 'N/A':
+            if result.get("offers_details"):
+                for offer in result["offers_details"]:
+                    if offer.get("monthly_cost") != "N/A":
                         try:
-                            price = int(offer['monthly_cost'])
+                            price = int(offer["monthly_cost"])
                             false_prices.append(price)
                         except:
                             pass
@@ -480,12 +422,14 @@ def compare_installation_impact(results: List[Dict]) -> Dict[str, Any]:
             price_diff = abs(true_price_avg - false_price_avg)
 
             if price_diff > 100:  # More than 1 EUR difference (prices in cents)
-                impact_analysis["price_differences"].append({
-                    "location": f"{address}_{conn_type}",
-                    "true_avg_price": true_price_avg,
-                    "false_avg_price": false_price_avg,
-                    "difference_cents": price_diff
-                })
+                impact_analysis["price_differences"].append(
+                    {
+                        "location": f"{address}_{conn_type}",
+                        "true_avg_price": true_price_avg,
+                        "false_avg_price": false_price_avg,
+                        "difference_cents": price_diff,
+                    }
+                )
                 print(f"   💰 Price difference: {price_diff / 100:.2f} EUR")
 
     return impact_analysis
@@ -495,7 +439,7 @@ def save_comprehensive_results(results: List[Dict], analysis: Dict) -> str:
     """Save detailed results with analysis"""
 
     timestamp = time.strftime("%Y%m%d_%H%M%S")
-    filename = f'webwunder_comprehensive_test_{timestamp}.json'
+    filename = f"webwunder_comprehensive_test_{timestamp}.json"
 
     comprehensive_data = {
         "test_metadata": {
@@ -503,20 +447,20 @@ def save_comprehensive_results(results: List[Dict], analysis: Dict) -> str:
             "total_addresses": len(TEST_ADDRESSES),
             "connection_types": CONNECTION_TYPES,
             "sampling_rounds": SAMPLING_ROUNDS,
-            "total_tests": len(results)
+            "total_tests": len(results),
         },
         "impact_analysis": analysis,
         "raw_results": results,
         "summary": {
-            "successful_tests": len([r for r in results if r['success']]),
-            "failed_tests": len([r for r in results if not r['success']]),
-            "total_offers_found": sum(r.get('offers_count', 0) for r in results),
+            "successful_tests": len([r for r in results if r["success"]]),
+            "failed_tests": len([r for r in results if not r["success"]]),
+            "total_offers_found": sum(r.get("offers_count", 0) for r in results),
             "locations_with_differences": len(analysis["significant_differences"]),
-            "locations_with_price_differences": len(analysis["price_differences"])
-        }
+            "locations_with_price_differences": len(analysis["price_differences"]),
+        },
     }
 
-    with open(filename, 'w') as f:
+    with open(filename, "w") as f:
         json.dump(comprehensive_data, f, indent=2)
 
     print(f"\n💾 Comprehensive results saved to {filename}")
@@ -527,7 +471,8 @@ def main():
     """Run the comprehensive test suite"""
     print("🚀 WebWunder API Comprehensive Test Suite")
     print(
-        f"📊 Testing {len(TEST_ADDRESSES)} addresses × {len(CONNECTION_TYPES)} connection types × {len(INSTALLATION_OPTIONS)} installation options")
+        f"📊 Testing {len(TEST_ADDRESSES)} addresses × {len(CONNECTION_TYPES)} connection types × {len(INSTALLATION_OPTIONS)} installation options"
+    )
     print(f"🔄 Running {SAMPLING_ROUNDS} sampling rounds with {ROUND_DELAY_MINUTES}min delays")
 
     # Filter addresses for quick mode
@@ -560,7 +505,7 @@ def main():
                     all_results.append(result)
 
                     # Show immediate result
-                    if result['success']:
+                    if result["success"]:
                         print(f"✅ Success: {result['offers_count']} offers")
                     else:
                         print(f"❌ Failed: {result.get('error', 'Unknown error')}")
@@ -590,8 +535,8 @@ def main():
     filename = save_comprehensive_results(all_results, impact_analysis)
 
     # Final summary
-    successful_tests = [r for r in all_results if r['success']]
-    failed_tests = [r for r in all_results if not r['success']]
+    successful_tests = [r for r in all_results if r["success"]]
+    failed_tests = [r for r in all_results if not r["success"]]
 
     print(f"\n📈 FINAL SUMMARY:")
     print(f"  Total test combinations: {len(all_results)}")
@@ -600,7 +545,7 @@ def main():
     print(f"  Success rate: {len(successful_tests) / len(all_results) * 100:.1f}%")
 
     if successful_tests:
-        total_offers = sum(r['offers_count'] for r in successful_tests)
+        total_offers = sum(r["offers_count"] for r in successful_tests)
         avg_offers = total_offers / len(successful_tests)
         print(f"  Average offers per successful test: {avg_offers:.1f}")
 
@@ -608,7 +553,8 @@ def main():
     if impact_analysis["significant_differences"]:
         print(f"\n🎯 INSTALLATION PARAMETER CONCLUSIONS:")
         print(
-            f"  Found significant differences in {len(impact_analysis['significant_differences'])} location/connection combinations")
+            f"  Found significant differences in {len(impact_analysis['significant_differences'])} location/connection combinations"
+        )
         for diff in impact_analysis["significant_differences"]:
             print(f"    {diff['location']}: {diff['difference']:+.1f} offers difference")
     else:

@@ -1,1 +1,1 @@
-"""Tests for shared components.""" 
+"""Tests for shared components."""

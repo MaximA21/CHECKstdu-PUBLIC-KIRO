@@ -5,9 +5,4 @@ from .process_results_use_case import ProcessResultsUseCase
 from .connection_management_use_case import ConnectionManagementUseCase
 from .share_results_use_case import ShareResultsUseCase
 
-__all__ = [
-    "SearchOffersUseCase",
-    "ProcessResultsUseCase", 
-    "ConnectionManagementUseCase",
-    "ShareResultsUseCase"
-]
+__all__ = ["SearchOffersUseCase", "ProcessResultsUseCase", "ConnectionManagementUseCase", "ShareResultsUseCase"]

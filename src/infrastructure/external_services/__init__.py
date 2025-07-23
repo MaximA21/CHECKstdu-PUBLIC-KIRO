@@ -16,23 +16,23 @@ from .mock_providers import (
     MockWebWunder,
     MockPingPerfect,
     MockProviderRegistry,
-    MockProviderAggregator
+    MockProviderAggregator,
 )
 
 __all__ = [
     # Concrete implementations
-    'ByteMeAdapter',
-    'VerbynDichAdapter',
-    'WebWunderAdapter',
-    'PingPerfectAdapter',
-    'ProviderRegistry',
-    'ProviderAggregator',
+    "ByteMeAdapter",
+    "VerbynDichAdapter",
+    "WebWunderAdapter",
+    "PingPerfectAdapter",
+    "ProviderRegistry",
+    "ProviderAggregator",
     # Mock implementations
-    'MockProviderService',
-    'MockByteMe',
-    'MockVerbynDich',
-    'MockWebWunder',
-    'MockPingPerfect',
-    'MockProviderRegistry',
-    'MockProviderAggregator'
+    "MockProviderService",
+    "MockByteMe",
+    "MockVerbynDich",
+    "MockWebWunder",
+    "MockPingPerfect",
+    "MockProviderRegistry",
+    "MockProviderAggregator",
 ]

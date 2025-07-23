@@ -14,12 +14,12 @@ from src.shared.dependency_injection import initialize_application, get_containe
 def main():
     """Demonstrate DI container usage."""
     # Set environment for testing
-    os.environ['APP_ENVIRONMENT'] = 'testing'
-    
+    os.environ["APP_ENVIRONMENT"] = "testing"
+
     # Initialize the application
     print("Initializing application...")
     container = initialize_application()
-    
+
     # Get configuration
     config = get_config()
     print(f"Environment: {config.environment.value}")
@@ -27,19 +27,19 @@ def main():
     print(f"Messaging provider: {config.messaging.provider.value}")
     print(f"Logging provider: {config.logging.provider.value}")
     print(f"Debug mode: {config.debug}")
-    
+
     # Demonstrate environment variable overrides
     print("\n--- Testing environment variable overrides ---")
-    os.environ['DB_PROVIDER'] = 'aws_dynamodb'
-    os.environ['LOG_LEVEL'] = 'DEBUG'
-    
+    os.environ["DB_PROVIDER"] = "aws_dynamodb"
+    os.environ["LOG_LEVEL"] = "DEBUG"
+
     # Reinitialize to pick up changes
     container = initialize_application()
     config = get_config()
-    
+
     print(f"Database provider (after override): {config.database.provider.value}")
     print(f"Log level (after override): {config.logging.level}")
-    
+
     print("\nDependency injection system initialized successfully!")
 
 

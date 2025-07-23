@@ -8,7 +8,7 @@ from .base import (
     RetryableException,
     ErrorSeverity,
     ErrorCategory,
-    ErrorContext
+    ErrorContext,
 )
 from .domain import (
     DomainException,
@@ -24,7 +24,7 @@ from .domain import (
     ProcessingException,
     ConnectionException,
     ShareTokenNotFoundException,
-    ShareResultsException
+    ShareResultsException,
 )
 from .infrastructure import (
     InfrastructureException,
@@ -33,42 +33,40 @@ from .infrastructure import (
     ExternalServiceException,
     StorageException,
     ConnectionManagerException,
-    LoggingException
+    LoggingException,
 )
 
 __all__ = [
     # Base exceptions
-    'BaseApplicationException',
-    'ValidationException',
-    'BusinessLogicException',
-    'ExternalServiceException',
-    'RetryableException',
-    'ErrorSeverity',
-    'ErrorCategory',
-    'ErrorContext',
-    
+    "BaseApplicationException",
+    "ValidationException",
+    "BusinessLogicException",
+    "ExternalServiceException",
+    "RetryableException",
+    "ErrorSeverity",
+    "ErrorCategory",
+    "ErrorContext",
     # Domain exceptions
-    'DomainException',
-    'InvalidAddressException',
-    'ProviderUnavailableException',
-    'OfferValidationException',
-    'ConnectionSessionException',
-    'SearchResultException',
-    'RateLimitExceededException',
-    'DataParsingException',
-    'ConfigurationException',
-    'SearchRequestException',
-    'ProcessingException',
-    'ConnectionException',
-    'ShareTokenNotFoundException',
-    'ShareResultsException',
-    
+    "DomainException",
+    "InvalidAddressException",
+    "ProviderUnavailableException",
+    "OfferValidationException",
+    "ConnectionSessionException",
+    "SearchResultException",
+    "RateLimitExceededException",
+    "DataParsingException",
+    "ConfigurationException",
+    "SearchRequestException",
+    "ProcessingException",
+    "ConnectionException",
+    "ShareTokenNotFoundException",
+    "ShareResultsException",
     # Infrastructure exceptions
-    'InfrastructureException',
-    'DatabaseConnectionException',
-    'MessageQueueException',
-    'ExternalServiceException',
-    'StorageException',
-    'ConnectionManagerException',
-    'LoggingException',
+    "InfrastructureException",
+    "DatabaseConnectionException",
+    "MessageQueueException",
+    "ExternalServiceException",
+    "StorageException",
+    "ConnectionManagerException",
+    "LoggingException",
 ]

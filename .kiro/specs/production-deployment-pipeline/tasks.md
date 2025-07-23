@@ -139,25 +139,84 @@
     - Focus on core functionality rather than comprehensive coverage
     - _Requirements: 2.1, 2.6, 5.5, 5.6_
 
-- [ ] 8. Cost-Optimized Production Deployment
-  - [ ] 8.1 Deploy to staging with minimal resources
+- [ ] 8. Fix CI/CD Pipeline Issues and Complete Deployment
+  - [ ] 8.1 Fix missing test files and dependencies
+    - Create missing test_dependency_injection.py file for unit tests
+    - Create missing tests/performance/load_test_runner.py for performance tests
+    - Create missing tests/e2e/test_complete_workflows.py for e2e tests
+    - Create missing tests/integration/test_full_search_flow.py for integration tests
+    - Add missing conftest.py files for pytest configuration
+    - _Requirements: 2.1, 5.1, 5.2, 5.3_
+
+  - [ ] 8.2 Fix GitHub Actions workflow configuration issues
+    - Update workflow file paths and references to existing test files
+    - Fix missing environment variables and secrets configuration
+    - Update artifact upload/download actions to use correct versions
+    - Fix Lambda packaging script references and dependencies
+    - _Requirements: 2.3, 2.4, 2.5_
+
+  - [x] 8.3 Complete legacy code cleanup
+    - Remove any remaining references to legacy storage interfaces
+    - Clean up import statements and unused dependencies
+    - Update documentation to reflect current architecture
+    - Validate all tests pass after cleanup
+    - _Requirements: 1.1, 1.2, 1.3, 1.4_
+
+  - [x] 8.4 Deploy to staging with minimal resources
     - Use shared staging/production environment to reduce costs
     - Deploy with minimal monitoring and logging
     - Validate core functionality without expensive load testing
     - Use basic health checks instead of comprehensive validation
     - _Requirements: 2.6, 4.1, 4.2_
 
-  - [ ] 8.2 Execute production deployment with cost controls
+  - [ ] 8.5 Execute production deployment with cost controls
     - Deploy new implementation with gradual traffic increase
     - Monitor basic metrics only (error rates, response times)
     - Use simple traffic distribution without complex monitoring
     - Focus on functionality over comprehensive observability
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 4.1, 4.2, 4.3, 4.5, 4.6, 4.7_
 
-  - [ ] 8.3 Validate cost-optimized deployment
+  - [ ] 8.6 Validate cost-optimized deployment
     - Run basic health checks on production environment
     - Validate essential monitoring and alerting only
     - Test simple rollback procedures
     - Document cost-optimized operational procedures
     - Monitor actual AWS costs and adjust if needed
     - _Requirements: 4.3, 4.4, 6.4_
+
+- [ ] 9. Immediate CI/CD Pipeline Fixes (Priority)
+  - [ ] 9.1 Create missing test files that are causing workflow failures
+    - Create tests/test_dependency_injection.py with basic DI container tests
+    - Create tests/performance/load_test_runner.py with basic load testing
+    - Create tests/e2e/test_complete_workflows.py with end-to-end workflow tests
+    - Create tests/integration/test_full_search_flow.py with integration tests
+    - Create tests/conftest.py with pytest configuration and fixtures
+    - _Requirements: 2.1, 5.1, 5.2, 5.3_
+
+  - [ ] 9.2 Fix GitHub Actions workflow file references
+    - Update comprehensive-testing.yml to reference existing test files only
+    - Fix deployment.yml artifact download paths and references
+    - Update build-package.yml Lambda packaging script paths
+    - Remove references to non-existent test files in workflows
+    - _Requirements: 2.3, 2.4, 2.5_
+
+  - [ ] 9.3 Configure GitHub repository variables and secrets
+    - Set AWS_GITHUB_ACTIONS_ROLE_ARN repository variable
+    - Set AWS_REGION repository variable to eu-central-1
+    - Verify GITHUB_TOKEN permissions for package registry
+    - Test OIDC authentication with AWS from GitHub Actions
+    - _Requirements: 6.1, 6.4_
+
+  - [ ] 9.4 Fix Lambda packaging and deployment scripts
+    - Update lambda_functions/build.sh to work with current directory structure
+    - Fix Lambda function packaging to include DI container properly
+    - Update deployment scripts to use correct artifact paths
+    - Test Lambda function deployment with new packaging
+    - _Requirements: 2.2, 2.5, 3.2_
+
+  - [ ] 9.5 Validate and fix workflow dependencies
+    - Ensure all workflow jobs have correct dependencies and conditions
+    - Fix artifact upload/download between workflow jobs
+    - Update workflow triggers to work correctly with kiro-rewrite branch
+    - Test complete CI/CD pipeline end-to-end
+    - _Requirements: 2.1, 2.3, 2.4, 2.6, 2.7_

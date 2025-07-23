@@ -63,10 +63,10 @@ class TestBasicDIContainer:
     def test_container_registration_and_resolution(self):
         """Test basic registration and resolution"""
         container = DIContainer()
-        
+
         # Register a simple service
         container.register(str, lambda: "test_value")
-        
+
         # Resolve the service
         result = container.resolve(str)
         assert result == "test_value"
@@ -74,24 +74,24 @@ class TestBasicDIContainer:
     def test_container_singleton_behavior(self):
         """Test that singleton services return the same instance"""
         container = DIContainer()
-        
+
         # Register a singleton service
         container.register_singleton(list, lambda: [1, 2, 3])
-        
+
         # Resolve twice
         instance1 = container.resolve(list)
         instance2 = container.resolve(list)
-        
+
         assert instance1 is instance2
         assert instance1 == [1, 2, 3]
 
     def test_container_is_registered(self):
         """Test that container can check if services are registered"""
         container = DIContainer()
-        
+
         # Initially not registered
         assert not container.is_registered(str)
-        
+
         # After registration
         container.register(str, lambda: "test")
         assert container.is_registered(str)
@@ -99,11 +99,11 @@ class TestBasicDIContainer:
     def test_container_clear(self):
         """Test that container can be cleared"""
         container = DIContainer()
-        
+
         # Register a service
         container.register(str, lambda: "test")
         assert container.is_registered(str)
-        
+
         # Clear container
         container.clear()
         assert not container.is_registered(str)
@@ -111,7 +111,7 @@ class TestBasicDIContainer:
     def test_container_resolve_unregistered_service(self):
         """Test that container raises exception for unregistered service"""
         container = DIContainer()
-        
+
         with pytest.raises(Exception):
             container.resolve(str)
 
@@ -120,17 +120,17 @@ class TestBasicDIContainer:
         container = DIContainer()
         test_instance = [1, 2, 3]
         container.register_instance(list, test_instance)
-        
+
         result = container.resolve(list)
         assert result is test_instance
 
     def test_container_register_factory(self):
         """Test registering a factory function"""
         container = DIContainer()
-        
+
         def factory():
             return {"key": "value"}
-        
+
         container.register(dict, factory)
         result = container.resolve(dict)
         assert result == {"key": "value"}
@@ -147,13 +147,13 @@ class TestBootstrapFunctions:
         """Test that reset_container works"""
         # Get initial container
         container1 = get_container()
-        
+
         # Reset container
         reset_container()
-        
+
         # Get new container
         container2 = get_container()
-        
+
         # They should be different instances
         assert container1 is not container2
 
@@ -185,11 +185,7 @@ class TestBasicExceptions:
 
     def test_base_application_exception_with_severity(self):
         """Test BaseApplicationException with severity"""
-        exception = BaseApplicationException(
-            "Test error",
-            severity=ErrorSeverity.HIGH,
-            category=ErrorCategory.SYSTEM
-        )
+        exception = BaseApplicationException("Test error", severity=ErrorSeverity.HIGH, category=ErrorCategory.SYSTEM)
         assert exception.severity == ErrorSeverity.HIGH
         assert exception.category == ErrorCategory.SYSTEM
 
@@ -373,57 +369,38 @@ class TestUseCases:
     def test_search_offers_use_case_creation(self):
         """Test SearchOffersUseCase creation"""
         use_case = SearchOffersUseCase(
-            provider_registry=MagicMock(),
-            result_repository=MagicMock(),
-            messaging_adapter=MagicMock(),
-            logger=MagicMock()
+            provider_registry=MagicMock(), result_repository=MagicMock(), messaging_adapter=MagicMock(), logger=MagicMock()
         )
         assert use_case is not None
 
     def test_share_results_use_case_creation(self):
         """Test ShareResultsUseCase creation"""
-        use_case = ShareResultsUseCase(
-            result_repository=MagicMock(),
-            logger=MagicMock()
-        )
+        use_case = ShareResultsUseCase(result_repository=MagicMock(), logger=MagicMock())
         assert use_case is not None
 
     def test_connection_management_use_case_creation(self):
         """Test ConnectionManagementUseCase creation"""
-        use_case = ConnectionManagementUseCase(
-            connection_manager=MagicMock(),
-            logger=MagicMock()
-        )
+        use_case = ConnectionManagementUseCase(connection_manager=MagicMock(), logger=MagicMock())
         assert use_case is not None
 
     def test_process_results_use_case_creation(self):
         """Test ProcessResultsUseCase creation"""
-        use_case = ProcessResultsUseCase(
-            result_repository=MagicMock(),
-            logger=MagicMock()
-        )
+        use_case = ProcessResultsUseCase(result_repository=MagicMock(), logger=MagicMock())
         assert use_case is not None
 
     def test_requestor_use_case_creation(self):
         """Test RequestorUseCase creation"""
-        use_case = RequestorUseCase(
-            messaging_adapter=MagicMock(),
-            logger=MagicMock()
-        )
+        use_case = RequestorUseCase(messaging_adapter=MagicMock(), logger=MagicMock())
         assert use_case is not None
 
     def test_address_normalization_use_case_creation(self):
         """Test AddressNormalizationUseCase creation"""
-        use_case = AddressNormalizationUseCase(
-            logger=MagicMock()
-        )
+        use_case = AddressNormalizationUseCase(logger=MagicMock())
         assert use_case is not None
 
     def test_authorization_use_case_creation(self):
         """Test AuthorizationUseCase creation"""
-        use_case = AuthorizationUseCase(
-            logger=MagicMock()
-        )
+        use_case = AuthorizationUseCase(logger=MagicMock())
         assert use_case is not None
 
 
@@ -435,108 +412,69 @@ class TestPresentation:
 
     def test_search_controller_creation(self):
         """Test SearchController creation"""
-        controller = SearchController(
-            search_use_case=MagicMock(),
-            logger=MagicMock()
-        )
+        controller = SearchController(search_use_case=MagicMock(), logger=MagicMock())
         assert controller is not None
 
     def test_share_controller_creation(self):
         """Test ShareController creation"""
-        controller = ShareController(
-            share_use_case=MagicMock(),
-            logger=MagicMock()
-        )
+        controller = ShareController(share_use_case=MagicMock(), logger=MagicMock())
         assert controller is not None
 
     def test_connection_handler_creation(self):
         """Test ConnectionHandler creation"""
-        handler = ConnectionHandler(
-            connection_use_case=MagicMock(),
-            logger=MagicMock()
-        )
+        handler = ConnectionHandler(connection_use_case=MagicMock(), logger=MagicMock())
         assert handler is not None
 
     def test_websocket_server_creation(self):
         """Test WebSocketServer creation"""
-        server = WebSocketServer(
-            connection_handler=MagicMock(),
-            logger=MagicMock()
-        )
+        server = WebSocketServer(connection_handler=MagicMock(), logger=MagicMock())
         assert server is not None
 
 
 class TestLambdaHandlers:
     def test_search_handler_creation(self):
         """Test SearchHandler creation"""
-        handler = SearchHandler(
-            container=MagicMock(),
-            logger=MagicMock()
-        )
+        handler = SearchHandler(container=MagicMock(), logger=MagicMock())
         assert handler is not None
 
     def test_share_api_handler_creation(self):
         """Test ShareApiHandler creation"""
-        handler = ShareApiHandler(
-            container=MagicMock(),
-            logger=MagicMock()
-        )
+        handler = ShareApiHandler(container=MagicMock(), logger=MagicMock())
         assert handler is not None
 
     def test_connect_handler_creation(self):
         """Test ConnectHandler creation"""
-        handler = ConnectHandler(
-            container=MagicMock(),
-            logger=MagicMock()
-        )
+        handler = ConnectHandler(container=MagicMock(), logger=MagicMock())
         assert handler is not None
 
     def test_requestor_handler_creation(self):
         """Test RequestorHandler creation"""
-        handler = RequestorHandler(
-            container=MagicMock(),
-            logger=MagicMock()
-        )
+        handler = RequestorHandler(container=MagicMock(), logger=MagicMock())
         assert handler is not None
 
     def test_results_handler_creation(self):
         """Test ResultsHandler creation"""
-        handler = ResultsHandler(
-            container=MagicMock(),
-            logger=MagicMock()
-        )
+        handler = ResultsHandler(container=MagicMock(), logger=MagicMock())
         assert handler is not None
 
     def test_address_normalizer_handler_creation(self):
         """Test AddressNormalizerHandler creation"""
-        handler = AddressNormalizerHandler(
-            container=MagicMock(),
-            logger=MagicMock()
-        )
+        handler = AddressNormalizerHandler(container=MagicMock(), logger=MagicMock())
         assert handler is not None
 
     def test_authorizer_handler_creation(self):
         """Test AuthorizerHandler creation"""
-        handler = AuthorizerHandler(
-            container=MagicMock(),
-            logger=MagicMock()
-        )
+        handler = AuthorizerHandler(container=MagicMock(), logger=MagicMock())
         assert handler is not None
 
     def test_disconnect_handler_creation(self):
         """Test DisconnectHandler creation"""
-        handler = DisconnectHandler(
-            container=MagicMock(),
-            logger=MagicMock()
-        )
+        handler = DisconnectHandler(container=MagicMock(), logger=MagicMock())
         assert handler is not None
 
     def test_connection_limit_enforcer_handler_creation(self):
         """Test ConnectionLimitEnforcerHandler creation"""
-        handler = ConnectionLimitEnforcerHandler(
-            container=MagicMock(),
-            logger=MagicMock()
-        )
+        handler = ConnectionLimitEnforcerHandler(container=MagicMock(), logger=MagicMock())
         assert handler is not None
 
 
@@ -544,7 +482,7 @@ class TestIntegration:
     def test_di_container_with_exceptions(self):
         """Test DI Container with Exception Handling"""
         container = DIContainer()
-        
+
         # Test that container Exception Handling supports
         try:
             container.resolve(str)  # Should raise Exception
@@ -556,7 +494,7 @@ class TestIntegration:
         """Test Bootstrap with Container Integration"""
         reset_container()
         container = get_container()
-        
+
         # Test that container works
         container.register_instance(str, "test_value")
         result = container.resolve(str)
@@ -567,7 +505,7 @@ class TestIntegration:
         # Test that domain exceptions inherit from base
         search_exception = SearchRequestException("test")
         assert isinstance(search_exception, BaseApplicationException)
-        
+
         share_exception = ShareTokenNotFoundException("test", "token")
         assert isinstance(share_exception, BaseApplicationException)
 
@@ -575,7 +513,7 @@ class TestIntegration:
         """Test configuration components work together"""
         config = AppConfig()
         loader = ConfigLoader()
-        
+
         assert config is not None
         assert loader is not None
 
@@ -585,7 +523,7 @@ class TestIntegration:
         factory = LoggerFactory()
         structured_logger = StructuredLogger()
         cloudwatch_logger = CloudWatchLogger()
-        
+
         assert console_logger is not None
         assert factory is not None
         assert structured_logger is not None
@@ -596,7 +534,7 @@ class TestIntegration:
         registry = ProviderRegistry()
         aggregator = ProviderAggregator()
         mock_service = MockProviderService("test")
-        
+
         assert registry is not None
         assert aggregator is not None
         assert mock_service is not None
@@ -612,7 +550,7 @@ class TestIntegration:
         workflow_orchestrator = MockWorkflowOrchestrator()
         event_bus = MockEventBus()
         connection_manager = MockConnectionManager()
-        
+
         assert message_queue is not None
         assert workflow_orchestrator is not None
         assert event_bus is not None
@@ -624,7 +562,7 @@ class TestIntegration:
         result = SearchResult("test")
         offer = ProviderOffer("test", "offer")
         address = Address("street", "12345", "city")
-        
+
         assert session is not None
         assert result is not None
         assert offer is not None
@@ -642,40 +580,25 @@ class TestIntegration:
     def test_use_cases_integration(self):
         """Test use cases work together"""
         search_use_case = SearchOffersUseCase(
-            provider_registry=MagicMock(),
-            result_repository=MagicMock(),
-            messaging_adapter=MagicMock(),
-            logger=MagicMock()
+            provider_registry=MagicMock(), result_repository=MagicMock(), messaging_adapter=MagicMock(), logger=MagicMock()
         )
-        share_use_case = ShareResultsUseCase(
-            result_repository=MagicMock(),
-            logger=MagicMock()
-        )
-        
+        share_use_case = ShareResultsUseCase(result_repository=MagicMock(), logger=MagicMock())
+
         assert search_use_case is not None
         assert share_use_case is not None
 
     def test_presentation_integration(self):
         """Test presentation components work together"""
         base_controller = BaseController(logger=MagicMock())
-        search_controller = SearchController(
-            search_use_case=MagicMock(),
-            logger=MagicMock()
-        )
-        
+        search_controller = SearchController(search_use_case=MagicMock(), logger=MagicMock())
+
         assert base_controller is not None
         assert search_controller is not None
 
     def test_lambda_handlers_integration(self):
         """Test lambda handlers work together"""
-        search_handler = SearchHandler(
-            container=MagicMock(),
-            logger=MagicMock()
-        )
-        share_handler = ShareApiHandler(
-            container=MagicMock(),
-            logger=MagicMock()
-        )
-        
+        search_handler = SearchHandler(container=MagicMock(), logger=MagicMock())
+        share_handler = ShareApiHandler(container=MagicMock(), logger=MagicMock())
+
         assert search_handler is not None
-        assert share_handler is not None 
+        assert share_handler is not None

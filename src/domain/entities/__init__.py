@@ -5,11 +5,11 @@ from .search_result import SearchResult
 from .connection_session import ConnectionSession, ConnectionStatus, SessionConnectionType
 
 __all__ = [
-    'ProviderOffer', 
-    'ConnectionType', 
-    'OfferStatus',
-    'SearchResult',
-    'ConnectionSession',
-    'ConnectionStatus',
-    'SessionConnectionType'
+    "ProviderOffer",
+    "ConnectionType",
+    "OfferStatus",
+    "SearchResult",
+    "ConnectionSession",
+    "ConnectionStatus",
+    "SessionConnectionType",
 ]

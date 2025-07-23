@@ -3,8 +3,8 @@ import os
 import json
 
 # Add src directory to path for importing the new DI-based handler
-sys.path.append('/opt/python')
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
+sys.path.append("/opt/python")
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
 try:
     # Import the new DI-based handler
@@ -14,7 +14,7 @@ try:
 except ImportError as e:
     print(f"Import error: {e}")
     # Fallback for development/testing
-    sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+    sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
     from src.shared.dependency_injection.bootstrap import get_container
     from src.presentation.lambda_handlers.connect_handler import ConnectHandler
     from src.application.use_cases.connection_management_use_case import ConnectionManagementUseCase
@@ -24,38 +24,32 @@ def lambda_handler(event, context):
     """Lambda entry point using dependency injection architecture."""
     try:
         # Handle warmer requests efficiently
-        if event.get('warmer'):
+        if event.get("warmer"):
             return {
                 "statusCode": 200,
-                "body": json.dumps({
-                    "message": "Lambda warmed successfully",
-                    "function": "connect_handler"
-                })
+                "body": json.dumps({"message": "Lambda warmed successfully", "function": "connect_handler"}),
             }
-        
+
         # Get DI container
         container = get_container()
-        
+
         # Create handler with dependencies
         handler = ConnectHandler(
             connection_management_use_case=container.get(ConnectionManagementUseCase),
-            logger=container.get_logger("connect_handler")
+            logger=container.get_logger("connect_handler"),
         )
-        
+
         # Handle request
         import asyncio
+
         return asyncio.run(handler.handle_request(event))
-        
+
     except Exception as e:
         # Fallback error handling if DI fails
         print(f"Error in connect handler: {e}")
-        return {
-            'statusCode': 500,
-            'body': json.dumps({
-                'error': 'Internal server error',
-                'message': 'Connection failed'
-            })
-        }
+        return {"statusCode": 500, "body": json.dumps({"error": "Internal server error", "message": "Connection failed"})}
+
+
 """
     # In DynamoDB speichern
     try:

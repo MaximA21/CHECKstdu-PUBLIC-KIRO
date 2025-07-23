@@ -1,11 +1,7 @@
 """Infrastructure persistence layer."""
 
 # Import mock repositories (always available)
-from .mock_repositories import (
-    MockSearchResultRepository,
-    MockConnectionRepository,
-    MockProviderOfferRepository
-)
+from .mock_repositories import MockSearchResultRepository, MockConnectionRepository, MockProviderOfferRepository
 
 # Legacy storage implementations removed - use repository pattern instead
 
@@ -15,22 +11,21 @@ try:
         AWSDynamoDBSearchResultRepository,
         AWSDynamoDBConnectionRepository,
         AWSDynamoDBProviderOfferRepository,
-        DynamoDBTypeConverter
+        DynamoDBTypeConverter,
     )
+
     _aws_available = True
 except ImportError:
     _aws_available = False
 
-__all__ = [
-    'MockSearchResultRepository',
-    'MockConnectionRepository',
-    'MockProviderOfferRepository'
-]
+__all__ = ["MockSearchResultRepository", "MockConnectionRepository", "MockProviderOfferRepository"]
 
 if _aws_available:
-    __all__.extend([
-        'AWSDynamoDBSearchResultRepository',
-        'AWSDynamoDBConnectionRepository', 
-        'AWSDynamoDBProviderOfferRepository',
-        'DynamoDBTypeConverter'
-    ])
+    __all__.extend(
+        [
+            "AWSDynamoDBSearchResultRepository",
+            "AWSDynamoDBConnectionRepository",
+            "AWSDynamoDBProviderOfferRepository",
+            "DynamoDBTypeConverter",
+        ]
+    )

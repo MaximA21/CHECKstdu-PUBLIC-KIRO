@@ -3,8 +3,8 @@ import sys
 import os
 
 # Add src to path for imports
-sys.path.append('/opt/python')
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
+sys.path.append("/opt/python")
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
 try:
     from src.shared.dependency_injection.bootstrap import get_container
@@ -13,7 +13,7 @@ try:
 except ImportError as e:
     print(f"Import error: {e}")
     # Fallback for development/testing
-    sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+    sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
     from src.shared.dependency_injection.bootstrap import get_container
     from src.presentation.lambda_handlers.search_handler import SearchHandler
     from src.application.use_cases.search_offers_use_case import SearchOffersUseCase
@@ -23,39 +23,30 @@ def lambda_handler(event, context):
     """Lambda entry point for search handler using dependency injection."""
     try:
         # Handle warmer requests efficiently
-        if event.get('warmer'):
+        if event.get("warmer"):
             return {
                 "statusCode": 200,
-                "body": json.dumps({
-                    "message": "Lambda warmed successfully",
-                    "function": "search_handler"
-                })
+                "body": json.dumps({"message": "Lambda warmed successfully", "function": "search_handler"}),
             }
-        
+
         # Get DI container
         container = get_container()
-        
+
         # Create handler with dependencies
         handler = SearchHandler(
-            search_offers_use_case=container.get(SearchOffersUseCase),
-            logger=container.get_logger("search_handler")
+            search_offers_use_case=container.get(SearchOffersUseCase), logger=container.get_logger("search_handler")
         )
-        
+
         # Handle request
         import asyncio
+
         return asyncio.run(handler.handle_request(event))
-        
+
     except Exception as e:
         # Fallback error handling if DI fails
         print(f"Error in search handler: {e}")
         return {
-            'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            'body': json.dumps({
-                'error': 'Internal server error',
-                'message': 'Search request failed'
-            })
+            "statusCode": 500,
+            "headers": {"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"},
+            "body": json.dumps({"error": "Internal server error", "message": "Search request failed"}),
         }
