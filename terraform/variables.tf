@@ -105,7 +105,7 @@ variable "rest_api_cache_ttl" {
 variable "log_retention_days" {
   description = "CloudWatch log retention period in days for API Gateway logs"
   type        = number
-  default     = 7  # Reduced to 7 days for cost optimization
+  default     = 7 # Reduced to 7 days for cost optimization
   validation {
     condition = contains([
       1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653
@@ -117,7 +117,7 @@ variable "log_retention_days" {
 variable "lambda_log_retention_days" {
   description = "CloudWatch log retention period in days for Lambda functions"
   type        = number
-  default     = 7  # Reduced to 7 days for cost optimization
+  default     = 7 # Reduced to 7 days for cost optimization
   validation {
     condition = contains([
       1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653
@@ -155,25 +155,25 @@ variable "backup_cold_storage_days" {
 variable "enable_kinesis_stream" {
   description = "Enable Kinesis stream for log analysis (expensive - saves ~$28/month when disabled)"
   type        = bool
-  default     = false  # Disabled by default for student budget
+  default     = false # Disabled by default for student budget
 }
 
 variable "enable_custom_kms_keys" {
   description = "Enable custom KMS keys (saves ~$2/month when disabled, uses AWS managed keys)"
   type        = bool
-  default     = false  # Disabled by default for student budget
+  default     = false # Disabled by default for student budget
 }
 
 variable "enable_aws_backup" {
   description = "Enable AWS Backup service (saves ~$20-50/month when disabled, uses DynamoDB PITR only)"
   type        = bool
-  default     = false  # Disabled by default for student budget
+  default     = false # Disabled by default for student budget
 }
 
 variable "minimal_cloudwatch_alarms" {
   description = "Use minimal CloudWatch alarms only (saves ~$3-5/month)"
   type        = bool
-  default     = true  # Enabled by default for student budget
+  default     = true # Enabled by default for student budget
 }
 
 variable "monthly_cost_alert_threshold" {
@@ -198,7 +198,7 @@ variable "budget_alert_email" {
 variable "github_repository" {
   description = "GitHub repository in format 'owner/repo' for OIDC trust relationship"
   type        = string
-  default     = "your-org/your-repo"  # Replace with actual repository
+  default     = "your-org/your-repo" # Replace with actual repository
 }
 
 variable "deployment_bucket_name" {

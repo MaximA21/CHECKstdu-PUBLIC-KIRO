@@ -90,7 +90,7 @@ resource "aws_lambda_function" "share_api_new" {
     variables = {
       RESULTS_TABLE_NAME = aws_dynamodb_table.provider_results.name
       IMPLEMENTATION     = "new"
-      LOG_LEVEL         = "INFO"
+      LOG_LEVEL          = "INFO"
     }
   }
 
@@ -123,7 +123,7 @@ resource "aws_lambda_function" "share_api_old" {
     variables = {
       RESULTS_TABLE_NAME = aws_dynamodb_table.provider_results.name
       IMPLEMENTATION     = "old"
-      LOG_LEVEL         = "INFO"
+      LOG_LEVEL          = "INFO"
     }
   }
 
@@ -410,9 +410,9 @@ resource "aws_api_gateway_deployment" "rest_api_staging" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
 
   variables = {
-    deployed_at     = timestamp()
-    implementation  = "staging"
-    traffic_split   = "0" # Start with 0% traffic to new implementation
+    deployed_at    = timestamp()
+    implementation = "staging"
+    traffic_split  = "0" # Start with 0% traffic to new implementation
   }
 
   lifecycle {
@@ -433,9 +433,9 @@ resource "aws_api_gateway_deployment" "rest_api_prod" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
 
   variables = {
-    deployed_at     = timestamp()
-    implementation  = "production"
-    traffic_split   = "50" # 50% traffic to new implementation
+    deployed_at    = timestamp()
+    implementation = "production"
+    traffic_split  = "50" # 50% traffic to new implementation
   }
 
   lifecycle {
@@ -489,14 +489,14 @@ resource "aws_api_gateway_method_settings" "staging_settings" {
     # Enable detailed CloudWatch metrics
     metrics_enabled = true
     logging_level   = "INFO"
-    
+
     # Data trace settings
     data_trace_enabled = true
-    
+
     # Throttling settings per method
     throttling_rate_limit  = 100
     throttling_burst_limit = 200
-    
+
     # Caching disabled for staging
     caching_enabled = false
   }
@@ -555,17 +555,17 @@ resource "aws_api_gateway_method_settings" "prod_settings" {
     # Enable detailed CloudWatch metrics
     metrics_enabled = true
     logging_level   = "ERROR" # Only log errors in production
-    
+
     # Data trace disabled in production for performance
     data_trace_enabled = false
-    
+
     # Throttling settings per method
     throttling_rate_limit  = var.rest_api_throttle_rate_limit
     throttling_burst_limit = var.rest_api_throttle_burst_limit
-    
+
     # Enable caching in production
-    caching_enabled                = true
-    cache_ttl_in_seconds          = var.rest_api_cache_ttl
+    caching_enabled                         = true
+    cache_ttl_in_seconds                    = var.rest_api_cache_ttl
     require_authorization_for_cache_control = false
   }
 }
@@ -573,7 +573,7 @@ resource "aws_api_gateway_method_settings" "prod_settings" {
 # Canary deployment for new implementation (separate deployment)
 resource "aws_api_gateway_deployment" "rest_api_canary" {
   count = var.canary_enabled ? 1 : 0
-  
+
   depends_on = [
     aws_api_gateway_method.share_get,
     aws_api_gateway_integration.share_integration_new,
@@ -584,9 +584,9 @@ resource "aws_api_gateway_deployment" "rest_api_canary" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
 
   variables = {
-    deployed_at     = timestamp()
-    implementation  = "canary"
-    traffic_split   = tostring(var.canary_traffic_percentage)
+    deployed_at    = timestamp()
+    implementation = "canary"
+    traffic_split  = tostring(var.canary_traffic_percentage)
   }
 
   lifecycle {
@@ -597,7 +597,7 @@ resource "aws_api_gateway_deployment" "rest_api_canary" {
 # Canary stage for gradual traffic shifting
 resource "aws_api_gateway_stage" "canary" {
   count = var.canary_enabled ? 1 : 0
-  
+
   deployment_id = aws_api_gateway_deployment.rest_api_canary[0].id
   rest_api_id   = aws_api_gateway_rest_api.rest_api.id
   stage_name    = "canary"
@@ -641,7 +641,7 @@ resource "aws_api_gateway_stage" "canary" {
 # Method settings for canary stage
 resource "aws_api_gateway_method_settings" "canary_settings" {
   count = var.canary_enabled ? 1 : 0
-  
+
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
   stage_name  = aws_api_gateway_stage.canary[0].stage_name
   method_path = "*/*"
@@ -650,14 +650,14 @@ resource "aws_api_gateway_method_settings" "canary_settings" {
     # Enable detailed CloudWatch metrics for canary
     metrics_enabled = true
     logging_level   = "INFO" # More detailed logging for canary
-    
+
     # Enable data trace for canary monitoring
     data_trace_enabled = true
-    
+
     # Conservative throttling for canary
     throttling_rate_limit  = var.rest_api_throttle_rate_limit / 2
     throttling_burst_limit = var.rest_api_throttle_burst_limit / 2
-    
+
     # Disable caching for canary to ensure fresh responses
     caching_enabled = false
   }
@@ -714,7 +714,7 @@ output "canary_deployment_info" {
     stage_name      = aws_api_gateway_stage.canary[0].stage_name
     deployment_id   = aws_api_gateway_deployment.rest_api_canary[0].id
     canary_url      = "https://${aws_api_gateway_rest_api.rest_api.id}.execute-api.${var.aws_region}.amazonaws.com/canary"
-  } : {
+    } : {
     enabled = false
   }
 }

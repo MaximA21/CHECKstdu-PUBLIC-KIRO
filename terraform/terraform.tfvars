@@ -6,5 +6,5 @@ ping_perfect_client_id = "9A26C2B5"
 ping_perfect_secret    = "C6F8B73B5566FCFD2B47D58C93D75AEF"
 
 # GitHub OIDC Configuration
-github_repository        = "your-org/your-repo"  # Replace with actual repository
-deployment_bucket_name   = "webwunder-deployment-artifacts"
+github_repository      = "your-org/your-repo" # Replace with actual repository
+deployment_bucket_name = "webwunder-deployment-artifacts"

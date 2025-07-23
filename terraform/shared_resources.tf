@@ -3,7 +3,7 @@
 # KMS key for CloudWatch logs encryption (conditional for cost optimization)
 resource "aws_kms_key" "logs_key" {
   count = var.enable_custom_kms_keys ? 1 : 0
-  
+
   description             = "KMS key for CloudWatch logs encryption"
   deletion_window_in_days = 7
   enable_key_rotation     = true
@@ -50,7 +50,7 @@ resource "aws_kms_key" "logs_key" {
 
 resource "aws_kms_alias" "logs_key_alias" {
   count = var.enable_custom_kms_keys ? 1 : 0
-  
+
   name          = "alias/${var.project_name}-${var.environment}-logs-key"
   target_key_id = aws_kms_key.logs_key[0].key_id
 }
@@ -187,7 +187,7 @@ resource "aws_cloudwatch_metric_alarm" "step_functions_failures" {
   namespace           = "AWS/States"
   period              = "300"
   statistic           = "Sum"
-  threshold           = "10"  # Higher threshold for cost optimization
+  threshold           = "10" # Higher threshold for cost optimization
   alarm_description   = "This metric monitors Step Functions execution failures"
   alarm_actions       = [aws_sns_topic.alerts.arn]
 
@@ -222,7 +222,7 @@ resource "aws_cloudwatch_metric_alarm" "monthly_cost_alarm" {
 # Kinesis stream disabled by default for cost optimization (saves ~$28/month)
 resource "aws_cloudwatch_log_destination" "log_destination" {
   count = var.enable_kinesis_stream ? 1 : 0
-  
+
   name       = "${var.project_name}-${var.environment}-log-destination"
   role_arn   = aws_iam_role.log_destination_role[0].arn
   target_arn = aws_kinesis_stream.log_stream[0].arn
@@ -232,7 +232,7 @@ resource "aws_cloudwatch_log_destination" "log_destination" {
 
 resource "aws_kinesis_stream" "log_stream" {
   count = var.enable_kinesis_stream ? 1 : 0
-  
+
   name             = "${var.project_name}-${var.environment}-log-stream"
   shard_count      = 1
   retention_period = 24
@@ -245,7 +245,7 @@ resource "aws_kinesis_stream" "log_stream" {
 
 resource "aws_iam_role" "log_destination_role" {
   count = var.enable_kinesis_stream ? 1 : 0
-  
+
   name = "${var.project_name}-${var.environment}-log-destination-role"
 
   assume_role_policy = jsonencode({
@@ -266,7 +266,7 @@ resource "aws_iam_role" "log_destination_role" {
 
 resource "aws_iam_role_policy" "log_destination_policy" {
   count = var.enable_kinesis_stream ? 1 : 0
-  
+
   name = "${var.project_name}-${var.environment}-log-destination-policy"
   role = aws_iam_role.log_destination_role[0].id
 

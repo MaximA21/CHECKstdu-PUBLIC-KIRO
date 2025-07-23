@@ -108,7 +108,7 @@
     - Use AWS managed policies where possible to reduce complexity
     - _Requirements: 6.4_
 
-  - [-] 6.2 Basic security controls and GitHub Actions updates
+  - [x] 6.2 Basic security controls and GitHub Actions updates
     - Update GitHub Actions workflows to use actions/upload-artifact@v4 and actions/download-artifact@v4
     - Enable CloudTrail for audit logging (basic tier only)
     - Use AWS managed encryption keys instead of customer managed
@@ -118,21 +118,21 @@
     - _Requirements: 6.1, 6.2_
 
 - [ ] 7. Simplified Testing and Validation
-  - [ ] 7.1 Essential WebSocket tests only
+  - [x] 7.1 Essential WebSocket tests only
     - Test connection limit enforcement functionality
     - Validate basic result delivery and timeout behavior
     - Skip expensive load testing - use basic functional tests
     - Test connection routing between implementations
     - _Requirements: 5.1, 5.2, 5.3_
 
-  - [ ] 7.2 Basic traffic distribution validation
+  - [x] 7.2 Basic traffic distribution validation
     - Test 50/50 traffic splitting functionality
     - Validate API Gateway canary deployment works
     - Skip complex monitoring validation to reduce costs
     - Use simple health checks instead of comprehensive monitoring
     - _Requirements: 4.7, 5.1, 5.2_
 
-  - [ ] 7.3 Streamlined deployment testing
+  - [x] 7.3 Streamlined deployment testing
     - Test basic CI/CD pipeline functionality
     - Validate rollback mechanisms work
     - Skip expensive security scanning in favor of basic checks

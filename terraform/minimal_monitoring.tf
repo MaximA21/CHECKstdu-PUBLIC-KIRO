@@ -89,9 +89,9 @@ resource "aws_cloudwatch_dashboard" "minimal_essential_dashboard" {
           ]
           view    = "timeSeries"
           stacked = false
-          region  = "us-east-1"  # Billing metrics only available in us-east-1
+          region  = "us-east-1" # Billing metrics only available in us-east-1
           title   = "Estimated Monthly Charges"
-          period  = 86400  # Daily
+          period  = 86400 # Daily
           stat    = "Maximum"
         }
       }
@@ -104,48 +104,48 @@ resource "aws_cloudwatch_dashboard" "minimal_essential_dashboard" {
 
 # Critical alarm: API Gateway error rate > 10%
 resource "aws_cloudwatch_metric_alarm" "api_gateway_critical_error_rate" {
-  alarm_name          = "${var.project_name}-${var.environment}-api-critical-errors"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = "2"
-  threshold           = "10"  # 10% error rate
-  alarm_description   = "Critical: API Gateway error rate exceeds 10%"
+  alarm_name                = "${var.project_name}-${var.environment}-api-critical-errors"
+  comparison_operator       = "GreaterThanThreshold"
+  evaluation_periods        = "2"
+  threshold                 = "10" # 10% error rate
+  alarm_description         = "Critical: API Gateway error rate exceeds 10%"
   insufficient_data_actions = []
-  
+
   metric_query {
-    id = "error_rate"
+    id          = "error_rate"
     return_data = true
-    
+
     metric {
       metric_name = "4XXError"
       namespace   = "AWS/ApiGateway"
       period      = 300
       stat        = "Sum"
-      
+
       dimensions = {
         ApiName = "provider-comparison-websocket"
       }
     }
   }
-  
+
   metric_query {
-    id = "total_requests"
+    id          = "total_requests"
     return_data = false
-    
+
     metric {
       metric_name = "Count"
       namespace   = "AWS/ApiGateway"
       period      = 300
       stat        = "Sum"
-      
+
       dimensions = {
         ApiName = "provider-comparison-websocket"
       }
     }
   }
-  
+
   metric_query {
-    id = "error_percentage"
-    expression = "(error_rate / total_requests) * 100"
+    id          = "error_percentage"
+    expression  = "(error_rate / total_requests) * 100"
     return_data = false
   }
 
@@ -173,7 +173,7 @@ resource "aws_cloudwatch_metric_alarm" "lambda_critical_errors" {
   namespace           = "AWS/Lambda"
   period              = "300"
   statistic           = "Sum"
-  threshold           = "5"  # 5 errors in 10 minutes
+  threshold           = "5" # 5 errors in 10 minutes
   alarm_description   = "Critical: Lambda function ${each.key} has high error rate"
   treat_missing_data  = "notBreaching"
 
@@ -199,7 +199,7 @@ resource "aws_cloudwatch_metric_alarm" "api_gateway_high_latency" {
   namespace           = "AWS/ApiGateway"
   period              = "300"
   statistic           = "Average"
-  threshold           = "10000"  # 10 seconds in milliseconds
+  threshold           = "10000" # 10 seconds in milliseconds
   alarm_description   = "Critical: API Gateway latency exceeds 10 seconds"
   treat_missing_data  = "notBreaching"
 
@@ -293,8 +293,8 @@ resource "aws_cloudwatch_log_group" "minimal_lambda_logs" {
   ])
 
   name              = each.key
-  retention_in_days = 7  # Minimal retention for cost savings
-  
+  retention_in_days = 7 # Minimal retention for cost savings
+
   # Use AWS managed encryption instead of custom KMS keys for cost savings
   kms_key_id = var.enable_custom_kms_keys ? aws_kms_key.logs_key[0].arn : null
 
@@ -307,8 +307,8 @@ resource "aws_cloudwatch_log_group" "minimal_lambda_logs" {
 # API Gateway log group with minimal retention
 resource "aws_cloudwatch_log_group" "api_gateway_minimal_logs" {
   name              = "API-Gateway-Execution-Logs_${aws_apigatewayv2_api.websocket_api.id}/prod"
-  retention_in_days = 7  # Minimal retention for cost savings
-  
+  retention_in_days = 7 # Minimal retention for cost savings
+
   kms_key_id = var.enable_custom_kms_keys ? aws_kms_key.logs_key[0].arn : null
 
   tags = merge(local.common_tags, {

@@ -1,11 +1,11 @@
 # Main queue for new search requests
 resource "aws_sqs_queue" "request_queue" {
-  name                      = "${var.project_name}-${var.environment}-request-queue"
-  delay_seconds             = 0
-  max_message_size          = 262144 # 256 KB
-  message_retention_seconds = 86400  # 24 hours (1 day)
-  receive_wait_time_seconds = 10     # Long polling for efficient processing
-  visibility_timeout_seconds = 300   # 5 minutes
+  name                       = "${var.project_name}-${var.environment}-request-queue"
+  delay_seconds              = 0
+  max_message_size           = 262144 # 256 KB
+  message_retention_seconds  = 86400  # 24 hours (1 day)
+  receive_wait_time_seconds  = 10     # Long polling for efficient processing
+  visibility_timeout_seconds = 300    # 5 minutes
 
   # Server-side encryption
   kms_master_key_id                 = "alias/aws/sqs"
@@ -19,11 +19,11 @@ resource "aws_sqs_queue" "request_queue" {
 
 # Dead Letter Queue for failed requests
 resource "aws_sqs_queue" "request_dlq" {
-  name                      = "${var.project_name}-${var.environment}-request-dlq"
-  delay_seconds             = 0
-  max_message_size          = 262144  # 256 KB
-  message_retention_seconds = 1209600 # 14 days for longer analysis time
-  visibility_timeout_seconds = 300    # 5 minutes
+  name                       = "${var.project_name}-${var.environment}-request-dlq"
+  delay_seconds              = 0
+  max_message_size           = 262144  # 256 KB
+  message_retention_seconds  = 1209600 # 14 days for longer analysis time
+  visibility_timeout_seconds = 300     # 5 minutes
 
   # Server-side encryption
   kms_master_key_id                 = "alias/aws/sqs"

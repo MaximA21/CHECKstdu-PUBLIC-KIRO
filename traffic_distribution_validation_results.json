@@ -1,0 +1,83 @@
+{
+  "timestamp": "2025-07-23 13:31:29",
+  "validation_type": "basic_traffic_distribution",
+  "requirements_tested": [
+    "4.7",
+    "5.1",
+    "5.2"
+  ],
+  "traffic_split_test": {
+    "total_requests": 100,
+    "old_implementation_requests": 50,
+    "new_implementation_requests": 50,
+    "old_percentage": 50.0,
+    "new_percentage": 50.0,
+    "distribution_balanced": true,
+    "variance": 0.0
+  },
+  "canary_deployment_test": {
+    "canary_configuration": {
+      "canary_enabled": true,
+      "percent_traffic": 50,
+      "deployment_id": "deployment-12345",
+      "stage_name": "prod",
+      "stage_variables": {
+        "implementation": "canary",
+        "traffic_split": "50"
+      },
+      "use_stage_cache": false
+    },
+    "configuration_valid": true,
+    "validation_checks": {
+      "canary_enabled": true,
+      "valid_traffic_percentage": true,
+      "has_deployment_id": true,
+      "valid_stage": true
+    }
+  },
+  "health_check_test": {
+    "overall_healthy": false,
+    "average_response_time": 99.09666666666666,
+    "endpoint_results": {
+      "staging": {
+        "endpoint": "https://api-staging.example.com",
+        "healthy": true,
+        "response_time_ms": 112.0,
+        "status_code": 200,
+        "last_checked": "2025-07-23 13:31:29"
+      },
+      "prod": {
+        "endpoint": "https://api-prod.example.com",
+        "healthy": true,
+        "response_time_ms": 57.29,
+        "status_code": 200,
+        "last_checked": "2025-07-23 13:31:29"
+      },
+      "canary": {
+        "endpoint": "https://api-canary.example.com",
+        "healthy": false,
+        "response_time_ms": 128.0,
+        "status_code": 500,
+        "last_checked": "2025-07-23 13:31:29"
+      }
+    },
+    "healthy_endpoints": 2,
+    "total_endpoints": 3
+  },
+  "websocket_distribution_test": {
+    "total_connections": 20,
+    "implementation_counts": {
+      "old": 11,
+      "new": 9
+    },
+    "old_percentage": 55.00000000000001,
+    "new_percentage": 45.0,
+    "distribution_balanced": true,
+    "connection_limits_configured": true,
+    "max_results_per_connection": 5,
+    "max_duration_seconds": 120
+  },
+  "overall_success": false,
+  "tests_passed": 3,
+  "total_tests": 4
+}

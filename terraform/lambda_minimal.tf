@@ -108,17 +108,17 @@ resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
 # Common environment variables for all Lambda functions
 locals {
   lambda_environment_variables = {
-    AWS_REGION                = var.aws_region
-    ENVIRONMENT              = var.environment
-    PROJECT_NAME             = var.project_name
-    IMPLEMENTATION_VERSION   = "new"
-    DYNAMODB_RESULTS_TABLE   = aws_dynamodb_table.provider_results.name
-    DYNAMODB_ROUTING_TABLE   = aws_dynamodb_table.connection_routing.name
-    SQS_REQUEST_QUEUE_URL    = aws_sqs_queue.request_queue.url
-    SQS_RESULTS_QUEUE_URL    = aws_sqs_queue.results_queue.url
-    WEBSOCKET_API_ENDPOINT   = aws_apigatewayv2_api.websocket_api.api_endpoint
-    SECRETS_PROVIDER_KEYS    = aws_secretsmanager_secret.provider_keys.name
-    LOG_LEVEL                = "INFO"
+    AWS_REGION                 = var.aws_region
+    ENVIRONMENT                = var.environment
+    PROJECT_NAME               = var.project_name
+    IMPLEMENTATION_VERSION     = "new"
+    DYNAMODB_RESULTS_TABLE     = aws_dynamodb_table.provider_results.name
+    DYNAMODB_ROUTING_TABLE     = aws_dynamodb_table.connection_routing.name
+    SQS_REQUEST_QUEUE_URL      = aws_sqs_queue.request_queue.url
+    SQS_RESULTS_QUEUE_URL      = aws_sqs_queue.results_queue.url
+    WEBSOCKET_API_ENDPOINT     = aws_apigatewayv2_api.websocket_api.api_endpoint
+    SECRETS_PROVIDER_KEYS      = aws_secretsmanager_secret.provider_keys.name
+    LOG_LEVEL                  = "INFO"
     CONNECTION_TIMEOUT_MINUTES = local.connection_timeout_minutes
     MAX_RESULTS_PER_CONNECTION = local.max_results_per_connection
   }
@@ -493,16 +493,16 @@ resource "aws_lambda_permission" "search_permission" {
 
 # Lambda permissions for SQS triggers
 resource "aws_lambda_event_source_mapping" "results_handler_sqs" {
-  event_source_arn = aws_sqs_queue.results_queue.arn
-  function_name    = aws_lambda_function.results_handler.arn
-  batch_size       = 10
+  event_source_arn                   = aws_sqs_queue.results_queue.arn
+  function_name                      = aws_lambda_function.results_handler.arn
+  batch_size                         = 10
   maximum_batching_window_in_seconds = 5
 }
 
 resource "aws_lambda_event_source_mapping" "requestor_handler_sqs" {
-  event_source_arn = aws_sqs_queue.request_queue.arn
-  function_name    = aws_lambda_function.requestor_handler.arn
-  batch_size       = 10
+  event_source_arn                   = aws_sqs_queue.request_queue.arn
+  function_name                      = aws_lambda_function.requestor_handler.arn
+  batch_size                         = 10
   maximum_batching_window_in_seconds = 5
 }
 

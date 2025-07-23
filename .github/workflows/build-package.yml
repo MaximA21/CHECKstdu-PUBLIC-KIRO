@@ -431,7 +431,7 @@ jobs:
         tar -czf webwunder-build-${{ github.sha }}.tar.gz release-${{ github.sha }}/
 
     - name: Upload release archive
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: webwunder-release-${{ github.sha }}
         path: |

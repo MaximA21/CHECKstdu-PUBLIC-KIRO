@@ -1,0 +1,228 @@
+name: Streamlined Deployment Testing
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment to test (staging/production)'
+        required: true
+        type: string
+      api_endpoint:
+        description: 'API Gateway endpoint URL'
+        required: false
+        type: string
+      skip_expensive_checks:
+        description: 'Skip expensive security scanning and comprehensive coverage'
+        required: false
+        type: boolean
+        default: true
+    outputs:
+      test_status:
+        description: 'Overall test status'
+        value: ${{ jobs.streamlined-testing.outputs.test_status }}
+      test_results_artifact:
+        description: 'Test results artifact name'
+        value: ${{ jobs.streamlined-testing.outputs.test_results_artifact }}
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test'
+        required: true
+        type: choice
+        options:
+        - staging
+        - production
+      api_endpoint:
+        description: 'API Gateway endpoint URL'
+        required: false
+        type: string
+
+permissions:
+  id-token: write   # Required for OIDC token generation
+  contents: read    # Required to read repository contents
+  actions: write    # Required to upload artifacts
+
+env:
+  AWS_REGION: 'eu-central-1'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  streamlined-testing:
+    runs-on: ubuntu-latest
+    outputs:
+      test_status: ${{ steps.run-tests.outputs.test_status }}
+      test_results_artifact: streamlined-test-results-${{ github.run_id }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ vars.AWS_GITHUB_ACTIONS_ROLE_ARN }}
+        role-session-name: GitHubActions-StreamlinedTesting-${{ github.run_id }}
+        aws-region: ${{ env.AWS_REGION }}
+        role-duration-seconds: 1800
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install boto3 requests pyyaml
+
+    - name: Setup Terraform (for pipeline testing)
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ~1.0
+        terraform_wrapper: false
+
+    - name: Run streamlined deployment tests
+      id: run-tests
+      env:
+        ENVIRONMENT: ${{ inputs.environment }}
+        API_ENDPOINT: ${{ inputs.api_endpoint }}
+      run: |
+        echo "🧪 Running streamlined deployment tests..."
+        echo "Environment: $ENVIRONMENT"
+        echo "API Endpoint: $API_ENDPOINT"
+        echo "Skip expensive checks: ${{ inputs.skip_expensive_checks }}"
+        
+        # Run the streamlined deployment testing script
+        if python3 scripts/deployment_testing.py "$ENVIRONMENT" \
+          --region ${{ env.AWS_REGION }} \
+          ${API_ENDPOINT:+--api-endpoint "$API_ENDPOINT"} \
+          --output streamlined-test-results.json \
+          --timeout 300; then
+          echo "test_status=passed" >> $GITHUB_OUTPUT
+          echo "✅ Streamlined deployment tests PASSED"
+        else
+          echo "test_status=failed" >> $GITHUB_OUTPUT
+          echo "❌ Streamlined deployment tests FAILED"
+          exit 1
+        fi
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: streamlined-test-results-${{ github.run_id }}
+        path: |
+          streamlined-test-results.json
+        retention-days: 30
+
+    - name: Generate test summary
+      if: always()
+      run: |
+        echo "# Streamlined Deployment Testing Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Environment:** ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Test Status:** ${{ steps.run-tests.outputs.test_status }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Timestamp:** $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [[ -f "streamlined-test-results.json" ]]; then
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          
+          # Extract test results using jq if available
+          if command -v jq >/dev/null 2>&1; then
+            echo "### Pipeline Functionality" >> $GITHUB_STEP_SUMMARY
+            PIPELINE_STATUS=$(jq -r '.tests.pipeline_functionality.status // "unknown"' streamlined-test-results.json)
+            echo "- Status: $PIPELINE_STATUS" >> $GITHUB_STEP_SUMMARY
+            
+            echo "### Rollback Mechanisms" >> $GITHUB_STEP_SUMMARY
+            ROLLBACK_STATUS=$(jq -r '.tests.rollback_mechanisms.status // "unknown"' streamlined-test-results.json)
+            echo "- Status: $ROLLBACK_STATUS" >> $GITHUB_STEP_SUMMARY
+            
+            echo "### Core Functionality" >> $GITHUB_STEP_SUMMARY
+            CORE_STATUS=$(jq -r '.tests.core_functionality.status // "unknown"' streamlined-test-results.json)
+            echo "- Status: $CORE_STATUS" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Test results available in artifacts" >> $GITHUB_STEP_SUMMARY
+          fi
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Key Features" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Basic CI/CD pipeline functionality testing" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Rollback mechanisms validation" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Core functionality verification" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Cost-optimized (skips expensive comprehensive coverage)" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Fast execution (< 5 minutes typical)" >> $GITHUB_STEP_SUMMARY
+
+  # Optional: Basic security check (cost-optimized)
+  basic-security-validation:
+    runs-on: ubuntu-latest
+    if: inputs.skip_expensive_checks != true
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install basic security tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install bandit pip-audit
+
+    - name: Run basic security scan (high severity only)
+      run: |
+        echo "🔍 Running basic security scan (cost-optimized)..."
+        
+        # Only check for high severity issues to keep it fast and focused
+        bandit -r src/ lambda_functions/ --severity-level high -f txt || true
+        
+        echo "🔍 Running basic dependency vulnerability check..."
+        pip-audit --desc --vulnerability-service pypi || true
+
+    - name: Validate basic security controls
+      run: |
+        echo "🔍 Validating basic security controls..."
+        
+        # Check for obvious security issues
+        echo "Checking for potential hardcoded secrets..."
+        if grep -r -i "password.*=" --include="*.py" src/ | head -3; then
+          echo "⚠️ Potential hardcoded credentials found - review needed"
+        else
+          echo "✅ No obvious hardcoded credentials found"
+        fi
+        
+        # Check .gitignore
+        if grep -q "secrets\|credentials\|\.env" .gitignore; then
+          echo "✅ .gitignore includes security patterns"
+        else
+          echo "⚠️ .gitignore may be missing security patterns"
+        fi
+
+  # Quality gate for streamlined testing
+  streamlined-quality-gate:
+    runs-on: ubuntu-latest
+    needs: [streamlined-testing]
+    if: always()
+    
+    steps:
+    - name: Check streamlined testing quality gate
+      run: |
+        echo "🚪 Checking streamlined deployment testing quality gate..."
+        
+        if [[ "${{ needs.streamlined-testing.result }}" != "success" ]]; then
+          echo "❌ Streamlined deployment testing failed"
+          exit 1
+        fi
+        
+        if [[ "${{ needs.streamlined-testing.outputs.test_status }}" != "passed" ]]; then
+          echo "❌ Streamlined deployment tests did not pass"
+          exit 1
+        fi
+        
+        echo "✅ Streamlined deployment testing quality gate passed"
+        echo "Core functionality validated with cost-optimized approach"

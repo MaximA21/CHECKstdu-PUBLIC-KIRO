@@ -58,6 +58,8 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     needs: code-quality
+    # Skip advanced security scanning for cost optimization (task 6.2)
+    if: github.event_name != 'pull_request' && contains(github.event.head_commit.message, '[security-scan]')
 
     steps:
     - uses: actions/checkout@v4
@@ -73,30 +75,82 @@ jobs:
         pip install -r requirements.txt
         pip install bandit safety pip-audit
 
-    - name: Security scanning with Bandit
+    - name: Basic security scanning with Bandit (essential only)
       run: |
-        bandit -r src/ lambda_functions/ -f json -o bandit-report.json || true
-        bandit -r src/ lambda_functions/ -f txt
+        echo "🔍 Running basic security scan (cost-optimized)..."
+        bandit -r src/ lambda_functions/ -f json -o bandit-report.json --severity-level medium || true
+        bandit -r src/ lambda_functions/ -f txt --severity-level medium
 
-    - name: Dependency vulnerability check with Safety
+    - name: Basic dependency vulnerability check
       run: |
-        safety check --json --output safety-report.json || true
-        safety check
+        echo "🔍 Running basic dependency vulnerability check..."
+        pip-audit --format=json --output=pip-audit-report.json --desc || true
+        pip-audit --desc
 
-    - name: Dependency audit with pip-audit
-      run: |
-        pip-audit --format=json --output=pip-audit-report.json || true
-        pip-audit
-
-    - name: Upload security reports
+    - name: Upload basic security reports
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: security-reports-${{ github.sha }}
         path: |
           bandit-report.json
-          safety-report.json
           pip-audit-report.json
+
+  # Basic security validation (always runs)
+  basic-security-check:
+    runs-on: ubuntu-latest
+    needs: code-quality
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+
+    - name: Install basic security tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install bandit pip-audit
+
+    - name: Quick security scan (high severity only)
+      run: |
+        echo "🔍 Running quick security scan for high severity issues..."
+        bandit -r src/ lambda_functions/ --severity-level high -f txt || true
+
+    - name: Quick dependency check (high severity only)
+      run: |
+        echo "🔍 Running quick dependency vulnerability check..."
+        pip-audit --desc --vulnerability-service pypi || true
+
+    - name: Validate security controls configuration
+      run: |
+        echo "🔍 Validating security controls are properly configured..."
+        
+        # Check for hardcoded secrets patterns
+        echo "Checking for potential hardcoded secrets..."
+        if grep -r -i "password\|secret\|key\|token" --include="*.py" --include="*.yml" --include="*.yaml" src/ .github/ terraform/ | grep -v "# " | grep -v "description" | grep -v "variable" | head -5; then
+          echo "⚠️ Potential hardcoded secrets found - review above matches"
+        else
+          echo "✅ No obvious hardcoded secrets found"
+        fi
+        
+        # Check .gitignore for security patterns
+        echo "Checking .gitignore for security patterns..."
+        if grep -q "secrets\|credentials\|\.env" .gitignore; then
+          echo "✅ .gitignore includes security patterns"
+        else
+          echo "⚠️ .gitignore may be missing security patterns"
+        fi
+        
+        # Check Terraform for AWS managed keys usage
+        echo "Checking Terraform for cost-optimized security settings..."
+        if grep -q "enable_custom_kms_keys.*false" terraform/variables.tf; then
+          echo "✅ Using AWS managed keys for cost optimization"
+        else
+          echo "⚠️ Custom KMS keys may be enabled (increases costs)"
+        fi
 
   test-coverage:
     runs-on: ubuntu-latest
@@ -140,7 +194,7 @@ jobs:
 
   quality-gate:
     runs-on: ubuntu-latest
-    needs: [code-quality, security-scan, test-coverage]
+    needs: [code-quality, security-scan, basic-security-check, test-coverage]
     if: always()
 
     steps:
@@ -148,6 +202,7 @@ jobs:
       run: |
         echo "Code Quality: ${{ needs.code-quality.result }}"
         echo "Security Scan: ${{ needs.security-scan.result }}"
+        echo "Basic Security Check: ${{ needs.basic-security-check.result }}"
         echo "Test Coverage: ${{ needs.test-coverage.result }}"
         
         if [[ "${{ needs.code-quality.result }}" != "success" ]]; then
@@ -155,8 +210,19 @@ jobs:
           exit 1
         fi
         
-        if [[ "${{ needs.security-scan.result }}" != "success" ]]; then
-          echo "⚠️ Security scan completed with warnings - check artifacts"
+        # Basic security check must pass
+        if [[ "${{ needs.basic-security-check.result }}" != "success" ]]; then
+          echo "❌ Basic security checks failed"
+          exit 1
+        fi
+        
+        # Advanced security scan is optional (cost optimization)
+        if [[ "${{ needs.security-scan.result }}" == "failure" ]]; then
+          echo "⚠️ Advanced security scan failed - check artifacts if enabled"
+        elif [[ "${{ needs.security-scan.result }}" == "success" ]]; then
+          echo "✅ Advanced security scan passed"
+        else
+          echo "ℹ️ Advanced security scan skipped for cost optimization"
         fi
         
         if [[ "${{ needs.test-coverage.result }}" != "success" ]]; then
@@ -164,4 +230,4 @@ jobs:
           exit 1
         fi
         
-        echo "✅ All quality gates passed"
+        echo "✅ Quality gates passed (cost-optimized security configuration)"

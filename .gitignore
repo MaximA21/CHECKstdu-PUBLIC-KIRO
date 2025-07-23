@@ -301,3 +301,87 @@ secrets/
 .secrets
 *.secret
 .env.secret
+.env.*.secret
+**/secrets.json
+**/credentials.json
+**/*_key.json
+**/*_secret.json
+**/*_token.json
+**/*_password.json
+
+# Security scan results and reports
+bandit-report.json
+safety-report.json
+pip-audit-report.json
+security-reports/
+vulnerability-reports/
+*.sarif
+
+# CloudTrail and audit logs
+cloudtrail-logs/
+audit-logs/
+*.audit
+
+# Terraform sensitive files
+terraform.tfvars.secret
+terraform.tfvars.*.secret
+*.tfvars.secret
+.terraform.tfvars
+terraform.tfstate.backup.*
+*.tfstate.backup
+
+# GitHub Actions artifacts and caches
+.github-actions-cache/
+github-actions-artifacts/
+deployment-artifacts/
+build-artifacts/
+production-backup-*/
+staging-backup-*/
+
+# Additional coverage and test artifacts
+.coverage.*
+coverage-*.xml
+coverage-*.json
+test-results-*/
+*-test-results.xml
+htmlcov-*/
+.pytest_cache/
+.tox/
+.nox/
+
+# IDE and editor security extensions
+.vscode/settings.json
+.vscode/launch.json
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries/
+.idea/shelf/
+
+# OS security and system files
+.Trashes
+.fseventsd
+.DocumentRevisions-V100
+.TemporaryItems
+.apdisk
+
+# Additional AWS and cloud provider files
+.aws/credentials
+.aws/config
+.azure/
+.gcp/
+**/aws-exports.js
+**/amplify-meta.json
+
+# Package manager security files
+package-lock.json.audit
+yarn-audit.json
+npm-audit.json
+.snyk
+
+# Additional temporary and cache files
+*.tmp
+*.temp
+.cache/
+.parcel-cache/
+.next/cache/
+.nuxt/cache/

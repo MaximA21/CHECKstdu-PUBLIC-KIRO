@@ -77,8 +77,8 @@ resource "aws_dynamodb_table" "provider_results" {
   }
 
   tags = merge(local.common_tags, {
-    Name        = "${var.project_name}-results-table"
-    Environment = var.environment
+    Name         = "${var.project_name}-results-table"
+    Environment  = var.environment
     BackupPolicy = var.enable_aws_backup ? "enabled" : "disabled"
   })
 }
@@ -112,8 +112,8 @@ resource "aws_dynamodb_table" "analytics" {
   }
 
   tags = merge(local.common_tags, {
-    Name        = "${var.project_name}-analytics-table"
-    Environment = var.environment
+    Name         = "${var.project_name}-analytics-table"
+    Environment  = var.environment
     BackupPolicy = var.enable_aws_backup ? "enabled" : "disabled"
   })
 }
@@ -154,7 +154,7 @@ resource "aws_iam_policy" "dynamodb_access" {
 # AWS Backup Service (conditional - expensive, saves ~$20-50/month when disabled)
 resource "aws_backup_vault" "dynamodb_backup_vault" {
   count = var.enable_aws_backup ? 1 : 0
-  
+
   name        = "${var.project_name}-${var.environment}-dynamodb-backup-vault"
   kms_key_arn = var.enable_custom_kms_keys ? aws_kms_key.backup_key[0].arn : null
 
@@ -166,7 +166,7 @@ resource "aws_backup_vault" "dynamodb_backup_vault" {
 # KMS key for backup encryption (conditional)
 resource "aws_kms_key" "backup_key" {
   count = var.enable_aws_backup && var.enable_custom_kms_keys ? 1 : 0
-  
+
   description             = "KMS key for DynamoDB backup encryption"
   deletion_window_in_days = 7
 
@@ -177,7 +177,7 @@ resource "aws_kms_key" "backup_key" {
 
 resource "aws_kms_alias" "backup_key_alias" {
   count = var.enable_aws_backup && var.enable_custom_kms_keys ? 1 : 0
-  
+
   name          = "alias/${var.project_name}-${var.environment}-backup-key"
   target_key_id = aws_kms_key.backup_key[0].key_id
 }
@@ -185,7 +185,7 @@ resource "aws_kms_alias" "backup_key_alias" {
 # IAM role for AWS Backup (conditional)
 resource "aws_iam_role" "backup_role" {
   count = var.enable_aws_backup ? 1 : 0
-  
+
   name = "${var.project_name}-${var.environment}-backup-role"
 
   assume_role_policy = jsonencode({
@@ -206,14 +206,14 @@ resource "aws_iam_role" "backup_role" {
 
 resource "aws_iam_role_policy_attachment" "backup_policy" {
   count = var.enable_aws_backup ? 1 : 0
-  
+
   role       = aws_iam_role.backup_role[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup"
 }
 
 resource "aws_iam_role_policy_attachment" "restore_policy" {
   count = var.enable_aws_backup ? 1 : 0
-  
+
   role       = aws_iam_role.backup_role[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForRestores"
 }
@@ -221,7 +221,7 @@ resource "aws_iam_role_policy_attachment" "restore_policy" {
 # Backup plan for DynamoDB tables (conditional)
 resource "aws_backup_plan" "dynamodb_backup_plan" {
   count = var.enable_aws_backup ? 1 : 0
-  
+
   name = "${var.project_name}-${var.environment}-dynamodb-backup-plan"
 
   rule {
@@ -245,7 +245,7 @@ resource "aws_backup_plan" "dynamodb_backup_plan" {
 # Backup selection for DynamoDB tables (conditional)
 resource "aws_backup_selection" "dynamodb_backup_selection" {
   count = var.enable_aws_backup ? 1 : 0
-  
+
   iam_role_arn = aws_iam_role.backup_role[0].arn
   name         = "${var.project_name}-${var.environment}-dynamodb-backup-selection"
   plan_id      = aws_backup_plan.dynamodb_backup_plan[0].id

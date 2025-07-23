@@ -166,7 +166,7 @@ output "backup_configuration" {
     backup_plan_id    = aws_backup_plan.dynamodb_backup_plan[0].id
     kms_key_id        = var.enable_custom_kms_keys ? aws_kms_key.backup_key[0].key_id : null
     retention_days    = var.backup_retention_days
-  } : {
+    } : {
     backup_vault_name = "disabled"
     backup_plan_id    = "disabled"
     kms_key_id        = "disabled"
@@ -177,10 +177,24 @@ output "backup_configuration" {
 output "monitoring_configuration" {
   description = "Monitoring and alerting configuration"
   value = {
-    sns_topic_arn     = aws_sns_topic.alerts.arn
-    dashboard_url     = "https://${var.aws_region}.console.aws.amazon.com/cloudwatch/home?region=${var.aws_region}#dashboards:name=${aws_cloudwatch_dashboard.shared_resources.dashboard_name}"
-    log_stream_name   = var.enable_kinesis_stream ? aws_kinesis_stream.log_stream[0].name : "disabled"
-    logs_kms_key_id   = var.enable_custom_kms_keys ? aws_kms_key.logs_key[0].key_id : "aws-managed"
+    sns_topic_arn   = aws_sns_topic.alerts.arn
+    dashboard_url   = "https://${var.aws_region}.console.aws.amazon.com/cloudwatch/home?region=${var.aws_region}#dashboards:name=${aws_cloudwatch_dashboard.shared_resources.dashboard_name}"
+    log_stream_name = var.enable_kinesis_stream ? aws_kinesis_stream.log_stream[0].name : "disabled"
+    logs_kms_key_id = var.enable_custom_kms_keys ? aws_kms_key.logs_key[0].key_id : "aws-managed"
+  }
+}
+
+# Security and audit configuration output
+output "security_configuration" {
+  description = "Security and audit configuration details"
+  value = {
+    cloudtrail_name    = aws_cloudtrail.basic_trail.name
+    cloudtrail_bucket  = aws_s3_bucket.cloudtrail_logs.bucket
+    kms_encryption     = var.enable_custom_kms_keys ? "custom" : "aws-managed"
+    audit_logging      = "enabled"
+    log_retention_days = var.log_retention_days
+    backup_enabled     = var.enable_aws_backup
+    cost_optimized     = !var.enable_custom_kms_keys && !var.enable_aws_backup && !var.enable_kinesis_stream
   }
 }
 
@@ -212,11 +226,11 @@ output "deployment_artifacts_bucket_name" {
 output "github_oidc_configuration" {
   description = "Complete GitHub OIDC configuration for repository setup"
   value = {
-    role_arn                = aws_iam_role.github_actions_role.arn
-    oidc_provider_arn      = aws_iam_openid_connect_provider.github_actions.arn
-    deployment_bucket      = aws_s3_bucket.deployment_artifacts.bucket
-    trusted_repository     = var.github_repository
-    aws_region            = var.aws_region
-    setup_instructions    = "See docs/GITHUB_OIDC_SETUP.md for configuration steps"
+    role_arn           = aws_iam_role.github_actions_role.arn
+    oidc_provider_arn  = aws_iam_openid_connect_provider.github_actions.arn
+    deployment_bucket  = aws_s3_bucket.deployment_artifacts.bucket
+    trusted_repository = var.github_repository
+    aws_region         = var.aws_region
+    setup_instructions = "See docs/GITHUB_OIDC_SETUP.md for configuration steps"
   }
 }
