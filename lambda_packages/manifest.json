@@ -1,28 +1,107 @@
 {
-  "build_timestamp": "2025-07-22T21:04:00Z",
-  "architecture": "new_di_architecture",
-  "region": "eu-central-1",
-  "functions": [
-    "address_normalizer"
+  "build_timestamp": "2025-07-24T22:37:50Z",
+  "python_version": "3.11",
+  "architecture": "DI-enabled",
+  "packages": [
+    {
+      "name": "address_normalizer",
+      "filename": "address_normalizer.zip",
+      "size_bytes": 22647796,
+      "size_mb": 21,
+      "handler": "address_normalizer.lambda_handler",
+      "runtime": "python3.11",
+      "architecture": "x86_64"
+    }
 ,
-    "authorizer"
+    {
+      "name": "authorizer",
+      "filename": "authorizer.zip",
+      "size_bytes": 22706257,
+      "size_mb": 21,
+      "handler": "authorizer.lambda_handler",
+      "runtime": "python3.11",
+      "architecture": "x86_64"
+    }
 ,
-    "connect_handler"
+    {
+      "name": "connect_handler",
+      "filename": "connect_handler.zip",
+      "size_bytes": 22648285,
+      "size_mb": 21,
+      "handler": "connect_handler.lambda_handler",
+      "runtime": "python3.11",
+      "architecture": "x86_64"
+    }
 ,
-    "connection_limit_enforcer"
+    {
+      "name": "connection_limit_enforcer",
+      "filename": "connection_limit_enforcer.zip",
+      "size_bytes": 22648617,
+      "size_mb": 21,
+      "handler": "connection_limit_enforcer.lambda_handler",
+      "runtime": "python3.11",
+      "architecture": "x86_64"
+    }
 ,
-    "connection_router"
+    {
+      "name": "disconnect_handler",
+      "filename": "disconnect_handler.zip",
+      "size_bytes": 22646905,
+      "size_mb": 21,
+      "handler": "disconnect_handler.lambda_handler",
+      "runtime": "python3.11",
+      "architecture": "x86_64"
+    }
 ,
-    "disconnect_handler "
+    {
+      "name": "ping_perfect_signer",
+      "filename": "ping_perfect_signer.zip",
+      "size_bytes": 22648743,
+      "size_mb": 21,
+      "handler": "ping_perfect_signer.lambda_handler",
+      "runtime": "python3.11",
+      "architecture": "x86_64"
+    }
 ,
-    "ping_perfect_signer"
+    {
+      "name": "requestor_handler",
+      "filename": "requestor_handler.zip",
+      "size_bytes": 22647947,
+      "size_mb": 21,
+      "handler": "requestor_handler.lambda_handler",
+      "runtime": "python3.11",
+      "architecture": "x86_64"
+    }
 ,
-    "requestor_handler"
+    {
+      "name": "results_handler",
+      "filename": "results_handler.zip",
+      "size_bytes": 22648047,
+      "size_mb": 21,
+      "handler": "results_handler.lambda_handler",
+      "runtime": "python3.11",
+      "architecture": "x86_64"
+    }
 ,
-    "results_handler"
+    {
+      "name": "search_handler",
+      "filename": "search_handler.zip",
+      "size_bytes": 22647775,
+      "size_mb": 21,
+      "handler": "search_handler.lambda_handler",
+      "runtime": "python3.11",
+      "architecture": "x86_64"
+    }
 ,
-    "search_handler"
-,
-    "share_api"
+    {
+      "name": "share_api",
+      "filename": "share_api.zip",
+      "size_bytes": 22647767,
+      "size_mb": 21,
+      "handler": "share_api.lambda_handler",
+      "runtime": "python3.11",
+      "architecture": "x86_64"
+    }
+
   ]
 }

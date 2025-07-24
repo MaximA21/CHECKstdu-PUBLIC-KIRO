@@ -206,3 +206,15 @@ variable "deployment_bucket_name" {
   type        = string
   default     = "github-actions-deployment-artifacts"
 }
+
+variable "lambda_package_path" {
+  description = "Path to lambda packages directory"
+  type        = string
+  default     = "../lambda_packages"
+}
+
+variable "skip_lambda_package_validation" {
+  description = "Skip lambda package file validation (for terraform validate in CI)"
+  type        = bool
+  default     = false
+}

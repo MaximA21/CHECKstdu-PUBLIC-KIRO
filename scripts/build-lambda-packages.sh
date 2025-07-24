@@ -35,6 +35,7 @@ LAMBDA_FUNCTIONS=(
     "authorizer"
     "connect_handler"
     "connection_limit_enforcer"
+    "connection_router"
     "disconnect_handler"
     "ping_perfect_signer"
     "requestor_handler"
