@@ -185,6 +185,69 @@ class IWorkflowOrchestrator(ABC):
         pass
 
 
+class IMessagingAdapter(ABC):
+    """Interface for messaging adapter operations."""
+
+    @abstractmethod
+    async def send_message(self, destination: str, message: Dict[str, Any]) -> bool:
+        """
+        Send a message to a destination.
+
+        Args:
+            destination: Destination to send message to
+            message: Message payload
+
+        Returns:
+            bool: True if message was sent successfully
+        """
+        pass
+
+    @abstractmethod
+    async def receive_messages(self, source: str, max_messages: int = 10) -> List[Dict[str, Any]]:
+        """
+        Receive messages from a source.
+
+        Args:
+            source: Source to receive messages from
+            max_messages: Maximum number of messages to receive
+
+        Returns:
+            List[Dict[str, Any]]: List of received messages
+        """
+        pass
+
+
+class IConnectionManager(ABC):
+    """Interface for connection management."""
+
+    @abstractmethod
+    async def send_to_connection(self, connection_id: str, message: Dict[str, Any]) -> bool:
+        """
+        Send a message to a specific connection.
+
+        Args:
+            connection_id: ID of the connection
+            message: Message payload
+
+        Returns:
+            bool: True if message was sent successfully
+        """
+        pass
+
+    @abstractmethod
+    async def disconnect_connection(self, connection_id: str) -> bool:
+        """
+        Disconnect a connection.
+
+        Args:
+            connection_id: ID of the connection to disconnect
+
+        Returns:
+            bool: True if disconnection was successful
+        """
+        pass
+
+
 class IEventBus(ABC):
     """Interface for event bus operations (EventBridge, etc.)."""
 

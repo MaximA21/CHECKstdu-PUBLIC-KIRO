@@ -184,39 +184,39 @@
     - Monitor actual AWS costs and adjust if needed
     - _Requirements: 4.3, 4.4, 6.4_
 
-- [ ] 9. Immediate CI/CD Pipeline Fixes (Priority)
+- [ ] 9. Fix Critical CI/CD Pipeline Issues
   - [ ] 9.1 Create missing test files that are causing workflow failures
-    - Create tests/test_dependency_injection.py with basic DI container tests
-    - Create tests/performance/load_test_runner.py with basic load testing
-    - Create tests/e2e/test_complete_workflows.py with end-to-end workflow tests
-    - Create tests/integration/test_full_search_flow.py with integration tests
-    - Create tests/conftest.py with pytest configuration and fixtures
+    - Create tests/test_dependency_injection.py with basic DI container tests ✅
+    - Create tests/performance/load_test_runner.py with basic load testing ✅
+    - Create tests/e2e/test_complete_workflows.py with end-to-end workflow tests ✅
+    - Create tests/integration/test_full_search_flow.py with integration tests ✅
+    - Create tests/conftest.py with pytest configuration and fixtures ✅
     - _Requirements: 2.1, 5.1, 5.2, 5.3_
 
-  - [ ] 9.2 Fix GitHub Actions workflow file references
-    - Update comprehensive-testing.yml to reference existing test files only
-    - Fix deployment.yml artifact download paths and references
-    - Update build-package.yml Lambda packaging script paths
-    - Remove references to non-existent test files in workflows
-    - _Requirements: 2.3, 2.4, 2.5_
+  - [ ] 9.2 Fix test configuration and dependency issues
+    - Fix pytest asyncio marker configuration in pyproject.toml
+    - Add missing moto dependency for deployment tests
+    - Fix import errors in tests/shared/test_basic_components.py
+    - Update test coverage configuration to be more realistic
+    - _Requirements: 2.1, 5.1, 5.2_
 
-  - [ ] 9.3 Configure GitHub repository variables and secrets
+  - [ ] 9.3 Fix Lambda packaging and Terraform validation issues
+    - Create missing Lambda layer packages (polars_layer_arm64.zip, shared_dependencies_arm64.zip)
+    - Fix Lambda function packaging script to create all required packages
+    - Update Terraform configuration to handle missing package files gracefully
+    - Create placeholder packages for validation if needed
+    - _Requirements: 2.2, 2.5, 3.2_
+
+  - [ ] 9.4 Configure GitHub repository variables and secrets
     - Set AWS_GITHUB_ACTIONS_ROLE_ARN repository variable
     - Set AWS_REGION repository variable to eu-central-1
     - Verify GITHUB_TOKEN permissions for package registry
     - Test OIDC authentication with AWS from GitHub Actions
     - _Requirements: 6.1, 6.4_
 
-  - [ ] 9.4 Fix Lambda packaging and deployment scripts
-    - Update lambda_functions/build.sh to work with current directory structure
-    - Fix Lambda function packaging to include DI container properly
-    - Update deployment scripts to use correct artifact paths
-    - Test Lambda function deployment with new packaging
-    - _Requirements: 2.2, 2.5, 3.2_
-
-  - [ ] 9.5 Validate and fix workflow dependencies
-    - Ensure all workflow jobs have correct dependencies and conditions
-    - Fix artifact upload/download between workflow jobs
+  - [ ] 9.5 Fix GitHub Actions workflow configuration
+    - Update workflows to handle missing packages gracefully
+    - Fix artifact upload/download paths and references
     - Update workflow triggers to work correctly with kiro-rewrite branch
     - Test complete CI/CD pipeline end-to-end
     - _Requirements: 2.1, 2.3, 2.4, 2.6, 2.7_

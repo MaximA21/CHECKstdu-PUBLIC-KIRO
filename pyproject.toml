@@ -19,7 +19,8 @@ markers = [
     "integration: Integration tests using mock infrastructure", 
     "e2e: End-to-end tests for Lambda functions",
     "performance: Performance and benchmarking tests",
-    "slow: Tests that take longer to execute"
+    "slow: Tests that take longer to execute",
+    "asyncio: Async tests"
 ]
 
 # Test timeout configuration (handled by pytest-timeout plugin)
