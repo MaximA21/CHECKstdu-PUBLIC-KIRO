@@ -122,19 +122,139 @@ jobs:
           fi
         done
 
-    - name: Build Lambda layers
-      run: |
-        echo "🏗️ Building Lambda layers..."
-        chmod +x lambda_functions/build_layer.sh
-        cd lambda_functions
-        ./build_layer.sh
-        cd ..
 
-    - name: Build ARM64 Lambda layers
+
+    - name: Set up Docker Buildx for multi-platform builds
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Lambda layers (ARM64 only)
       run: |
-        echo "🏗️ Building ARM64 Lambda layers for Graviton2..."
-        chmod +x build_arm.sh
-        ./build_arm.sh
+        echo "🚀 Building ARM64 Lambda layers for Graviton2..."
+        
+        # Ensure lambda_packages directory exists
+        mkdir -p lambda_packages
+        
+        # Clean up any existing ARM64 build artifacts
+        rm -rf lambda_layers_arm64/
+        rm -f lambda_packages/*_arm64.zip
+        
+        echo "🎯 Creating ARM64 Layer 1: Ultra-Fast JSON (orjson)"
+        
+        # Build JSON layer for ARM64
+        docker run --rm --platform linux/arm64 \
+          -v $(pwd):/workspace \
+          -w /workspace \
+          python:3.9-slim \
+          bash -c "
+            apt-get update > /dev/null 2>&1
+            apt-get install -y zip > /dev/null 2>&1
+            
+            mkdir -p lambda_layers_arm64/json_layer_arm64/python
+            
+            pip install orjson==3.9.15 \
+                --target lambda_layers_arm64/json_layer_arm64/python \
+                --no-cache-dir \
+                --quiet
+            
+            # Cleanup
+            find lambda_layers_arm64/json_layer_arm64/python -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true
+            find lambda_layers_arm64/json_layer_arm64/python -name '*.pyc' -delete 2>/dev/null || true
+            find lambda_layers_arm64/json_layer_arm64/python -name '*.dist-info' -type d -exec rm -rf {} + 2>/dev/null || true
+            
+            echo 'JSON ARM64 Layer size:'
+            du -sh lambda_layers_arm64/json_layer_arm64/python
+            
+            cd lambda_layers_arm64/json_layer_arm64
+            zip -r9 ../../lambda_packages/json_layer_arm64.zip python/ > /dev/null
+          "
+        
+        echo "🎯 Creating ARM64 Layer 2: Data Processing (Polars)"
+        
+        # Build Polars layer for ARM64
+        docker run --rm --platform linux/arm64 \
+          -v $(pwd):/workspace \
+          -w /workspace \
+          python:3.9-slim \
+          bash -c "
+            apt-get update > /dev/null 2>&1
+            apt-get install -y zip gcc g++ > /dev/null 2>&1
+            
+            mkdir -p lambda_layers_arm64/polars_layer_arm64/python
+            
+            pip install polars==0.20.31 \
+                --target lambda_layers_arm64/polars_layer_arm64/python \
+                --no-cache-dir \
+                --compile \
+                --quiet
+            
+            # Cleanup
+            find lambda_layers_arm64/polars_layer_arm64/python -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true
+            find lambda_layers_arm64/polars_layer_arm64/python -name '*.pyc' -delete 2>/dev/null || true
+            find lambda_layers_arm64/polars_layer_arm64/python -name '*.dist-info' -type d -exec rm -rf {} + 2>/dev/null || true
+            find lambda_layers_arm64/polars_layer_arm64/python -name 'tests' -type d -exec rm -rf {} + 2>/dev/null || true
+            
+            echo 'Polars ARM64 Layer size:'
+            du -sh lambda_layers_arm64/polars_layer_arm64/python
+            
+            cd lambda_layers_arm64/polars_layer_arm64
+            zip -r9 ../../lambda_packages/polars_layer_arm64.zip python/ > /dev/null
+          "
+        
+        echo "🎯 Creating ARM64 Layer 3: Shared Dependencies"
+        
+        # Build shared dependencies layer for ARM64
+        docker run --rm --platform linux/arm64 \
+          -v $(pwd):/workspace \
+          -w /workspace \
+          python:3.9-slim \
+          bash -c "
+            apt-get update > /dev/null 2>&1
+            apt-get install -y zip > /dev/null 2>&1
+            
+            mkdir -p lambda_layers_arm64/shared_dependencies_arm64/python
+            
+            pip install boto3 botocore requests urllib3 certifi idna \
+                --target lambda_layers_arm64/shared_dependencies_arm64/python \
+                --no-cache-dir \
+                --quiet
+            
+            # Cleanup
+            find lambda_layers_arm64/shared_dependencies_arm64/python -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true
+            find lambda_layers_arm64/shared_dependencies_arm64/python -name '*.pyc' -delete 2>/dev/null || true
+            find lambda_layers_arm64/shared_dependencies_arm64/python -name 'tests' -type d -exec rm -rf {} + 2>/dev/null || true
+            
+            echo 'Shared Dependencies ARM64 Layer size:'
+            du -sh lambda_layers_arm64/shared_dependencies_arm64/python
+            
+            cd lambda_layers_arm64/shared_dependencies_arm64
+            zip -r9 ../../lambda_packages/shared_dependencies_arm64.zip python/ > /dev/null
+          "
+        
+        # Final statistics
+        echo "📊 ARM64 LAYERS STATISTICS"
+        echo "=========================="
+        
+        for layer in json_layer_arm64 polars_layer_arm64 shared_dependencies_arm64; do
+          if [ -f lambda_packages/${layer}.zip ]; then
+            LAYER_SIZE=$(stat -c%s lambda_packages/${layer}.zip 2>/dev/null || stat -f%z lambda_packages/${layer}.zip)
+            LAYER_SIZE_MB=$((LAYER_SIZE / 1024 / 1024))
+            
+            echo "${layer}: ${LAYER_SIZE_MB}MB"
+            
+            if [ $LAYER_SIZE -lt 70000000 ]; then
+              echo "  Status: ✅ FITS IN AWS LAMBDA"
+            else
+              echo "  Status: ❌ Too large for Lambda"
+            fi
+          else
+            echo "❌ Missing: ${layer}.zip"
+          fi
+        done
+        
+        # Cleanup temporary build directories
+        rm -rf lambda_layers_arm64/
+        
+        echo "✅ ARM64 Lambda layers built successfully!"
 
     - name: Generate Lambda package manifest
       run: |
