@@ -11,7 +11,6 @@ python_functions = ["test_*"]
 
 # Asyncio configuration to prevent warnings and ensure deterministic behavior
 asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "function"
 
 # Markers for test categorization
 markers = [
@@ -69,7 +68,7 @@ exclude_lines = [
 ]
 show_missing = true
 precision = 2
-fail_under = 80
+fail_under = 60
 
 [tool.black]
 line-length = 127

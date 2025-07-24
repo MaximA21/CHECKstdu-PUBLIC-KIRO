@@ -66,6 +66,75 @@ variable "verbyndich_api_key" {
   default     = ""
 }
 
+# Lambda configuration variables
+variable "lambda_timeout" {
+  description = "Lambda function timeout in seconds"
+  type        = number
+  default     = 30
+  validation {
+    condition     = var.lambda_timeout >= 3 && var.lambda_timeout <= 900
+    error_message = "Lambda timeout must be between 3 and 900 seconds."
+  }
+}
+
+variable "lambda_memory_size" {
+  description = "Lambda function memory size in MB"
+  type        = number
+  default     = 512
+  validation {
+    condition     = var.lambda_memory_size >= 128 && var.lambda_memory_size <= 10240
+    error_message = "Lambda memory size must be between 128 and 10240 MB."
+  }
+}
+
+variable "lambda_runtime" {
+  description = "Lambda function runtime"
+  type        = string
+  default     = "python3.11"
+}
+
+# API Gateway configuration variables
+variable "api_gateway_stage_name" {
+  description = "API Gateway stage name"
+  type        = string
+  default     = "prod"
+}
+
+# DynamoDB configuration variables
+variable "dynamodb_billing_mode" {
+  description = "DynamoDB billing mode"
+  type        = string
+  default     = "PAY_PER_REQUEST"
+  validation {
+    condition     = contains(["PROVISIONED", "PAY_PER_REQUEST"], var.dynamodb_billing_mode)
+    error_message = "DynamoDB billing mode must be either PROVISIONED or PAY_PER_REQUEST."
+  }
+}
+
+# Monitoring configuration variables
+variable "cloudwatch_log_retention_days" {
+  description = "CloudWatch log retention period in days"
+  type        = number
+  default     = 14
+  validation {
+    condition = contains([
+      1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653
+    ], var.cloudwatch_log_retention_days)
+    error_message = "CloudWatch log retention days must be a valid retention period."
+  }
+}
+
+# Common tags variable
+variable "common_tags" {
+  description = "Common tags to apply to all resources"
+  type        = map(string)
+  default = {
+    Environment = "dev"
+    Project     = "webwunder"
+    ManagedBy   = "terraform"
+  }
+}
+
 # Canary deployment configuration variables
 variable "canary_enabled" {
   description = "Enable canary deployment for REST API"

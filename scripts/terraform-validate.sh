@@ -117,6 +117,12 @@ echo -e "${GREEN}✅ Validation variables created${NC}"
 
 # Step 6: Generate Terraform Plan
 echo -e "\n${BLUE}📋 Step 6: Generate Terraform Plan${NC}"
+
+# Set fake AWS credentials for validation
+export AWS_ACCESS_KEY_ID="fake"
+export AWS_SECRET_ACCESS_KEY="fake"
+export AWS_DEFAULT_REGION="$AWS_REGION"
+
 if terraform plan -var-file=terraform.tfvars.validation -out="$PLAN_FILE" -input=false; then
     echo -e "${GREEN}✅ Terraform plan generated successfully${NC}"
     PLAN_STATUS="success"

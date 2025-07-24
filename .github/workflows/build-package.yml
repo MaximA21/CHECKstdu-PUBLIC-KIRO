@@ -351,7 +351,19 @@ jobs:
     - name: Terraform Plan (With Packages)
       env:
         TF_VAR_aws_region: ${{ env.AWS_REGION }}
-        TF_VAR_environment: staging
+        TF_VAR_environment: validation
+        TF_VAR_project_name: webwunder
+        TF_VAR_lambda_timeout: 30
+        TF_VAR_lambda_memory_size: 512
+        TF_VAR_lambda_runtime: python3.11
+        TF_VAR_api_gateway_stage_name: validation
+        TF_VAR_dynamodb_billing_mode: PAY_PER_REQUEST
+        TF_VAR_cloudwatch_log_retention_days: 14
+        TF_VAR_skip_lambda_package_validation: false
+        TF_VAR_lambda_package_path: ../lambda_packages
+        AWS_ACCESS_KEY_ID: fake
+        AWS_SECRET_ACCESS_KEY: fake
+        AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
       run: |
         cd terraform
         # Create terraform.tfvars for planning with actual packages
@@ -361,8 +373,18 @@ jobs:
         project_name = "webwunder"
         lambda_timeout = 30
         lambda_memory_size = 512
+        lambda_runtime = "python3.11"
+        api_gateway_stage_name = "validation"
+        dynamodb_billing_mode = "PAY_PER_REQUEST"
+        cloudwatch_log_retention_days = 14
         skip_lambda_package_validation = false
         lambda_package_path = "../lambda_packages"
+        common_tags = {
+          Environment = "validation"
+          Project     = "webwunder"
+          ManagedBy   = "terraform"
+          Repository  = "webwunder"
+        }
         EOF
         
         # Run terraform plan with actual packages
