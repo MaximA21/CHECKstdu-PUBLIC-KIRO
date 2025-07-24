@@ -348,6 +348,13 @@ jobs:
         cd terraform
         terraform init -backend=false
 
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
     - name: Terraform Plan (With Packages)
       env:
         TF_VAR_aws_region: ${{ env.AWS_REGION }}
@@ -361,9 +368,6 @@ jobs:
         TF_VAR_cloudwatch_log_retention_days: 14
         TF_VAR_skip_lambda_package_validation: false
         TF_VAR_lambda_package_path: ../lambda_packages
-        AWS_ACCESS_KEY_ID: fake
-        AWS_SECRET_ACCESS_KEY: fake
-        AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
       run: |
         cd terraform
         # Create terraform.tfvars for planning with actual packages
