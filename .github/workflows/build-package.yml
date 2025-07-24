@@ -130,6 +130,12 @@ jobs:
         ./build_layer.sh
         cd ..
 
+    - name: Build ARM64 Lambda layers
+      run: |
+        echo "🏗️ Building ARM64 Lambda layers for Graviton2..."
+        chmod +x build_arm.sh
+        ./build_arm.sh
+
     - name: Generate Lambda package manifest
       run: |
         echo "📋 Generating Lambda package manifest..."

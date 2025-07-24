@@ -104,11 +104,50 @@ docker run --rm --platform linux/arm64 \
     zip -r9 ../../lambda_packages/polars_layer_arm64.zip python/ > /dev/null
   "
 
+echo -e "${BLUE}🎯 Creating ARM64 Layer 3: Shared Dependencies${NC}"
+
+docker run --rm --platform linux/arm64 \
+  -v $(pwd):/workspace \
+  -w /workspace \
+  python:${PYTHON_VERSION}-slim \
+  bash -c "
+    echo '🏗️  Building shared dependencies on ARM64 architecture for Graviton2'
+
+    apt-get update > /dev/null 2>&1
+    apt-get install -y zip > /dev/null 2>&1
+
+    mkdir -p lambda_layers/shared_dependencies_arm64/python
+
+    echo '📦 Installing shared dependencies for ARM64...'
+    pip install boto3 botocore requests urllib3 certifi idna \
+        --target lambda_layers/shared_dependencies_arm64/python \
+        --no-cache-dir \
+        --quiet
+
+    # Verify installation
+    if [ -d lambda_layers/shared_dependencies_arm64/python/boto3 ]; then
+        echo '✅ Shared dependencies ARM64 installed successfully'
+    else
+        echo '❌ Shared dependencies ARM64 installation failed'
+    fi
+
+    # Cleanup
+    find lambda_layers/shared_dependencies_arm64/python -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true
+    find lambda_layers/shared_dependencies_arm64/python -name '*.pyc' -delete 2>/dev/null || true
+    find lambda_layers/shared_dependencies_arm64/python -name 'tests' -type d -exec rm -rf {} + 2>/dev/null || true
+
+    echo 'Shared Dependencies ARM64 Layer size:'
+    du -sh lambda_layers/shared_dependencies_arm64/python
+
+    cd lambda_layers/shared_dependencies_arm64
+    zip -r9 ../../lambda_packages/shared_dependencies_arm64.zip python/ > /dev/null
+  "
+
 # Final statistics
 echo -e "${GREEN}📊 GRAVITON2 LAYERS STATISTICS${NC}"
 echo "=============================="
 
-for layer in json_layer_arm64 polars_layer_arm64; do
+for layer in json_layer_arm64 polars_layer_arm64 shared_dependencies_arm64; do
     if [ -f lambda_packages/${layer}.zip ]; then
         LAYER_SIZE=$(stat -f%z lambda_packages/${layer}.zip 2>/dev/null || stat -c%s lambda_packages/${layer}.zip)
         LAYER_SIZE_MB=$((LAYER_SIZE / 1024 / 1024))
@@ -125,7 +164,7 @@ done
 
 # Architecture verification
 echo -e "${YELLOW}🔍 Architecture Verification:${NC}"
-for layer in json_layer_arm64 polars_layer_arm64; do
+for layer in json_layer_arm64 polars_layer_arm64 shared_dependencies_arm64; do
     if [ -f lambda_packages/${layer}.zip ]; then
         echo "Checking ${layer} architecture:"
         unzip -l lambda_packages/${layer}.zip | grep '\.so$' | head -2
