@@ -187,8 +187,8 @@ class HTTPServer:
             request_data = await self._extract_request_data(request)
             result = await self.search_controller.get_search_status(request_data)
 
-            status_code = 200 if result.get("status") == "success" else 400
-            return web.json_response(result, status=status_code)
+            # Return 200 for successful responses, regardless of internal status
+            return web.json_response(result, status=200)
 
         except Exception as e:
             self.logger.error("Search status request error", {"error": str(e)}, exception=e)
@@ -202,8 +202,8 @@ class HTTPServer:
             request_data = await self._extract_request_data(request)
             result = await self.share_controller.handle_request(request_data)
 
-            status_code = 200 if result.get("status") == "success" else 400
-            return web.json_response(result, status=status_code)
+            # Return 200 for successful responses, regardless of internal status
+            return web.json_response(result, status=200)
 
         except Exception as e:
             self.logger.error("Share request error", {"error": str(e)}, exception=e)
@@ -215,8 +215,8 @@ class HTTPServer:
             request_data = await self._extract_request_data(request)
             result = await self.share_controller.get_statistics(request_data)
 
-            status_code = 200 if result.get("status") == "success" else 400
-            return web.json_response(result, status=status_code)
+            # Return 200 for successful responses, regardless of internal status
+            return web.json_response(result, status=200)
 
         except Exception as e:
             self.logger.error("Share stats request error", {"error": str(e)}, exception=e)
@@ -270,7 +270,8 @@ class HTTPServer:
                 else:
                     request_data["body"] = await request.text()
             except Exception:
-                request_data["body"] = None
+                # Return empty dict instead of None for JSON parsing failures
+                request_data["body"] = {} if request.content_type == "application/json" else ""
 
         return request_data
 
