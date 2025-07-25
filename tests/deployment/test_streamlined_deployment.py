@@ -15,7 +15,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import boto3
 import pytest
-from moto import mock_apigateway, mock_lambda, mock_logs
+from moto import mock_aws
 
 
 class TestStreamlinedDeployment:
@@ -50,7 +50,7 @@ class TestStreamlinedDeployment:
             "scripts/deployment-monitor.py",
             "scripts/rollback.py",
             "scripts/health-check.py",
-            "scripts/deployment-testing.py",
+            "scripts/deployment_testing.py",  # Fixed: underscore instead of hyphen
         ]
 
         missing_scripts = []
@@ -125,7 +125,7 @@ def lambda_handler(event, context):
             assert os.path.exists(zip_path)
             assert os.path.getsize(zip_path) > 0
 
-    @mock_lambda
+    @mock_aws
     def test_rollback_script_functionality(self):
         """Test that rollback script basic functionality works."""
         rollback_script = "scripts/rollback.py"
@@ -192,8 +192,7 @@ def lambda_handler(event, context):
             if os.path.exists(backup_file):
                 os.unlink(backup_file)
 
-    @mock_lambda
-    @mock_logs
+    @mock_aws
     def test_core_functionality_check(self):
         """Test core functionality checking logic."""
         # Create mock Lambda functions

@@ -81,10 +81,38 @@ class AuthorizerHandler(BaseController):
                 "context": {"message": "Internal error"},
             }
 
+    def _create_success_response(self, data: Any, status_code: int = 200) -> Dict[str, Any]:
+        """Create success response - not used for authorizers but required by base class."""
+        # Authorizers return IAM policies, not HTTP responses
+        # This method is implemented to satisfy the abstract base class
+        return {
+            "principalId": "user",
+            "policyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [{"Action": "execute-api:Invoke", "Effect": "Allow", "Resource": "*"}],
+            },
+            "context": {"data": data},
+        }
+
+    def _create_error_response(self, status_code: int, message: str) -> Dict[str, Any]:
+        """Create error response - not used for authorizers but required by base class."""
+        # Authorizers return IAM policies, not HTTP responses
+        # This method is implemented to satisfy the abstract base class
+        return {
+            "principalId": "user",
+            "policyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [{"Action": "execute-api:Invoke", "Effect": "Deny", "Resource": "*"}],
+            },
+            "context": {"error": message, "status_code": status_code},
+        }
+
 
 # Lambda entry point function
 def lambda_handler(event, context):
     """Lambda entry point for API Gateway authorization."""
+    import asyncio
+
     from ...shared.dependency_injection.bootstrap import get_container
 
     # Get DI container
@@ -101,7 +129,15 @@ def lambda_handler(event, context):
     # Create handler with dependencies
     handler = AuthorizerHandler(authorization_use_case=authorization_use_case, logger=container.get_logger("authorizer"))
 
-    # Handle request
-    import asyncio
+    # Handle request - check if event loop is already running
+    try:
+        loop = asyncio.get_running_loop()
+        # If we're in an async context (like tests), create a task
+        import concurrent.futures
 
-    return asyncio.run(handler.handle_request(event))
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(asyncio.run, handler.handle_request(event))
+            return future.result()
+    except RuntimeError:
+        # No event loop running, safe to use asyncio.run()
+        return asyncio.run(handler.handle_request(event))

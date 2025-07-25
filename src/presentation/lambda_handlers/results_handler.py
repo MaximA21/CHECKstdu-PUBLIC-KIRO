@@ -75,6 +75,8 @@ class ResultsHandler(HTTPController):
 # Lambda entry point function
 def lambda_handler(event, context):
     """Lambda entry point for results processing."""
+    import asyncio
+
     from ...application.use_cases.connection_management_use_case import ConnectionManagementUseCase
     from ...shared.dependency_injection.bootstrap import get_container
 
@@ -91,7 +93,15 @@ def lambda_handler(event, context):
     # Create handler with dependencies
     handler = ResultsHandler(process_results_use_case=process_results_use_case, logger=container.get_logger("results_handler"))
 
-    # Handle request
-    import asyncio
+    # Handle request - check if event loop is already running
+    try:
+        loop = asyncio.get_running_loop()
+        # If we're in an async context (like tests), create a task
+        import concurrent.futures
 
-    return asyncio.run(handler.handle_request(event))
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(asyncio.run, handler.handle_request(event))
+            return future.result()
+    except RuntimeError:
+        # No event loop running, safe to use asyncio.run()
+        return asyncio.run(handler.handle_request(event))

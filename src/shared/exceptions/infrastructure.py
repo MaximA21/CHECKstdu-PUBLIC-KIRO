@@ -91,8 +91,6 @@ class ExternalServiceException(BaseExternalServiceException):
             service_name=service_name,
             status_code=status_code,
             response_body=response_body,
-            severity=ErrorSeverity.HIGH,
-            category=ErrorCategory.EXTERNAL_SERVICE,
             **kwargs,
         )
 

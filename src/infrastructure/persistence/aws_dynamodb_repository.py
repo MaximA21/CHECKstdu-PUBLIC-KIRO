@@ -11,7 +11,7 @@ except ImportError:
     Attr = lambda x: x
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
@@ -168,7 +168,9 @@ class AWSDynamoDBSearchResultRepository(ISearchResultRepository):
             offers=all_offers,
             share_token=first_item["share_token"],
             timestamp=datetime.fromisoformat(first_item["timestamp"]),
-            expires_at=datetime.fromtimestamp(first_item["expires_at"]),
+            expires_at=datetime.fromtimestamp(
+                int(DynamoDBTypeConverter.from_dynamodb_item(first_item["expires_at"])), tz=timezone.utc
+            ),
             search_metadata=DynamoDBTypeConverter.from_dynamodb_item(first_item.get("search_metadata", {})),
         )
 

@@ -32,13 +32,16 @@ class SearchHandler(HTTPController):
                 return self._create_error_response(400, "Address information required")
 
             # Create address value object
-            address = Address(
-                street=address_data.get("street", ""),
-                house_number=address_data.get("house_number", ""),
-                city=address_data.get("city", ""),
-                postal_code=address_data.get("postal_code", ""),
-                country=address_data.get("country", "DE"),
-            )
+            try:
+                address = Address(
+                    street=address_data.get("street", ""),
+                    house_number=address_data.get("house_number", ""),
+                    city=address_data.get("city", ""),
+                    postal_code=address_data.get("postal_code", ""),
+                    country=address_data.get("country", "DE"),
+                )
+            except ValueError as e:
+                return self._create_error_response(400, f"Invalid address data: {str(e)}")
 
             # Extract connection ID for WebSocket notifications
             connection_id = request_body.get("connection_id")
@@ -67,6 +70,8 @@ class SearchHandler(HTTPController):
 # Lambda entry point function
 def lambda_handler(event, context):
     """Lambda entry point for search offers."""
+    import asyncio
+
     from ...shared.dependency_injection.bootstrap import get_container
 
     # Get DI container
@@ -77,7 +82,15 @@ def lambda_handler(event, context):
         search_offers_use_case=container.get(SearchOffersUseCase), logger=container.get_logger("search_handler")
     )
 
-    # Handle request
-    import asyncio
+    # Handle request - check if event loop is already running
+    try:
+        loop = asyncio.get_running_loop()
+        # If we're in an async context (like tests), create a task
+        import concurrent.futures
 
-    return asyncio.run(handler.handle_request(event))
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(asyncio.run, handler.handle_request(event))
+            return future.result()
+    except RuntimeError:
+        # No event loop running, safe to use asyncio.run()
+        return asyncio.run(handler.handle_request(event))

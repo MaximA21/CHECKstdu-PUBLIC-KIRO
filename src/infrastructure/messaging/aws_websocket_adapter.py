@@ -91,7 +91,7 @@ class AWSAPIGatewayWebSocketManager(IConnectionManager):
             else:
                 logger.error(f"Failed to send message to {connection_id}: {e}")
                 return False
-        except json.JSONEncodeError as e:
+        except (TypeError, ValueError) as e:
             logger.error(f"Failed to serialize message: {e}")
             return False
 
@@ -102,7 +102,7 @@ class AWSAPIGatewayWebSocketManager(IConnectionManager):
         # Serialize message once
         try:
             message_data = json.dumps(message, default=str, separators=(",", ":")).encode("utf-8")
-        except json.JSONEncodeError as e:
+        except (TypeError, ValueError) as e:
             logger.error(f"Failed to serialize message: {e}")
             return {conn_id: False for conn_id in connection_ids}
 

@@ -10,7 +10,16 @@ import pytest
 # Set test environment
 os.environ["APP_ENVIRONMENT"] = "testing"
 
-from src.infrastructure.config import AppConfig, Environment
+from src.infrastructure.config import (
+    AppConfig,
+    DatabaseConfig,
+    DatabaseProvider,
+    Environment,
+    LoggingConfig,
+    LoggingProvider,
+    MessagingConfig,
+    MessagingProvider,
+)
 from src.shared.dependency_injection import DIContainer, get_container
 
 
@@ -34,11 +43,10 @@ def app_config():
     """Provide test application configuration."""
     return AppConfig(
         environment=Environment.TESTING,
-        log_level="DEBUG",
-        aws_region="eu-central-1",
-        dynamodb_table_name="test-table",
-        sqs_queue_url="https://sqs.eu-central-1.amazonaws.com/123456789012/test-queue",
-        websocket_api_endpoint="wss://test.execute-api.eu-central-1.amazonaws.com/test",
+        database=DatabaseConfig(provider=DatabaseProvider.MOCK),
+        messaging=MessagingConfig(provider=MessagingProvider.MOCK),
+        logging=LoggingConfig(provider=LoggingProvider.CONSOLE, level="DEBUG"),
+        debug=True,
     )
 
 
@@ -160,7 +168,7 @@ def rest_api_event():
         "pathParameters": None,
         "queryStringParameters": None,
         "headers": {"Content-Type": "application/json", "Host": "test.execute-api.eu-central-1.amazonaws.com"},
-        "body": '{"address": {"street": "Test St", "city": "Berlin"}}',
+        "body": '{"address": {"street": "Test St", "house_number": "123", "city": "Berlin", "postal_code": "10115", "country": "DE"}}',
         "isBase64Encoded": False,
         "requestContext": {"requestId": "test-request-id", "stage": "test", "apiId": "test-api-id"},
     }

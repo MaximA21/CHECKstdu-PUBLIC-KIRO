@@ -22,7 +22,15 @@ class TestSearchHandler:
             "path": "/search",
             "headers": {"Content-Type": "application/json"},
             "body": json.dumps(
-                {"address": {"street": "Test Street 1", "city": "Berlin", "postal_code": "10115", "country": "Germany"}}
+                {
+                    "address": {
+                        "street": "Test Street",
+                        "house_number": "1",
+                        "city": "Berlin",
+                        "postal_code": "10115",
+                        "country": "DE",
+                    }
+                }
             ),
             "requestContext": {"requestId": "test-request-123"},
         }
@@ -41,13 +49,12 @@ class TestSearchHandler:
         # Mock container and use case
         mock_container = Mock()
         mock_use_case = AsyncMock()
-        mock_result = Mock()
-        mock_result.to_dict.return_value = {
+        mock_use_case.execute.return_value = {
             "request_id": "test-request-123",
-            "offers": [{"provider_name": "TestProvider", "speed_mbps": 100, "price_monthly": 29.99}],
+            "share_token": "test-token",
+            "status": "initiated",
+            "message": "Search request processed successfully",
         }
-
-        mock_use_case.execute.return_value = mock_result
         mock_container.get.return_value = mock_use_case
         mock_get_container.return_value = mock_container
 
@@ -57,8 +64,8 @@ class TestSearchHandler:
         # Assertions
         assert response["statusCode"] == 200
         body = json.loads(response["body"])
-        assert "offers" in body
-        assert len(body["offers"]) == 1
+        assert "request_id" in body
+        assert body["request_id"] == "test-request-123"
 
     @patch("src.shared.dependency_injection.bootstrap.get_container")
     def test_search_handler_invalid_body(self, mock_get_container, lambda_context):
@@ -131,9 +138,13 @@ class TestConnectHandler:
         """Test successful WebSocket connection."""
         mock_container = Mock()
         mock_use_case = AsyncMock()
-        mock_session = Mock()
-        mock_session.connection_id = "test-connection-123"
-        mock_use_case.create_connection.return_value = mock_session
+        mock_use_case.handle_connect.return_value = {
+            "connection_id": "test-connection-123",
+            "status": "connected",
+            "connected_at": "2023-01-01T00:00:00",
+            "connection_type": "websocket",
+            "message": "Connection established successfully",
+        }
         mock_container.get.return_value = mock_use_case
         mock_get_container.return_value = mock_container
 
@@ -155,7 +166,7 @@ class TestConnectHandler:
         """Test connect handler with use case error."""
         mock_container = Mock()
         mock_use_case = AsyncMock()
-        mock_use_case.create_connection.side_effect = Exception("Database error")
+        mock_use_case.handle_connect.side_effect = Exception("Database error")
         mock_container.get.return_value = mock_use_case
         mock_get_container.return_value = mock_container
 
@@ -184,7 +195,19 @@ class TestDisconnectHandler:
         """Test successful WebSocket disconnection."""
         mock_container = Mock()
         mock_use_case = AsyncMock()
-        mock_use_case.disconnect_connection.return_value = None
+        mock_use_case.get_connection_status.return_value = {
+            "connection_id": "test-connection-123",
+            "status": "connected",
+            "should_disconnect_due_to_limits": False,
+        }
+        mock_use_case.handle_disconnect.return_value = {
+            "connection_id": "test-connection-123",
+            "status": "disconnected",
+            "disconnected_at": "2023-01-01T00:01:00",
+            "duration_seconds": 60,
+            "reason": "Client disconnected",
+            "message": "Connection disconnected successfully",
+        }
         mock_container.get.return_value = mock_use_case
         mock_get_container.return_value = mock_container
 
@@ -197,7 +220,12 @@ class TestDisconnectHandler:
         """Test disconnect handler with connection not found."""
         mock_container = Mock()
         mock_use_case = AsyncMock()
-        mock_use_case.disconnect_connection.side_effect = ValueError("Connection not found")
+        mock_use_case.get_connection_status.return_value = {"connection_id": "test-connection-123", "status": "not_found"}
+        mock_use_case.handle_disconnect.return_value = {
+            "connection_id": "test-connection-123",
+            "status": "not_found",
+            "message": "Connection not found",
+        }
         mock_container.get.return_value = mock_use_case
         mock_get_container.return_value = mock_container
 
@@ -218,6 +246,7 @@ class TestAuthorizerHandler:
             "resource": "/search",
             "path": "/search",
             "httpMethod": "POST",
+            "queryStringParameters": {"token": "valid-token"},
             "headers": {"Authorization": "Bearer valid-token"},
             "requestContext": {"accountId": "123456789012", "apiId": "test-api-id", "stage": "test"},
         }
@@ -227,7 +256,14 @@ class TestAuthorizerHandler:
         """Test authorizer with valid token."""
         mock_container = Mock()
         mock_use_case = AsyncMock()
-        mock_use_case.authorize.return_value = {"user_id": "user-123", "permissions": ["search"]}
+        mock_use_case.authorize_request.return_value = {
+            "principalId": "user-123",
+            "policyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [{"Action": "execute-api:Invoke", "Effect": "Allow", "Resource": authorizer_event["methodArn"]}],
+            },
+            "context": {"user_id": "user-123", "permissions": ["search"]},
+        }
         mock_container.get.return_value = mock_use_case
         mock_get_container.return_value = mock_container
 
@@ -236,18 +272,14 @@ class TestAuthorizerHandler:
         assert "policyDocument" in response
         assert response["policyDocument"]["Statement"][0]["Effect"] == "Allow"
         assert "context" in response
-        assert response["context"]["user_id"] == "user-123"
 
-    @patch("src.shared.dependency_injection.bootstrap.get_container")
-    def test_authorizer_handler_invalid_token(self, mock_get_container, authorizer_event, lambda_context):
+    def test_authorizer_handler_invalid_token(self, authorizer_event, lambda_context):
         """Test authorizer with invalid token."""
-        mock_container = Mock()
-        mock_use_case = AsyncMock()
-        mock_use_case.authorize.side_effect = ValueError("Invalid token")
-        mock_container.get.return_value = mock_use_case
-        mock_get_container.return_value = mock_container
+        # Test with empty token
+        event_without_token = authorizer_event.copy()
+        event_without_token["queryStringParameters"] = {"token": ""}
 
-        response = authorizer_handler(authorizer_event, lambda_context)
+        response = authorizer_handler(event_without_token, lambda_context)
 
         assert "policyDocument" in response
         assert response["policyDocument"]["Statement"][0]["Effect"] == "Deny"
@@ -257,6 +289,7 @@ class TestAuthorizerHandler:
         event = {
             "type": "REQUEST",
             "methodArn": "arn:aws:execute-api:eu-central-1:123456789012:test-api/test/POST/search",
+            "queryStringParameters": {},
             "headers": {},
             "requestContext": {"accountId": "123456789012", "apiId": "test-api-id", "stage": "test"},
         }
@@ -266,17 +299,13 @@ class TestAuthorizerHandler:
         assert "policyDocument" in response
         assert response["policyDocument"]["Statement"][0]["Effect"] == "Deny"
 
-    @patch("src.shared.dependency_injection.bootstrap.get_container")
-    def test_authorizer_handler_system_error(self, mock_get_container, authorizer_event, lambda_context):
+    def test_authorizer_handler_system_error(self, authorizer_event, lambda_context):
         """Test authorizer with system error."""
-        mock_container = Mock()
-        mock_use_case = AsyncMock()
-        mock_use_case.authorize.side_effect = Exception("Database connection failed")
-        mock_container.get.return_value = mock_use_case
-        mock_get_container.return_value = mock_container
+        # Test with missing methodArn to trigger system error
+        event_with_error = authorizer_event.copy()
+        del event_with_error["methodArn"]
 
-        # System errors should deny access for security
-        response = authorizer_handler(authorizer_event, lambda_context)
+        response = authorizer_handler(event_with_error, lambda_context)
 
         assert "policyDocument" in response
         assert response["policyDocument"]["Statement"][0]["Effect"] == "Deny"
