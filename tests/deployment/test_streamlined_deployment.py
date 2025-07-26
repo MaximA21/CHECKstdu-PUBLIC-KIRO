@@ -135,26 +135,16 @@ def lambda_handler(event, context):
         # Create mock IAM role first
         iam_client = boto3.client("iam", region_name=self.region)
         role_name = "webwunder-test-lambda-role"
-        
+
         # Create the IAM role with proper assume role policy
         assume_role_policy = {
             "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Action": "sts:AssumeRole",
-                    "Effect": "Allow",
-                    "Principal": {
-                        "Service": "lambda.amazonaws.com"
-                    }
-                }
-            ]
+            "Statement": [{"Action": "sts:AssumeRole", "Effect": "Allow", "Principal": {"Service": "lambda.amazonaws.com"}}],
         }
-        
+
         try:
             iam_client.create_role(
-                RoleName=role_name,
-                AssumeRolePolicyDocument=json.dumps(assume_role_policy),
-                Description="Test Lambda role"
+                RoleName=role_name, AssumeRolePolicyDocument=json.dumps(assume_role_policy), Description="Test Lambda role"
             )
         except iam_client.exceptions.EntityAlreadyExistsException:
             pass  # Role already exists
@@ -225,26 +215,16 @@ def lambda_handler(event, context):
         # Create mock IAM role first
         iam_client = boto3.client("iam", region_name=self.region)
         role_name = "webwunder-test-lambda-role"
-        
+
         # Create the IAM role with proper assume role policy
         assume_role_policy = {
             "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Action": "sts:AssumeRole",
-                    "Effect": "Allow",
-                    "Principal": {
-                        "Service": "lambda.amazonaws.com"
-                    }
-                }
-            ]
+            "Statement": [{"Action": "sts:AssumeRole", "Effect": "Allow", "Principal": {"Service": "lambda.amazonaws.com"}}],
         }
-        
+
         try:
             iam_client.create_role(
-                RoleName=role_name,
-                AssumeRolePolicyDocument=json.dumps(assume_role_policy),
-                Description="Test Lambda role"
+                RoleName=role_name, AssumeRolePolicyDocument=json.dumps(assume_role_policy), Description="Test Lambda role"
             )
         except iam_client.exceptions.EntityAlreadyExistsException:
             pass  # Role already exists
@@ -330,10 +310,17 @@ def lambda_handler(event, context):
                 with open(tf_file, "r") as f:
                     content = f.read()
                     # Look for various cost optimization patterns
-                    if any(pattern in content.lower() for pattern in [
-                        "cost-optimized", "student budget", "budget alert", 
-                        "cost anomaly", "cost monitoring", "cost optimization"
-                    ]):
+                    if any(
+                        pattern in content.lower()
+                        for pattern in [
+                            "cost-optimized",
+                            "student budget",
+                            "budget alert",
+                            "cost anomaly",
+                            "cost monitoring",
+                            "cost optimization",
+                        ]
+                    ):
                         cost_optimized_features.append(tf_file)
 
         # Should have at least some cost optimization configuration

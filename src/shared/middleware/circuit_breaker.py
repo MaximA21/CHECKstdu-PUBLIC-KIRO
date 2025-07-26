@@ -76,7 +76,7 @@ class CircuitBreaker:
         # Initialize lock if not already done
         if self._lock is None:
             self._lock = asyncio.Lock()
-            
+
         async with self._lock:
             if self.state == CircuitBreakerState.OPEN:
                 if self._should_attempt_reset():

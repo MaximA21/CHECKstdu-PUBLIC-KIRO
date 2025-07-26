@@ -106,7 +106,7 @@ class TestConfigLoader:
         try:
             loader = ConfigLoader(os.path.dirname(temp_file))
             # Mock the entire _load_config_file method to avoid Path issues
-            with patch.object(loader, '_load_config_file') as mock_load:
+            with patch.object(loader, "_load_config_file") as mock_load:
                 mock_load.side_effect = ConfigurationError("Failed to load config file")
                 with pytest.raises(ConfigurationError, match="Failed to load config file"):
                     loader._load_config_file(Environment.DEVELOPMENT)

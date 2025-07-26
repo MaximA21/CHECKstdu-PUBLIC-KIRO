@@ -2,7 +2,7 @@
 
 import asyncio
 import json
-from unittest.mock import AsyncMock, Mock, patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 from aiohttp import web
@@ -154,14 +154,14 @@ class TestHTTPServer:
     async def test_handle_search_status(self, server):
         """Test search status endpoint."""
         request = make_mocked_request("GET", "/api/search/status/123")
-        
+
         # Mock controllers and logger
         server.search_controller = Mock()
         server.search_controller.get_search_status = AsyncMock(return_value={"status": "completed"})
         server.logger = Mock()
 
         # Mock the match_info using patch
-        with patch.object(type(request), 'match_info', {"request_id": "123"}):
+        with patch.object(type(request), "match_info", {"request_id": "123"}):
             response = await server._handle_search_status(request)
 
             assert response.status == 200
@@ -170,14 +170,14 @@ class TestHTTPServer:
     async def test_handle_share(self, server):
         """Test share endpoint."""
         request = make_mocked_request("GET", "/api/share/abc123")
-        
+
         # Mock controllers and logger
         server.share_controller = Mock()
         server.share_controller.handle_request = AsyncMock(return_value={"results": []})
         server.logger = Mock()
 
         # Mock the match_info using patch
-        with patch.object(type(request), 'match_info', {"share_token": "abc123"}):
+        with patch.object(type(request), "match_info", {"share_token": "abc123"}):
             response = await server._handle_share(request)
 
             assert response.status == 200
@@ -186,14 +186,14 @@ class TestHTTPServer:
     async def test_handle_share_stats(self, server):
         """Test share stats endpoint."""
         request = make_mocked_request("GET", "/api/share/abc123/stats")
-        
+
         # Mock controllers and logger
         server.share_controller = Mock()
         server.share_controller.get_statistics = AsyncMock(return_value={"views": 5})
         server.logger = Mock()
 
         # Mock the match_info using patch
-        with patch.object(type(request), 'match_info', {"share_token": "abc123"}):
+        with patch.object(type(request), "match_info", {"share_token": "abc123"}):
             response = await server._handle_share_stats(request)
 
             assert response.status == 200
@@ -203,7 +203,7 @@ class TestHTTPServer:
         """Test share extend endpoint."""
         request = make_mocked_request("POST", "/api/share/abc123/extend")
         request.json = AsyncMock(return_value={"days": 7})
-        
+
         # Mock controllers and logger
         server.share_controller = Mock()
         server.share_controller.extend_expiration = AsyncMock(return_value={"status": "success"})
@@ -217,11 +217,11 @@ class TestHTTPServer:
     async def test_handle_websocket(self, server):
         """Test WebSocket endpoint."""
         request = make_mocked_request("GET", "/ws")
-        
+
         # Mock WebSocket response
         mock_ws = Mock()
         mock_ws.prepare = AsyncMock()
-        
+
         with patch("src.presentation.http_server.WebSocketResponse", return_value=mock_ws):
             # Mock controllers and logger
             server.websocket_controller = Mock()
@@ -236,13 +236,13 @@ class TestHTTPServer:
     async def test_extract_request_data_json(self, server):
         """Test request data extraction with JSON body."""
         request = make_mocked_request("POST", "/api/test")
-        
+
         # Mock headers, query, and match_info using patch on the class level
-        with patch.object(type(request), 'headers', {"Content-Type": "application/json"}):
-            with patch.object(type(request), 'query', {"param": "value"}):
-                with patch.object(type(request), 'match_info', {"id": "123"}):
+        with patch.object(type(request), "headers", {"Content-Type": "application/json"}):
+            with patch.object(type(request), "query", {"param": "value"}):
+                with patch.object(type(request), "match_info", {"id": "123"}):
                     # Mock content_type property
-                    with patch.object(type(request), 'content_type', "application/json"):
+                    with patch.object(type(request), "content_type", "application/json"):
                         request.json = AsyncMock(return_value={"test": "data"})
 
                         data = await server._extract_request_data(request)
@@ -257,11 +257,11 @@ class TestHTTPServer:
     async def test_extract_request_data_text(self, server):
         """Test request data extraction with text body."""
         request = make_mocked_request("POST", "/api/test")
-        
+
         # Mock headers, query, and match_info using patch on the class level
-        with patch.object(type(request), 'headers', {"Content-Type": "text/plain"}):
-            with patch.object(type(request), 'query', {}):
-                with patch.object(type(request), 'match_info', {}):
+        with patch.object(type(request), "headers", {"Content-Type": "text/plain"}):
+            with patch.object(type(request), "query", {}):
+                with patch.object(type(request), "match_info", {}):
                     request.text = AsyncMock(return_value="test data")
 
                     data = await server._extract_request_data(request)
@@ -272,11 +272,11 @@ class TestHTTPServer:
     async def test_extract_request_data_get(self, server):
         """Test request data extraction for GET request."""
         request = make_mocked_request("GET", "/api/test")
-        
+
         # Mock headers, query, and match_info using patch on the class level
-        with patch.object(type(request), 'headers', {}):
-            with patch.object(type(request), 'query', {"param": "value"}):
-                with patch.object(type(request), 'match_info', {}):
+        with patch.object(type(request), "headers", {}):
+            with patch.object(type(request), "query", {"param": "value"}):
+                with patch.object(type(request), "match_info", {}):
 
                     data = await server._extract_request_data(request)
 
