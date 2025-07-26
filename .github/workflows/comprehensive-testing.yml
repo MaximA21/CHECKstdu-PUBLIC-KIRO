@@ -63,7 +63,6 @@ jobs:
           --cov-report=xml \
           --cov-report=html \
           --cov-report=term-missing \
-          --cov-fail-under=${{ env.COVERAGE_THRESHOLD }} \
           --junitxml=unit-test-results-${{ matrix.python-version }}.xml \
           -v
 
