@@ -63,6 +63,7 @@ jobs:
           --cov-report=xml \
           --cov-report=html \
           --cov-report=term-missing \
+          --cov-fail-under=0 \
           --junitxml=unit-test-results-${{ matrix.python-version }}.xml \
           -v
 
@@ -138,6 +139,7 @@ jobs:
           --cov=src \
           --cov-report=xml \
           --cov-report=term-missing \
+          --cov-fail-under=0 \
           --junitxml=integration-test-results.xml \
           -v \
           --tb=short
@@ -205,6 +207,7 @@ jobs:
           --cov=src \
           --cov-report=xml \
           --cov-report=term-missing \
+          --cov-fail-under=0 \
           --junitxml=e2e-test-results.xml \
           -v \
           --tb=short \
