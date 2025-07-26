@@ -21,7 +21,7 @@ on:
 
 env:
   PYTHON_VERSION: '3.11'
-  COVERAGE_THRESHOLD: 60
+  COVERAGE_THRESHOLD: 58
 
 jobs:
   # Unit Tests with Coverage

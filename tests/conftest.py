@@ -1,4 +1,4 @@
-"""Pytest configuration and shared fixtures."""
+"""Pytest configuration and fixtures."""
 
 import asyncio
 import os
@@ -29,6 +29,22 @@ def event_loop():
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
+
+
+@pytest.fixture(autouse=True)
+def setup_event_loop(event_loop):
+    """Set up event loop for each test."""
+    asyncio.set_event_loop(event_loop)
+    yield
+    # Clean up any pending tasks
+    try:
+        pending = asyncio.all_tasks(event_loop)
+        for task in pending:
+            task.cancel()
+        event_loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+    except RuntimeError:
+        # Event loop might not be running, which is fine
+        pass
 
 
 @pytest.fixture

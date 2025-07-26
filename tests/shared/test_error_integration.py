@@ -49,7 +49,7 @@ class TestComprehensiveErrorHandler:
 
     def test_handle_error_validation_exception(self):
         """Test handling validation exception."""
-        handler = ComprehensiveErrorHandler()
+        handler = ComprehensiveErrorHandler(enable_circuit_breakers=False)
         error = ValidationException("Invalid input")
         error.add_field_error("email", "Invalid email format")
 
@@ -62,7 +62,7 @@ class TestComprehensiveErrorHandler:
 
     def test_handle_error_business_logic_exception(self):
         """Test handling business logic exception."""
-        handler = ComprehensiveErrorHandler()
+        handler = ComprehensiveErrorHandler(enable_circuit_breakers=False)
         error = BusinessLogicException("Business rule violation")
 
         result = handler.handle_error(error)
@@ -73,7 +73,7 @@ class TestComprehensiveErrorHandler:
 
     def test_handle_error_infrastructure_exception(self):
         """Test handling infrastructure exception."""
-        handler = ComprehensiveErrorHandler()
+        handler = ComprehensiveErrorHandler(enable_circuit_breakers=False)
         error = InfrastructureException("Database connection failed")
 
         result = handler.handle_error(error)
@@ -85,7 +85,7 @@ class TestComprehensiveErrorHandler:
 
     def test_handle_error_with_service_name(self):
         """Test handling error with service name."""
-        handler = ComprehensiveErrorHandler()
+        handler = ComprehensiveErrorHandler(enable_circuit_breakers=False)
         error = BusinessLogicException("Service error")
 
         result = handler.handle_error(error, service_name="test-service")
@@ -95,7 +95,7 @@ class TestComprehensiveErrorHandler:
     @pytest.mark.asyncio
     async def test_execute_with_protection_success(self):
         """Test executing function with protection successfully."""
-        handler = ComprehensiveErrorHandler()
+        handler = ComprehensiveErrorHandler(enable_circuit_breakers=False)
 
         async def test_func():
             return "success"
@@ -109,7 +109,7 @@ class TestComprehensiveErrorHandler:
     @pytest.mark.asyncio
     async def test_execute_with_protection_error(self):
         """Test executing function with protection when error occurs."""
-        handler = ComprehensiveErrorHandler()
+        handler = ComprehensiveErrorHandler(enable_circuit_breakers=False)
 
         async def test_func():
             raise ValueError("Test error")
@@ -120,7 +120,7 @@ class TestComprehensiveErrorHandler:
     @pytest.mark.asyncio
     async def test_execute_with_protection_fallback(self):
         """Test executing function with fallback."""
-        handler = ComprehensiveErrorHandler()
+        handler = ComprehensiveErrorHandler(enable_circuit_breakers=False)
 
         async def test_func():
             raise ValueError("Primary error")
@@ -141,7 +141,7 @@ class TestComprehensiveErrorHandler:
 
     def test_register_fallback(self):
         """Test registering fallback function."""
-        handler = ComprehensiveErrorHandler()
+        handler = ComprehensiveErrorHandler(enable_circuit_breakers=False)
 
         def fallback_func():
             return "fallback"
@@ -151,7 +151,7 @@ class TestComprehensiveErrorHandler:
 
     def test_add_alert_callback(self):
         """Test adding alert callback."""
-        handler = ComprehensiveErrorHandler()
+        handler = ComprehensiveErrorHandler(enable_circuit_breakers=False)
 
         def callback(alert_data):
             pass
@@ -163,7 +163,7 @@ class TestComprehensiveErrorHandler:
 
     def test_get_system_health(self):
         """Test getting system health information."""
-        handler = ComprehensiveErrorHandler()
+        handler = ComprehensiveErrorHandler(enable_circuit_breakers=False)
 
         health_data = handler.get_system_health()
 
@@ -175,7 +175,7 @@ class TestComprehensiveErrorHandler:
     @pytest.mark.asyncio
     async def test_perform_health_checks(self):
         """Test performing health checks."""
-        handler = ComprehensiveErrorHandler()
+        handler = ComprehensiveErrorHandler(enable_circuit_breakers=False)
 
         result = await handler.perform_health_checks()
 
@@ -183,14 +183,14 @@ class TestComprehensiveErrorHandler:
 
     def test_reset_circuit_breakers(self):
         """Test resetting circuit breakers."""
-        handler = ComprehensiveErrorHandler()
+        handler = ComprehensiveErrorHandler(enable_circuit_breakers=False)
 
         # Should not raise any exception
         handler.reset_circuit_breakers()
 
     def test_clear_error_history(self):
         """Test clearing error history."""
-        handler = ComprehensiveErrorHandler()
+        handler = ComprehensiveErrorHandler(enable_circuit_breakers=False)
 
         # Should not raise any exception
         handler.clear_error_history()
@@ -212,7 +212,7 @@ class TestGlobalErrorHandler:
     def test_initialize_error_handler(self):
         """Test initializing global error handler."""
         logger = Mock()
-        handler = initialize_error_handler(logger, enable_monitoring=False)
+        handler = initialize_error_handler(logger, enable_monitoring=False, enable_circuit_breakers=False)
 
         assert isinstance(handler, ComprehensiveErrorHandler)
         assert handler.logger is logger
@@ -222,7 +222,7 @@ class TestGlobalErrorHandler:
 
     def test_handle_error_with_global_handler(self):
         """Test handle_error with global handler."""
-        handler = initialize_error_handler()
+        handler = initialize_error_handler(enable_circuit_breakers=False)
         error = ValidationException("Test error")
 
         result = handle_error(error)

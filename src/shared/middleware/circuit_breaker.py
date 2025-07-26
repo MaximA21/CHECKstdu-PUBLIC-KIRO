@@ -69,10 +69,14 @@ class CircuitBreaker:
         self.failure_count = 0
         self.last_failure_time = None
         self.state = CircuitBreakerState.CLOSED
-        self._lock = asyncio.Lock()
+        self._lock = None  # Will be initialized when needed
 
     async def call(self, func: Callable, *args, **kwargs) -> Any:
         """Execute function with circuit breaker protection."""
+        # Initialize lock if not already done
+        if self._lock is None:
+            self._lock = asyncio.Lock()
+            
         async with self._lock:
             if self.state == CircuitBreakerState.OPEN:
                 if self._should_attempt_reset():
