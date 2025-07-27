@@ -1,0 +1,133 @@
+name: Emergency Infrastructure Destroy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to destroy'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+      skip_backup:
+        description: 'Skip creating backup before destruction'
+        required: false
+        default: false
+        type: boolean
+      skip_terraform:
+        description: 'Skip Terraform destruction (manual cleanup only)'
+        required: false
+        default: false
+        type: boolean
+      auto_confirm:
+        description: 'Skip confirmation prompts (use with extreme caution)'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  id-token: write   # Required for OIDC token generation
+  contents: read    # Required to read repository contents
+
+env:
+  AWS_REGION: 'eu-central-1'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  emergency-destroy:
+    runs-on: ubuntu-latest
+    environment: 
+      name: ${{ github.event.inputs.environment }}
+      url: ${{ github.event.inputs.environment == 'production' && 'https://api.webwunder.com' || 'https://staging-api.webwunder.com' }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ vars.AWS_GITHUB_ACTIONS_ROLE_ARN }}
+        role-session-name: GitHubActions-EmergencyDestroy-${{ github.run_id }}
+        aws-region: ${{ env.AWS_REGION }}
+        role-duration-seconds: 3600
+
+    - name: Set up Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install boto3
+
+    - name: Emergency Infrastructure Destruction
+      run: |
+        echo "🚨 EMERGENCY INFRASTRUCTURE DESTRUCTION"
+        echo "Environment: ${{ github.event.inputs.environment }}"
+        echo "Skip Backup: ${{ github.event.inputs.skip_backup }}"
+        echo "Skip Terraform: ${{ github.event.inputs.skip_terraform }}"
+        echo "Auto Confirm: ${{ github.event.inputs.auto_confirm }}"
+        echo "=" * 80
+        
+        # Build command
+        cmd = [
+          "python3", "scripts/destroy.py",
+          "${{ github.event.inputs.environment }}",
+          "--region", "${{ env.AWS_REGION }}"
+        ]
+        
+        if [[ "${{ github.event.inputs.skip_backup }}" == "true" ]]; then
+          cmd.append("--skip-backup")
+        fi
+        
+        if [[ "${{ github.event.inputs.skip_terraform }}" == "true" ]]; then
+          cmd.append("--skip-terraform")
+        fi
+        
+        if [[ "${{ github.event.inputs.auto_confirm }}" == "true" ]]; then
+          cmd.append("--auto-confirm")
+        fi
+        
+        echo "Executing: ${cmd[*]}"
+        
+        # Execute destruction
+        if "${cmd[@]}"; then
+          echo "✅ Emergency destruction completed successfully"
+        else
+          echo "❌ Emergency destruction completed with errors"
+          exit 1
+        fi
+
+    - name: Upload destruction report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: emergency-destroy-report-${{ github.run_id }}
+        path: |
+          backup-*.json
+          terraform-destroy-*.log
+        retention-days: 30
+
+    - name: Emergency destruction summary
+      run: |
+        echo "# Emergency Infrastructure Destruction Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Environment:** ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Timestamp:** $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+        echo "**Run ID:** ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Destruction Options" >> $GITHUB_STEP_SUMMARY
+        echo "- Skip Backup: ${{ github.event.inputs.skip_backup }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Skip Terraform: ${{ github.event.inputs.skip_terraform }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Auto Confirm: ${{ github.event.inputs.auto_confirm }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Status" >> $GITHUB_STEP_SUMMARY
+        if [[ "${{ job.status }}" == "success" ]]; then
+          echo "✅ **DESTRUCTION COMPLETED SUCCESSFULLY**" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **DESTRUCTION COMPLETED WITH ERRORS**" >> $GITHUB_STEP_SUMMARY
+        fi 

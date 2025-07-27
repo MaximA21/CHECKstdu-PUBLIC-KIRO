@@ -2,7 +2,7 @@ name: Deployment Pipeline
 
 on:
   workflow_run:
-    workflows: ["Code Quality and Security", "Comprehensive Testing", "Build and Package"]
+    workflows: ["Build and Package"]
     types:
       - completed
     branches: [ kiro-rewrite ]
@@ -45,7 +45,7 @@ jobs:
   # Pre-deployment validation
   pre-deployment-checks:
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch'
+    if: (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.name == 'Build and Package') || github.event_name == 'workflow_dispatch'
     outputs:
       deploy_staging: ${{ steps.gate-check.outputs.deploy_staging }}
       deploy_production: ${{ steps.gate-check.outputs.deploy_production }}
@@ -93,8 +93,8 @@ jobs:
             fi
           fi
         else
-          # Automatic staging deployment after successful CI
-          if [[ "${{ github.event.workflow_run.conclusion }}" == "success" ]]; then
+          # Automatic staging deployment after successful Build and Package
+          if [[ "${{ github.event.workflow_run.conclusion }}" == "success" ]] && [[ "${{ github.event.workflow_run.name }}" == "Build and Package" ]]; then
             DEPLOY_STAGING="true"
             BUILD_WORKFLOW_ID="${{ github.event.workflow_run.id }}"
           fi
@@ -114,27 +114,25 @@ jobs:
         echo "- Artifact SHA: $ARTIFACT_SHA"
 
     - name: Wait for build completion
-      if: steps.gate-check.outputs.deploy_staging == 'true' && steps.gate-check.outputs.build_workflow_id != ''
+      if: steps.gate-check.outputs.deploy_staging == 'true' && steps.gate-check.outputs.build_workflow_id != '' && github.event.workflow_run.name == 'Build and Package'
       run: |
-        echo "⏳ Waiting for build workflow to complete..."
+        echo "⏳ Waiting for Build and Package workflow to complete..."
         echo "Build Workflow ID: ${{ steps.gate-check.outputs.build_workflow_id }}"
+        echo "Build Workflow Name: ${{ github.event.workflow_run.name }}"
         
-        # Wait up to 15 minutes for build to complete
-        MAX_ATTEMPTS=90
-        ATTEMPT=0
-        
-        while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-          echo "Attempt $((ATTEMPT + 1))/$MAX_ATTEMPTS: Waiting for build completion..."
-          
-          # Simple wait - artifacts will be available after build completes
-          ATTEMPT=$((ATTEMPT + 1))
-          if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
-            echo "⏳ Build may still be running, waiting 10 seconds..."
-            sleep 10
-          fi
-        done
-        
-        echo "✅ Build wait period completed, proceeding with deployment"
+        # Since we're triggered by workflow_run completion, artifacts should be available
+        echo "✅ Build and Package workflow completed, artifacts should be available"
+
+    - name: Debug artifact information
+      if: steps.gate-check.outputs.deploy_staging == 'true' || steps.gate-check.outputs.deploy_production == 'true'
+      run: |
+        echo "🔍 Debugging artifact information..."
+        echo "GitHub SHA: ${{ github.sha }}"
+        echo "Workflow Run Head SHA: ${{ github.event.workflow_run.head_sha }}"
+        echo "Artifact SHA: ${{ needs.pre-deployment-checks.outputs.artifact_sha }}"
+        echo "Event Name: ${{ github.event_name }}"
+        echo "Workflow Run ID: ${{ github.event.workflow_run.id }}"
+        echo "Workflow Run Name: ${{ github.event.workflow_run.name }}"
 
     - name: Download build artifacts (if available)
       if: steps.gate-check.outputs.deploy_staging == 'true' || steps.gate-check.outputs.deploy_production == 'true'
@@ -289,11 +287,16 @@ jobs:
             zip -r "../${func_name}.zip" .
             cd ..
             
-            # Deploy to staging
-            aws lambda update-function-code \
-              --function-name "webwunder-staging-$func_name" \
-              --zip-file "fileb://${func_name}.zip" \
-              --region ${{ env.AWS_REGION }} || echo "Function webwunder-staging-$func_name may not exist yet"
+            # Check if function exists before updating
+            if aws lambda get-function --function-name "webwunder-staging-$func_name" --region ${{ env.AWS_REGION }} >/dev/null 2>&1; then
+              echo "🔄 Updating existing function webwunder-staging-$func_name..."
+              aws lambda update-function-code \
+                --function-name "webwunder-staging-$func_name" \
+                --zip-file "fileb://${func_name}.zip" \
+                --region ${{ env.AWS_REGION }}
+            else
+              echo "⚠️ Function webwunder-staging-$func_name does not exist - will be created by Terraform"
+            fi
             
             # Cleanup
             rm -rf "$BUILD_DIR"
@@ -618,11 +621,17 @@ jobs:
               function_name=$(basename "$zip_file" .zip)
               echo "Deploying $function_name to production..."
               
-              # Update function code
+                          # Check if function exists before updating
+            if aws lambda get-function --function-name "webwunder-prod-$function_name" --region ${{ env.AWS_REGION }} >/dev/null 2>&1; then
+              echo "🔄 Updating existing function webwunder-prod-$function_name..."
               aws lambda update-function-code \
                 --function-name "webwunder-prod-$function_name" \
                 --zip-file "fileb://$zip_file" \
                 --region ${{ env.AWS_REGION }}
+            else
+              echo "⚠️ Function webwunder-prod-$function_name does not exist - will be created by Terraform"
+              continue
+            fi
               
               # Publish new version
               NEW_VERSION=$(aws lambda publish-version \
@@ -694,11 +703,17 @@ jobs:
             zip -r "../${func_name}.zip" .
             cd ..
             
-            # Update function code
-            aws lambda update-function-code \
-              --function-name "webwunder-prod-$func_name" \
-              --zip-file "fileb://${func_name}.zip" \
-              --region ${{ env.AWS_REGION }}
+            # Check if function exists before updating
+            if aws lambda get-function --function-name "webwunder-prod-$func_name" --region ${{ env.AWS_REGION }} >/dev/null 2>&1; then
+              echo "🔄 Updating existing function webwunder-prod-$func_name..."
+              aws lambda update-function-code \
+                --function-name "webwunder-prod-$func_name" \
+                --zip-file "fileb://${func_name}.zip" \
+                --region ${{ env.AWS_REGION }}
+            else
+              echo "⚠️ Function webwunder-prod-$func_name does not exist - will be created by Terraform"
+              continue
+            fi
             
             # Publish new version
             NEW_VERSION=$(aws lambda publish-version \
