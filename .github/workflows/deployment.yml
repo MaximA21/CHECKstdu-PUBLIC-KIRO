@@ -330,11 +330,13 @@ jobs:
             -var="environment=staging" \
             -var="aws_region=${{ env.AWS_REGION }}" \
             -var="lambda_package_path=$LAMBDA_PACKAGE_PATH" \
+            -var="skip_lambda_package_validation=false" \
             -out=staging.tfplan
         else
           terraform plan \
             -var="environment=staging" \
             -var="aws_region=${{ env.AWS_REGION }}" \
+            -var="skip_lambda_package_validation=true" \
             -out=staging.tfplan
         fi
         
@@ -768,6 +770,7 @@ jobs:
             -var="environment=production" \
             -var="aws_region=${{ env.AWS_REGION }}" \
             -var="lambda_package_path=$LAMBDA_PACKAGE_PATH" \
+            -var="skip_lambda_package_validation=false" \
             -var="canary_deployment=true" \
             -var="traffic_split_percentage=0" \
             -out=production.tfplan
@@ -775,6 +778,7 @@ jobs:
           terraform plan \
             -var="environment=production" \
             -var="aws_region=${{ env.AWS_REGION }}" \
+            -var="skip_lambda_package_validation=true" \
             -var="canary_deployment=true" \
             -var="traffic_split_percentage=0" \
             -out=production.tfplan
