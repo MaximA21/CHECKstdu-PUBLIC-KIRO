@@ -305,10 +305,11 @@ resource "aws_cloudwatch_dashboard" "cost_optimization_dashboard" {
 
 # Lambda function for cost optimization recommendations
 resource "aws_lambda_function" "cost_optimizer" {
-  filename         = var.skip_lambda_package_validation ? "../lambda_packages/cost_optimizer.zip" : "${var.lambda_package_path}/cost_optimizer.zip"
-  source_code_hash = var.skip_lambda_package_validation ? "dummy-hash" : filebase64sha256("${var.lambda_package_path}/cost_optimizer.zip")
+  count            = var.skip_lambda_package_validation ? 0 : (fileexists("${var.lambda_package_path}/cost_optimizer.zip") ? 1 : 0)
+  filename         = "${var.lambda_package_path}/cost_optimizer.zip"
+  source_code_hash = filebase64sha256("${var.lambda_package_path}/cost_optimizer.zip")
   function_name    = "${var.project_name}-${var.environment}-cost-optimizer"
-  role             = aws_iam_role.cost_optimizer_role.arn
+  role             = aws_iam_role.cost_optimizer_role[0].arn
   handler          = "cost_optimizer.lambda_handler"
   runtime          = "python3.11"
   timeout          = 60
@@ -329,6 +330,7 @@ resource "aws_lambda_function" "cost_optimizer" {
 
 # IAM role for cost optimizer Lambda
 resource "aws_iam_role" "cost_optimizer_role" {
+  count = var.skip_lambda_package_validation ? 0 : (fileexists("${var.lambda_package_path}/cost_optimizer.zip") ? 1 : 0)
   name = "${var.project_name}-${var.environment}-cost-optimizer-role"
 
   assume_role_policy = jsonencode({
@@ -349,8 +351,9 @@ resource "aws_iam_role" "cost_optimizer_role" {
 
 # IAM policy for cost optimizer
 resource "aws_iam_role_policy" "cost_optimizer_policy" {
+  count = var.skip_lambda_package_validation ? 0 : (fileexists("${var.lambda_package_path}/cost_optimizer.zip") ? 1 : 0)
   name = "${var.project_name}-${var.environment}-cost-optimizer-policy"
-  role = aws_iam_role.cost_optimizer_role.id
+  role = aws_iam_role.cost_optimizer_role[0].id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -391,16 +394,18 @@ resource "aws_cloudwatch_event_rule" "daily_cost_check" {
 
 # EventBridge target for cost optimizer
 resource "aws_cloudwatch_event_target" "cost_optimizer_target" {
+  count     = var.skip_lambda_package_validation ? 0 : (fileexists("${var.lambda_package_path}/cost_optimizer.zip") ? 1 : 0)
   rule      = aws_cloudwatch_event_rule.daily_cost_check.name
   target_id = "CostOptimizerTarget"
-  arn       = aws_lambda_function.cost_optimizer.arn
+  arn       = aws_lambda_function.cost_optimizer[0].arn
 }
 
 # Lambda permission for EventBridge
 resource "aws_lambda_permission" "allow_eventbridge_cost_optimizer" {
+  count         = var.skip_lambda_package_validation ? 0 : (fileexists("${var.lambda_package_path}/cost_optimizer.zip") ? 1 : 0)
   statement_id  = "AllowExecutionFromEventBridge"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.cost_optimizer.function_name
+  function_name = aws_lambda_function.cost_optimizer[0].function_name
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.daily_cost_check.arn
 }
