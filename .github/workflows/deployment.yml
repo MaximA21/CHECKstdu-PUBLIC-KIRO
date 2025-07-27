@@ -51,6 +51,7 @@ jobs:
       deploy_production: ${{ steps.gate-check.outputs.deploy_production }}
       rollback_mode: ${{ steps.gate-check.outputs.rollback_mode }}
       build_workflow_id: ${{ steps.gate-check.outputs.build_workflow_id }}
+      artifact_sha: ${{ steps.gate-check.outputs.artifact_sha }}
       
     steps:
     - name: Checkout code
@@ -65,6 +66,13 @@ jobs:
         DEPLOY_PRODUCTION="false"
         ROLLBACK_MODE="false"
         BUILD_WORKFLOW_ID=""
+        
+        # Determine the correct SHA for artifacts
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          ARTIFACT_SHA="${{ github.sha }}"
+        else
+          ARTIFACT_SHA="${{ github.event.workflow_run.head_sha }}"
+        fi
         
         # Manual dispatch logic
         if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
@@ -96,12 +104,14 @@ jobs:
         echo "deploy_production=$DEPLOY_PRODUCTION" >> $GITHUB_OUTPUT
         echo "rollback_mode=$ROLLBACK_MODE" >> $GITHUB_OUTPUT
         echo "build_workflow_id=$BUILD_WORKFLOW_ID" >> $GITHUB_OUTPUT
+        echo "artifact_sha=$ARTIFACT_SHA" >> $GITHUB_OUTPUT
         
         echo "Deployment plan:"
         echo "- Staging: $DEPLOY_STAGING"
         echo "- Production: $DEPLOY_PRODUCTION"
         echo "- Rollback: $ROLLBACK_MODE"
         echo "- Build Workflow ID: $BUILD_WORKFLOW_ID"
+        echo "- Artifact SHA: $ARTIFACT_SHA"
 
     - name: Wait for build completion
       if: steps.gate-check.outputs.deploy_staging == 'true' && steps.gate-check.outputs.build_workflow_id != ''
@@ -130,7 +140,7 @@ jobs:
       if: steps.gate-check.outputs.deploy_staging == 'true' || steps.gate-check.outputs.deploy_production == 'true'
       uses: actions/download-artifact@v4
       with:
-        name: webwunder-release-${{ github.sha }}
+        name: webwunder-release-${{ needs.pre-deployment-checks.outputs.artifact_sha }}
         path: ./artifacts
       continue-on-error: true
 
@@ -202,7 +212,7 @@ jobs:
     - name: Download deployment artifacts (if available)
       uses: actions/download-artifact@v4
       with:
-        name: webwunder-release-${{ github.sha }}
+        name: webwunder-release-${{ needs.pre-deployment-checks.outputs.artifact_sha }}
         path: ./artifacts
       continue-on-error: true
 
@@ -217,11 +227,11 @@ jobs:
         echo "🚀 Deploying Lambda functions to staging..."
         
         # Check if we have pre-built packages
-        if [[ -d "artifacts/release-${{ github.sha }}" ]] && [[ -f "artifacts/release-${{ github.sha }}/*.zip" ]]; then
+        if [[ -d "artifacts/release-${{ needs.pre-deployment-checks.outputs.artifact_sha }}" ]] && [[ -f "artifacts/release-${{ needs.pre-deployment-checks.outputs.artifact_sha }}/*.zip" ]]; then
           echo "📦 Using pre-built Lambda packages..."
           
           # Deploy each Lambda function from pre-built packages
-          for zip_file in artifacts/release-${{ github.sha }}/*.zip; do
+          for zip_file in artifacts/release-${{ needs.pre-deployment-checks.outputs.artifact_sha }}/*.zip; do
             if [[ -f "$zip_file" ]]; then
               function_name=$(basename "$zip_file" .zip)
               echo "Deploying $function_name to staging..."
@@ -303,8 +313,8 @@ jobs:
         terraform workspace select staging || terraform workspace new staging
         
         # Check if we have pre-built packages for Terraform
-        if [[ -d "../artifacts/release-${{ github.sha }}" ]]; then
-          LAMBDA_PACKAGE_PATH="../artifacts/release-${{ github.sha }}"
+        if [[ -d "../artifacts/release-${{ needs.pre-deployment-checks.outputs.artifact_sha }}" ]]; then
+          LAMBDA_PACKAGE_PATH="../artifacts/release-${{ needs.pre-deployment-checks.outputs.artifact_sha }}"
           echo "📦 Using pre-built Lambda packages for Terraform: $LAMBDA_PACKAGE_PATH"
         else
           LAMBDA_PACKAGE_PATH=""
@@ -336,8 +346,8 @@ jobs:
         echo "🐳 Updating container images in staging..."
         
         # Update ECS service or Lambda container images
-        if [[ -f "artifacts/release-${{ github.sha }}/docker-manifest.json" ]]; then
-          IMAGE_TAG=$(jq -r '.tags[0].tag' artifacts/release-${{ github.sha }}/docker-manifest.json)
+        if [[ -f "artifacts/release-${{ needs.pre-deployment-checks.outputs.artifact_sha }}/docker-manifest.json" ]]; then
+          IMAGE_TAG=$(jq -r '.tags[0].tag' artifacts/release-${{ needs.pre-deployment-checks.outputs.artifact_sha }}/docker-manifest.json)
           
           # Update ECS service if it exists
           aws ecs update-service \
@@ -553,7 +563,7 @@ jobs:
       if: needs.pre-deployment-checks.outputs.rollback_mode == 'false'
       uses: actions/download-artifact@v4
       with:
-        name: webwunder-release-${{ github.sha }}
+        name: webwunder-release-${{ needs.pre-deployment-checks.outputs.artifact_sha }}
         path: ./artifacts
       continue-on-error: true
 
@@ -599,11 +609,11 @@ jobs:
         echo "Phase 1: Deploying new version (0% traffic)..."
         
         # Check if we have pre-built packages
-        if [[ -d "artifacts/release-${{ github.sha }}" ]] && [[ -f "artifacts/release-${{ github.sha }}/*.zip" ]]; then
+        if [[ -d "artifacts/release-${{ needs.pre-deployment-checks.outputs.artifact_sha }}" ]] && [[ -f "artifacts/release-${{ needs.pre-deployment-checks.outputs.artifact_sha }}/*.zip" ]]; then
           echo "📦 Using pre-built Lambda packages for production deployment..."
           
           # Deploy Lambda functions with versioning from pre-built packages
-          for zip_file in artifacts/release-${{ github.sha }}/*.zip; do
+          for zip_file in artifacts/release-${{ needs.pre-deployment-checks.outputs.artifact_sha }}/*.zip; do
             if [[ -f "$zip_file" ]]; then
               function_name=$(basename "$zip_file" .zip)
               echo "Deploying $function_name to production..."
@@ -729,8 +739,8 @@ jobs:
         terraform workspace select production
         
         # Check if we have pre-built packages for Terraform
-        if [[ -d "../artifacts/release-${{ github.sha }}" ]]; then
-          LAMBDA_PACKAGE_PATH="../artifacts/release-${{ github.sha }}"
+        if [[ -d "../artifacts/release-${{ needs.pre-deployment-checks.outputs.artifact_sha }}" ]]; then
+          LAMBDA_PACKAGE_PATH="../artifacts/release-${{ needs.pre-deployment-checks.outputs.artifact_sha }}"
           echo "📦 Using pre-built Lambda packages for Terraform: $LAMBDA_PACKAGE_PATH"
         else
           LAMBDA_PACKAGE_PATH=""
