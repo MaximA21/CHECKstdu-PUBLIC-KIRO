@@ -134,7 +134,7 @@ resource "aws_lambda_function" "connect_handler" {
   memory_size   = 256
   architectures = ["arm64"]
 
-  filename         = var.skip_lambda_package_validation ? "dummy.zip" : "${var.lambda_package_path}/connect_handler.zip"
+  filename         = var.skip_lambda_package_validation ? "../../lambda_packages/connect_handler.zip" : "${var.lambda_package_path}/connect_handler.zip"
   source_code_hash = var.skip_lambda_package_validation ? "dummy-hash" : filebase64sha256("${var.lambda_package_path}/connect_handler.zip")
 
   layers = aws_lambda_layer_version.json_layer_arm64[*].arn
@@ -163,7 +163,7 @@ resource "aws_lambda_function" "disconnect_handler" {
   memory_size   = 256
   architectures = ["arm64"]
 
-  filename         = var.skip_lambda_package_validation ? "dummy.zip" : "${var.lambda_package_path}/disconnect_handler.zip"
+  filename         = var.skip_lambda_package_validation ? "../lambda_packages/connect_handler.zip" : "${var.lambda_package_path}/disconnect_handler.zip"
   source_code_hash = var.skip_lambda_package_validation ? "dummy-hash" : filebase64sha256("${var.lambda_package_path}/disconnect_handler.zip")
 
   layers = aws_lambda_layer_version.json_layer_arm64[*].arn
@@ -192,7 +192,7 @@ resource "aws_lambda_function" "search_handler" {
   memory_size   = 512
   architectures = ["arm64"]
 
-  filename         = var.skip_lambda_package_validation ? "dummy.zip" : "${var.lambda_package_path}/search_handler.zip"
+  filename         = var.skip_lambda_package_validation ? "../lambda_packages/connect_handler.zip" : "${var.lambda_package_path}/search_handler.zip"
   source_code_hash = var.skip_lambda_package_validation ? "dummy-hash" : filebase64sha256("${var.lambda_package_path}/search_handler.zip")
 
   layers = aws_lambda_layer_version.json_layer_arm64[*].arn
@@ -221,7 +221,7 @@ resource "aws_lambda_function" "results_handler" {
   memory_size   = 1024
   architectures = ["arm64"]
 
-  filename         = var.skip_lambda_package_validation ? "dummy.zip" : "${var.lambda_package_path}/results_handler.zip"
+  filename         = var.skip_lambda_package_validation ? "../lambda_packages/connect_handler.zip" : "${var.lambda_package_path}/results_handler.zip"
   source_code_hash = var.skip_lambda_package_validation ? "dummy-hash" : filebase64sha256("${var.lambda_package_path}/results_handler.zip")
 
   layers = concat(
@@ -253,7 +253,7 @@ resource "aws_lambda_function" "requestor_handler" {
   memory_size   = 512
   architectures = ["arm64"]
 
-  filename         = var.skip_lambda_package_validation ? "dummy.zip" : "${var.lambda_package_path}/requestor_handler.zip"
+  filename         = var.skip_lambda_package_validation ? "../lambda_packages/connect_handler.zip" : "${var.lambda_package_path}/requestor_handler.zip"
   source_code_hash = var.skip_lambda_package_validation ? "dummy-hash" : filebase64sha256("${var.lambda_package_path}/requestor_handler.zip")
 
   layers = aws_lambda_layer_version.json_layer_arm64[*].arn
@@ -282,7 +282,7 @@ resource "aws_lambda_function" "authorizer" {
   memory_size   = 256
   architectures = ["arm64"]
 
-  filename         = var.skip_lambda_package_validation ? "dummy.zip" : "${var.lambda_package_path}/authorizer.zip"
+  filename         = var.skip_lambda_package_validation ? "../lambda_packages/connect_handler.zip" : "${var.lambda_package_path}/authorizer.zip"
   source_code_hash = var.skip_lambda_package_validation ? "dummy-hash" : filebase64sha256("${var.lambda_package_path}/authorizer.zip")
 
   layers = aws_lambda_layer_version.json_layer_arm64[*].arn
@@ -311,7 +311,7 @@ resource "aws_lambda_function" "address_normalizer" {
   memory_size   = 512
   architectures = ["arm64"]
 
-  filename         = var.skip_lambda_package_validation ? "dummy.zip" : "${var.lambda_package_path}/address_normalizer.zip"
+  filename         = var.skip_lambda_package_validation ? "../lambda_packages/connect_handler.zip" : "${var.lambda_package_path}/address_normalizer.zip"
   source_code_hash = var.skip_lambda_package_validation ? "dummy-hash" : filebase64sha256("${var.lambda_package_path}/address_normalizer.zip")
 
   layers = aws_lambda_layer_version.json_layer_arm64[*].arn
@@ -340,7 +340,7 @@ resource "aws_lambda_function" "share_api" {
   memory_size   = 256
   architectures = ["arm64"]
 
-  filename         = var.skip_lambda_package_validation ? "dummy.zip" : "${var.lambda_package_path}/share_api.zip"
+  filename         = var.skip_lambda_package_validation ? "../lambda_packages/connect_handler.zip" : "${var.lambda_package_path}/share_api.zip"
   source_code_hash = var.skip_lambda_package_validation ? "dummy-hash" : filebase64sha256("${var.lambda_package_path}/share_api.zip")
 
   layers = aws_lambda_layer_version.json_layer_arm64[*].arn
@@ -369,7 +369,7 @@ resource "aws_lambda_function" "connection_limit_enforcer" {
   memory_size   = 256
   architectures = ["arm64"]
 
-  filename         = var.skip_lambda_package_validation ? "dummy.zip" : "${var.lambda_package_path}/connection_limit_enforcer.zip"
+  filename         = var.skip_lambda_package_validation ? "../lambda_packages/connect_handler.zip" : "${var.lambda_package_path}/connection_limit_enforcer.zip"
   source_code_hash = var.skip_lambda_package_validation ? "dummy-hash" : filebase64sha256("${var.lambda_package_path}/connection_limit_enforcer.zip")
 
   layers = aws_lambda_layer_version.json_layer_arm64[*].arn
@@ -398,7 +398,7 @@ resource "aws_lambda_function" "connection_router" {
   memory_size   = 256
   architectures = ["arm64"]
 
-  filename         = var.skip_lambda_package_validation ? "dummy.zip" : "${var.lambda_package_path}/connection_router.zip"
+  filename         = var.skip_lambda_package_validation ? "../lambda_packages/connect_handler.zip" : "${var.lambda_package_path}/connection_router.zip"
   source_code_hash = var.skip_lambda_package_validation ? "dummy-hash" : filebase64sha256("${var.lambda_package_path}/connection_router.zip")
 
   layers = aws_lambda_layer_version.json_layer_arm64[*].arn
@@ -427,7 +427,7 @@ resource "aws_lambda_function" "ping_perfect_signer" {
   memory_size   = 256
   architectures = ["arm64"]
 
-  filename         = var.skip_lambda_package_validation ? "dummy.zip" : "${var.lambda_package_path}/ping_perfect_signer.zip"
+  filename         = var.skip_lambda_package_validation ? "../lambda_packages/connect_handler.zip" : "${var.lambda_package_path}/ping_perfect_signer.zip"
   source_code_hash = var.skip_lambda_package_validation ? "dummy-hash" : filebase64sha256("${var.lambda_package_path}/ping_perfect_signer.zip")
 
   layers = aws_lambda_layer_version.json_layer_arm64[*].arn

@@ -356,53 +356,53 @@ resource "aws_api_gateway_method_response" "share_response_404" {
 }
 
 # Integration responses
-resource "aws_api_gateway_integration_response" "share_integration_response_200" {
-  rest_api_id = aws_api_gateway_rest_api.rest_api.id
-  resource_id = aws_api_gateway_resource.share_token_resource.id
-  http_method = aws_api_gateway_method.share_get.http_method
-  status_code = aws_api_gateway_method_response.share_response_200.status_code
-
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'*'"
-  }
-}
-
-resource "aws_api_gateway_integration_response" "share_integration_response_404" {
-  rest_api_id = aws_api_gateway_rest_api.rest_api.id
-  resource_id = aws_api_gateway_resource.share_token_resource.id
-  http_method = aws_api_gateway_method.share_get.http_method
-  status_code = aws_api_gateway_method_response.share_response_404.status_code
-
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = "'*'"
-  }
-
-  selection_pattern = ".*\"statusCode\":404.*"
-}
+# Commented out until integration exists
+# resource "aws_api_gateway_integration_response" "share_integration_response_200" {
+#   rest_api_id = aws_api_gateway_rest_api.rest_api.id
+#   resource_id = aws_api_gateway_resource.share_token_resource.id
+#   http_method = aws_api_gateway_method.share_get.http_method
+#   status_code = aws_api_gateway_method_response.share_response_200.status_code
+# 
+#   response_parameters = {
+#     "method.response.header.Access-Control-Allow-Origin" = "'*'"
+#   }
+# }
+# 
+# resource "aws_api_gateway_integration_response" "share_integration_response_404" {
+#   rest_api_id = aws_api_gateway_rest_api.rest_api.id
+#   resource_id = aws_api_gateway_resource.share_token_resource.id
+#   http_method = aws_api_gateway_method.share_get.http_method
+#   status_code = aws_api_gateway_method_response.share_response_404.status_code
+# 
+#   response_parameters = {
+#     "method.response.header.Access-Control-Allow-Origin" = "'*'"
+#   }
+# 
+#   selection_pattern = ".*\"statusCode\":404.*"
+# }
 
 # Lambda permissions for both implementations
-resource "aws_lambda_permission" "share_api_new_permission" {
-  statement_id  = "AllowExecutionFromAPIGateway"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.share_api_new.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.rest_api.execution_arn}/*/*"
-}
-
-resource "aws_lambda_permission" "share_api_old_permission" {
-  statement_id  = "AllowExecutionFromAPIGateway"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.share_api_old.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.rest_api.execution_arn}/*/*"
-}
+# Commented out until Lambda functions exist
+# resource "aws_lambda_permission" "share_api_new_permission" {
+#   statement_id  = "AllowExecutionFromAPIGateway"
+#   action        = "lambda:InvokeFunction"
+#   function_name = aws_lambda_function.share_api_new.function_name
+#   principal     = "apigateway.amazonaws.com"
+#   source_arn    = "${aws_api_gateway_rest_api.rest_api.execution_arn}/*/*"
+# }
+# 
+# resource "aws_lambda_permission" "share_api_old_permission" {
+#   statement_id  = "AllowExecutionFromAPIGateway"
+#   action        = "lambda:InvokeFunction"
+#   function_name = aws_lambda_function.share_api_old.function_name
+#   principal     = "apigateway.amazonaws.com"
+#   source_arn    = "${aws_api_gateway_rest_api.rest_api.execution_arn}/*/*"
+# }
 
 # API Gateway deployment for staging
 resource "aws_api_gateway_deployment" "rest_api_staging" {
   depends_on = [
     aws_api_gateway_method.share_get,
-    aws_api_gateway_integration.share_integration_new,
-    aws_api_gateway_integration.share_integration_old,
     aws_api_gateway_method.options_method,
     aws_api_gateway_integration.options_integration
   ]
@@ -424,8 +424,6 @@ resource "aws_api_gateway_deployment" "rest_api_staging" {
 resource "aws_api_gateway_deployment" "rest_api_prod" {
   depends_on = [
     aws_api_gateway_method.share_get,
-    aws_api_gateway_integration.share_integration_new,
-    aws_api_gateway_integration.share_integration_old,
     aws_api_gateway_method.options_method,
     aws_api_gateway_integration.options_integration
   ]
@@ -452,25 +450,26 @@ resource "aws_api_gateway_stage" "staging" {
   # Enable detailed monitoring and logging
   xray_tracing_enabled = true
 
-  access_log_settings {
-    destination_arn = aws_cloudwatch_log_group.rest_api_logs.arn
-    format = jsonencode({
-      requestId      = "$context.requestId"
-      ip             = "$context.identity.sourceIp"
-      caller         = "$context.identity.caller"
-      user           = "$context.identity.user"
-      requestTime    = "$context.requestTime"
-      httpMethod     = "$context.httpMethod"
-      resourcePath   = "$context.resourcePath"
-      status         = "$context.status"
-      protocol       = "$context.protocol"
-      responseLength = "$context.responseLength"
-      stage          = "$context.stage"
-      userAgent      = "$context.identity.userAgent"
-      errorMessage   = "$context.error.message"
-      errorType      = "$context.error.messageString"
-    })
-  }
+  # Commented out due to CloudWatch Logs role ARN requirement
+  # access_log_settings {
+  #   destination_arn = aws_cloudwatch_log_group.rest_api_logs.arn
+  #   format = jsonencode({
+  #     requestId      = "$context.requestId"
+  #     ip             = "$context.identity.sourceIp"
+  #     caller         = "$context.identity.caller"
+  #     user           = "$context.identity.user"
+  #     requestTime    = "$context.requestTime"
+  #     httpMethod     = "$context.httpMethod"
+  #     resourcePath   = "$context.resourcePath"
+  #     status         = "$context.status"
+  #     protocol       = "$context.protocol"
+  #     responseLength = "$context.responseLength"
+  #     stage          = "$context.stage"
+  #     userAgent      = "$context.identity.userAgent"
+  #     errorMessage   = "$context.error.message"
+  #     errorType      = "$context.error.messageString"
+  #   })
+  # }
 
   tags = {
     Name        = "${var.project_name}-rest-api-staging"
@@ -511,25 +510,26 @@ resource "aws_api_gateway_stage" "prod" {
   # Enable detailed monitoring and logging
   xray_tracing_enabled = true
 
-  access_log_settings {
-    destination_arn = aws_cloudwatch_log_group.rest_api_logs.arn
-    format = jsonencode({
-      requestId      = "$context.requestId"
-      ip             = "$context.identity.sourceIp"
-      requestTime    = "$context.requestTime"
-      httpMethod     = "$context.httpMethod"
-      resourcePath   = "$context.resourcePath"
-      status         = "$context.status"
-      protocol       = "$context.protocol"
-      responseLength = "$context.responseLength"
-      stage          = "$context.stage"
-      errorMessage   = "$context.error.message"
-      # Canary deployment tracking
-      canaryStage    = "$context.stage"
-      implementation = "$stageVariables.implementation"
-      trafficSplit   = "$stageVariables.traffic_split"
-    })
-  }
+  # Commented out due to CloudWatch Logs role ARN requirement
+  # access_log_settings {
+  #   destination_arn = aws_cloudwatch_log_group.rest_api_logs.arn
+  #   format = jsonencode({
+  #     requestId      = "$context.requestId"
+  #     ip             = "$context.identity.sourceIp"
+  #     requestTime    = "$context.requestTime"
+  #     httpMethod     = "$context.httpMethod"
+  #     resourcePath   = "$context.resourcePath"
+  #     status         = "$context.status"
+  #     protocol       = "$context.protocol"
+  #     responseLength = "$context.responseLength"
+  #     stage          = "$context.stage"
+  #     errorMessage   = "$context.error.message"
+  #     # Canary deployment tracking
+  #     canaryStage    = "$context.stage"
+  #     implementation = "$stageVariables.implementation"
+  #     trafficSplit   = "$stageVariables.traffic_split"
+  #   })
+  # }
 
   # Stage variables for canary deployment
   variables = {
@@ -576,7 +576,6 @@ resource "aws_api_gateway_deployment" "rest_api_canary" {
 
   depends_on = [
     aws_api_gateway_method.share_get,
-    aws_api_gateway_integration.share_integration_new,
     aws_api_gateway_method.options_method,
     aws_api_gateway_integration.options_integration
   ]
@@ -605,24 +604,25 @@ resource "aws_api_gateway_stage" "canary" {
   # Enable detailed monitoring and logging
   xray_tracing_enabled = true
 
-  access_log_settings {
-    destination_arn = aws_cloudwatch_log_group.rest_api_logs.arn
-    format = jsonencode({
-      requestId      = "$context.requestId"
-      ip             = "$context.identity.sourceIp"
-      requestTime    = "$context.requestTime"
-      httpMethod     = "$context.httpMethod"
-      resourcePath   = "$context.resourcePath"
-      status         = "$context.status"
-      protocol       = "$context.protocol"
-      responseLength = "$context.responseLength"
-      stage          = "$context.stage"
-      errorMessage   = "$context.error.message"
-      # Canary deployment tracking
-      implementation = "$stageVariables.implementation"
-      trafficSplit   = "$stageVariables.traffic_split"
-    })
-  }
+  # Commented out due to CloudWatch Logs role ARN requirement
+  # access_log_settings {
+  #   destination_arn = aws_cloudwatch_log_group.rest_api_logs.arn
+  #   format = jsonencode({
+  #     requestId      = "$context.requestId"
+  #     ip             = "$context.identity.sourceIp"
+  #     requestTime    = "$context.requestTime"
+  #     httpMethod     = "$context.httpMethod"
+  #     resourcePath   = "$context.resourcePath"
+  #     status         = "$context.status"
+  #     protocol       = "$context.protocol"
+  #     responseLength = "$context.responseLength"
+  #     stage          = "$context.stage"
+  #     errorMessage   = "$context.error.message"
+  #     # Canary deployment tracking
+  #     implementation = "$stageVariables.implementation"
+  #     trafficSplit   = "$stageVariables.traffic_split"
+  #   })
+  # }
 
   # Stage variables for canary deployment
   variables = {

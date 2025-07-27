@@ -1,7 +1,13 @@
 # GitHub OIDC Identity Provider and IAM Roles for CI/CD Pipeline
 
 # OIDC Identity Provider for GitHub Actions
+# Use data source if provider already exists, otherwise create it
+data "aws_iam_openid_connect_provider" "github_actions_existing" {
+  url = "https://token.actions.githubusercontent.com"
+}
+
 resource "aws_iam_openid_connect_provider" "github_actions" {
+  count = 0  # Disable creation since provider already exists
   url = "https://token.actions.githubusercontent.com"
 
   client_id_list = [
@@ -20,6 +26,11 @@ resource "aws_iam_openid_connect_provider" "github_actions" {
   }
 }
 
+# Use existing provider
+locals {
+  github_oidc_provider_arn = data.aws_iam_openid_connect_provider.github_actions_existing.arn
+}
+
 # IAM Role for GitHub Actions CI/CD Pipeline
 resource "aws_iam_role" "github_actions_role" {
   name = "github-actions-deployment-role"
@@ -31,7 +42,7 @@ resource "aws_iam_role" "github_actions_role" {
         Action = "sts:AssumeRoleWithWebIdentity"
         Effect = "Allow"
         Principal = {
-          Federated = aws_iam_openid_connect_provider.github_actions.arn
+          Federated = local.github_oidc_provider_arn
         }
         Condition = {
           StringEquals = {

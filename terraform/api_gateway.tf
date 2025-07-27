@@ -59,24 +59,25 @@ resource "aws_apigatewayv2_stage" "prod" {
   }
 
   # Enable access logging for traffic distribution and connection tracking
-  access_log_settings {
-    destination_arn = aws_cloudwatch_log_group.api_logs.arn
-    format = jsonencode({
-      requestId          = "$context.requestId"
-      ip                 = "$context.identity.sourceIp"
-      requestTime        = "$context.requestTime"
-      routeKey           = "$context.routeKey"
-      status             = "$context.status"
-      connectionId       = "$context.connectionId"
-      error              = "$context.error.message"
-      integrationLatency = "$context.integrationLatency"
-      responseLength     = "$context.responseLength"
-      # Additional fields for traffic distribution monitoring
-      userAgent = "$context.identity.userAgent"
-      protocol  = "$context.protocol"
-      stage     = "$context.stage"
-    })
-  }
+  # Commented out due to CloudWatch Logs role ARN requirement
+  # access_log_settings {
+  #   destination_arn = aws_cloudwatch_log_group.api_logs.arn
+  #   format = jsonencode({
+  #     requestId          = "$context.requestId"
+  #     ip                 = "$context.identity.sourceIp"
+  #     requestTime        = "$context.requestTime"
+  #     routeKey           = "$context.routeKey"
+  #     status             = "$context.status"
+  #     connectionId       = "$context.connectionId"
+  #     error              = "$context.error.message"
+  #     integrationLatency = "$context.integrationLatency"
+  #     responseLength     = "$context.responseLength"
+  #     # Additional fields for traffic distribution monitoring
+  #     userAgent = "$context.identity.userAgent"
+  #     protocol  = "$context.protocol"
+  #     stage     = "$context.stage"
+  #   })
+  # }
 
   tags = {
     Name                = "${var.project_name}-prod-stage"
@@ -98,24 +99,25 @@ resource "aws_apigatewayv2_stage" "staging" {
     detailed_metrics_enabled = true
   }
 
-  access_log_settings {
-    destination_arn = aws_cloudwatch_log_group.api_logs.arn
-    format = jsonencode({
-      requestId          = "$context.requestId"
-      ip                 = "$context.identity.sourceIp"
-      requestTime        = "$context.requestTime"
-      routeKey           = "$context.routeKey"
-      status             = "$context.status"
-      connectionId       = "$context.connectionId"
-      error              = "$context.error.message"
-      integrationLatency = "$context.integrationLatency"
-      responseLength     = "$context.responseLength"
-      # Additional fields for traffic distribution monitoring
-      userAgent = "$context.identity.userAgent"
-      protocol  = "$context.protocol"
-      stage     = "$context.stage"
-    })
-  }
+  # Commented out due to CloudWatch Logs role ARN requirement
+  # access_log_settings {
+  #   destination_arn = aws_cloudwatch_log_group.api_logs.arn
+  #   format = jsonencode({
+  #     requestId          = "$context.requestId"
+  #     ip                 = "$context.identity.sourceIp"
+  #     requestTime        = "$context.requestTime"
+  #     routeKey           = "$context.routeKey"
+  #     status             = "$context.status"
+  #     connectionId       = "$context.connectionId"
+  #     error              = "$context.error.message"
+  #     integrationLatency = "$context.integrationLatency"
+  #     responseLength     = "$context.responseLength"
+  #     # Additional fields for traffic distribution monitoring
+  #     userAgent = "$context.identity.userAgent"
+  #     protocol  = "$context.protocol"
+  #     stage     = "$context.stage"
+  #   })
+  # }
 
   tags = {
     Name                = "${var.project_name}-staging-stage"

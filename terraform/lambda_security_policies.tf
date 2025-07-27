@@ -341,13 +341,14 @@ resource "aws_iam_role_policy_attachment" "authorizer_policy" {
 # Security best practices: Resource-based policies for additional protection
 
 # Lambda function resource policy to restrict invocation sources
-resource "aws_lambda_permission" "api_gateway_invoke_authorizer" {
-  statement_id  = "AllowExecutionFromAPIGateway"
-  action        = "lambda:InvokeFunction"
-  function_name = "${var.project_name}-${var.environment}-authorizer"
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.websocket_api.execution_arn}/*/*"
-}
+# Commented out until Lambda function exists
+# resource "aws_lambda_permission" "api_gateway_invoke_authorizer" {
+#   statement_id  = "AllowExecutionFromAPIGateway"
+#   action        = "lambda:InvokeFunction"
+#   function_name = "${var.project_name}-${var.environment}-authorizer"
+#   principal     = "apigateway.amazonaws.com"
+#   source_arn    = "${aws_apigatewayv2_api.websocket_api.execution_arn}/*/*"
+# }
 
 # Additional security: VPC configuration for Lambda functions (optional)
 # Uncomment if VPC isolation is required

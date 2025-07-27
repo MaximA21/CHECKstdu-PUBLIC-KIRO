@@ -305,12 +305,13 @@ resource "aws_cloudwatch_dashboard" "cost_optimization_dashboard" {
 
 # Lambda function for cost optimization recommendations
 resource "aws_lambda_function" "cost_optimizer" {
-  filename      = "lambda_packages/cost_optimizer.zip"
-  function_name = "${var.project_name}-${var.environment}-cost-optimizer"
-  role          = aws_iam_role.cost_optimizer_role.arn
-  handler       = "cost_optimizer.lambda_handler"
-  runtime       = "python3.11"
-  timeout       = 60
+  filename         = var.skip_lambda_package_validation ? "../lambda_packages/cost_optimizer.zip" : "${var.lambda_package_path}/cost_optimizer.zip"
+  source_code_hash = var.skip_lambda_package_validation ? "dummy-hash" : filebase64sha256("${var.lambda_package_path}/cost_optimizer.zip")
+  function_name    = "${var.project_name}-${var.environment}-cost-optimizer"
+  role             = aws_iam_role.cost_optimizer_role.arn
+  handler          = "cost_optimizer.lambda_handler"
+  runtime          = "python3.11"
+  timeout          = 60
 
   environment {
     variables = {
