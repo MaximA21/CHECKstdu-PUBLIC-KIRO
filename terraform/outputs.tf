@@ -215,7 +215,7 @@ output "github_actions_role_arn" {
 
 output "oidc_provider_arn" {
   description = "ARN of the GitHub OIDC identity provider"
-  value       = aws_iam_openid_connect_provider.github_actions.arn
+  value       = data.aws_iam_openid_connect_provider.github_actions_existing.arn
 }
 
 output "deployment_artifacts_bucket_name" {
@@ -227,7 +227,7 @@ output "github_oidc_configuration" {
   description = "Complete GitHub OIDC configuration for repository setup"
   value = {
     role_arn           = aws_iam_role.github_actions_role.arn
-    oidc_provider_arn  = aws_iam_openid_connect_provider.github_actions.arn
+    oidc_provider_arn  = data.aws_iam_openid_connect_provider.github_actions_existing.arn
     deployment_bucket  = aws_s3_bucket.deployment_artifacts.bucket
     trusted_repository = var.github_repository
     aws_region         = var.aws_region
