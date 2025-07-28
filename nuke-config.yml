@@ -1,0 +1,16 @@
+regions:
+  - us-east-1
+  - us-west-2
+  - eu-west-1
+  # Add any other regions you've used
+
+account-blocklist:
+  - "999999999999" # Dummy account ID for safety
+
+accounts:
+  "123456789012": # Replace with your ACTUAL AWS account ID
+    filters:
+      IAMRole:
+        - "OrganizationAccountAccessRole"
+      IAMRolePolicyAttachment:
+        - "OrganizationAccountAccessRole -> AdministratorAccess"
